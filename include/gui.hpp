@@ -1,6 +1,8 @@
 #ifndef GUI__HPP
 #define GUI__HPP
 
+#include "SDL_opengl.h"
+
 #include <vector>
 
 void loadTexture(char* filename);

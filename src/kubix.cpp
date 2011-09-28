@@ -6,9 +6,10 @@
 #include "SDL_opengl.h"
 
 #include "gui.hpp"
+#include "handler.hpp"
 
 int main(){
-    SDL_Event ev;
+    SDL_Event* event = new SDL_Event();
     bool DONE=false;
     
     initSDL();
@@ -17,27 +18,20 @@ int main(){
     try{
         KBX_Die* werrfel = new KBX_Die();
 
-        KBX_Scene scene;
-        scene.add( werrfel );
+        KBX_Scene* scene = new KBX_Scene();
+        scene->add( werrfel );
 
-        while ( ! DONE ){
-            SDL_PollEvent( &ev );
 
-            switch( ev.type ){
-                case SDL_QUIT:
-                    DONE=true;
-                    break;
-                case SDL_KEYDOWN:
-                    if (ev.key.keysym.sym == SDLK_ESCAPE){
-                        DONE=true;
-                    }
-                    break;
-                default:
-                    // do nothing
-                    break;
+        KBX_ExitEventHandler exitEvents(scene);
+
+        while ( !DONE ){
+            SDL_PollEvent( event );
+
+            if (exitEvents.handle( event ) != 0){
+                DONE=true;
             }
 
-            scene.display();
+            scene->display();
             SDL_GL_SwapBuffers();
         }
     }catch(const char* errMsg){
