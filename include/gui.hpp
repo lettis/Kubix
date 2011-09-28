@@ -25,11 +25,11 @@ public:
 // KBX_Object
 //  abstract class defining opengl object
 class KBX_Object{
+protected:
 	float   _angle;
 	KBX_Vec _rotAxis;
 	KBX_Vec _pos;
 	bool    _isVisible;
-
 	// define opengl for this object
 	virtual void _render() = 0;
 	// rotate object around _rotAxis by _angle
@@ -53,18 +53,20 @@ public:
 // KBX_AnimObject
 //  abstract class defining opengl object with animation support
 class KBX_AnimObject : public KBX_Object {
+protected:
 	float _angleOrig;
 	float _angleDest;
 	float _rotStep;
-
 	KBX_Vec _posOrig;
 	KBX_Vec _posDest;
 	float   _transStep;
-
 //TODO: overload _rotate, _translate
 	void _animRotate(KBX_Vec axis, float angle);
 	void _animTranslate(KBX_Vec direction);
 public:
+    void rotate(KBX_Vec axis, float angle){
+        KBX_Object::rotate(axis, angle);
+    }
 	// sets angle and axis to define a rotation
 	void rotate(KBX_Vec axis, float angle, float step);
 	// sets vector to define a translation

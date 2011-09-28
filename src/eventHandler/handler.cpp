@@ -27,4 +27,25 @@ int KBX_ExitEventHandler::handle(SDL_Event* event){
     return 0;
 }
 
+/// handle motionn events
+/**
+    \param event the given event
+    \returns 1 if event has been handled, else 0
+*/
+int KBX_MotionEventHandler::handle(SDL_Event* event){
+    float angle=5;
+
+    if (event->type == SDL_KEYDOWN){
+        switch(event->key.keysym.sym){
+            case SDLK_LEFT:
+            case SDLK_a:
+//                this->scene->rotate( );
+                break;
+            default:
+                // do nothing
+                break;
+        }
+    }
+    return 0;
+}
 

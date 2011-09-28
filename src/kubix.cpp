@@ -21,7 +21,6 @@ int main(){
         KBX_Scene* scene = new KBX_Scene();
         scene->add( werrfel );
 
-
         KBX_ExitEventHandler exitEvents(scene);
 
         while ( !DONE ){

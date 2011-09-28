@@ -110,7 +110,7 @@ void KBX_Object::translate(KBX_Vec direction){
 
 // actually rotate object (private, only called by 'display')
 void KBX_Object::_rotate(){
-	glRotatef( this->_angle, this->_pos.x, this->_pos.y, this->_pos.z );
+	glRotatef( this->_angle, this->_rotAxis.x, this->_rotAxis.y, this->_rotAxis.z );
 }
 
 // actually translate object (private, only called by 'display')
@@ -130,7 +130,7 @@ void KBX_Object::display(){
 // -- KBX_Object
 
 // --+ graphical objects +--
-KBX_Die::KBX_Die() : KBX_AnimObject(){}
+KBX_Die::KBX_Die() :KBX_AnimObject(){}
 
 void KBX_Die::_render(){
 	glBegin( GL_QUADS );
@@ -184,7 +184,6 @@ void KBX_Die::_render(){
 void KBX_Board::_render(){
 	// TODO: render board
 }
-// -- KBX_Board
 /// scene constructor
 KBX_Scene::KBX_Scene(){}
 /// render the scene
@@ -217,7 +216,6 @@ void KBX_Scene::add(KBX_Object* obj){
         throw "unable to add object to scene (null-reference)";
     }
 }
-
 
 // --+ end graphical objects +--
 
