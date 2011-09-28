@@ -1,40 +1,49 @@
 #include <stdlib.h>
 #include <math.h>
+#include <iostream>
+
 #include "SDL.h"
 #include "SDL_opengl.h"
 
 #include "gui.hpp"
 
 int main(){
-	SDL_Event ev;
-	bool DONE=false;
-	
-	initSDL();
-	initOpenGL();
+    SDL_Event ev;
+    bool DONE=false;
+    
+    initSDL();
+    initOpenGL();
 
-	KBX_Die* werrfel = new KBX_Die();
-	
-	while ( ! DONE ){
+    try{
+        KBX_Die* werrfel = new KBX_Die();
 
-		SDL_PollEvent( &ev );
-		if ( ev.type == SDL_QUIT || ev.key.keysym.sym == SDLK_ESCAPE ){
-			DONE = true;
-		}
+        KBX_Scene scene;
+        scene.add( werrfel );
 
-		// TODO: this rendering stuff should rest in scene.display()
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glMatrixMode(GL_MODELVIEW); //Switch to the drawing perspective
-		glLoadIdentity(); //Reset the drawing perspective
+        while ( ! DONE ){
+            SDL_PollEvent( &ev );
 
-		glTranslatef( 0,0,-10);
+            switch( ev.type ){
+                case SDL_QUIT:
+                    DONE=true;
+                    break;
+                case SDL_KEYDOWN:
+                    if (ev.key.keysym.sym == SDLK_ESCAPE){
+                        DONE=true;
+                    }
+                    break;
+                default:
+                    // do nothing
+                    break;
+            }
 
-		//TODO: render stuff here
-		werrfel->display();
-
-		SDL_GL_SwapBuffers();
-	}
-	
-	SDL_Quit();
-	return 0;
+            scene.display();
+            SDL_GL_SwapBuffers();
+        }
+    }catch(const char* errMsg){
+        std::cout << "error: " << errMsg << std::endl;
+    }
+    SDL_Quit();
+    return 0;
 }
 

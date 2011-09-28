@@ -14,6 +14,6 @@ all: $(OBJ)
 	$(CPP) $(CPPFLAGS) $(INCLUDE) -c $<
 
 clean:
-	rm $(OBJ)
+	rm -f $(OBJ)
 
 

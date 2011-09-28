@@ -6,8 +6,6 @@
 #include "SDL_opengl.h"
 #include "gui.hpp"
 
-using namespace std;
-
 void loadTexture(char* filename){
 	GLuint  texture;	// This is a handle to our texture object
 	SDL_Surface *surface;	// This surface will tell us the details of the image
@@ -88,8 +86,7 @@ void KBX_Vec::normalize(){
 	    this->y /= norm;
 	    this->z /= norm;
     }else{
-        cout << "div by zero in vector norm" << endl;
-        exit(1);
+        throw "div by zero in vector norm";
     }
 }
 // -- KBX_Vec
@@ -132,15 +129,8 @@ void KBX_Object::display(){
 }
 // -- KBX_Object
 
-
-//  --+ end abstract classes +--
-
-
-
 // --+ graphical objects +--
-KBX_Die::KBX_Die() : KBX_AnimObject(){
-
-}
+KBX_Die::KBX_Die() : KBX_AnimObject(){}
 
 void KBX_Die::_render(){
 	glBegin( GL_QUADS );
@@ -195,6 +185,40 @@ void KBX_Board::_render(){
 	// TODO: render board
 }
 // -- KBX_Board
+/// scene constructor
+KBX_Scene::KBX_Scene(){}
+/// render the scene
+void KBX_Scene::_render(){
+    // clear the graphics buffer
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // switch to the drawing perspective
+    glMatrixMode(GL_MODELVIEW); 
+    // reset the drawing perspective
+    glLoadIdentity();
+    // Set scene some pixels back to look ON it and not IN it
+    glTranslatef( 0,0,-10 );
+    // call every object's display method to draw
+    // the object to the scene
+    for (size_t i=0; i<this->objList.size(); i++){
+        this->objList[i]->display();
+    }
+    // draw everything to screen
+    SDL_GL_SwapBuffers();
+}
+/// add object to the scene
+/**
+    \param obj pointer to a KBX_Object to be added to the scene
+    \throws string exception, if trying to add null-reference to scene
+*/
+void KBX_Scene::add(KBX_Object* obj){
+    if (obj){
+        this->objList.push_back( obj );
+    }else{
+        throw "unable to add object to scene (null-reference)";
+    }
+}
+
+
 // --+ end graphical objects +--
 
 

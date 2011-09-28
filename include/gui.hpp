@@ -1,6 +1,8 @@
 #ifndef GUI__HPP
 #define GUI__HPP
 
+#include <vector>
+
 void loadTexture(char* filename);
 
 void initOpenGL();
@@ -85,10 +87,18 @@ class KBX_Board: public KBX_Object{
 	void _render();
 };
 
-// KBX_Scene
-//  defines the whole scene
+/// Defines the whole scene.
+/**
+    KBX_Scene is an object container for KBX_Objects.
+    Every object added to the scene will be rendered,
+    when the scene is rendered.
+*/
 class KBX_Scene : public KBX_Object{
-
-
+    std::vector<KBX_Object*> objList;
+    void _render();
+    void _rotate();
+public:
+    void add(KBX_Object* obj);
+    KBX_Scene();
 };
 #endif

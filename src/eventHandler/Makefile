@@ -2,7 +2,7 @@
 include ../../Makefile.def
 
 INCLUDE = -I../../include
-SRC = gui.cpp
+SRC = handler.cpp
 
 .PHONY: clean
 

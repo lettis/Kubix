@@ -5,9 +5,10 @@ INCLUDE = -Iinclude
 
 #ENGINE = src/engine
 GUI = src/gui
+HANDLER = src/eventHandler
 MAIN = src/
 
-MODULES = $(ENGINE) $(GUI)
+MODULES = $(ENGINE) $(GUI) $(HANDLER)
 BIN = kubix
 
 
@@ -30,5 +31,5 @@ clean:
 	@$(MAKE) TARGET=clean cleanhere
 
 cleanhere: $(MAIN) $(MODULES)
-	rm $(BIN)
+	rm -f $(BIN)
 
