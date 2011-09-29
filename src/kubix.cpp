@@ -26,24 +26,22 @@
 #include "handler.hpp"
 
 int main(){
-    SDL_Event* event = new SDL_Event();
-    bool DONE=false;
-
+    // initialize SDL
     initSDL();
+    // initialize OpenGL
     initOpenGL();
-
     try{
-        KBX_Die* werrfel = new KBX_Die();
-
+        // initialize scene
         KBX_Scene* scene = new KBX_Scene();
+        // add die to scene
+        KBX_Die* werrfel = new KBX_Die();
         scene->add( werrfel );
-
-
+        // initialize event handlers
         KBX_ExitEventHandler exitEvents(scene);
         KBX_MotionEventHandler motionEvents(scene);
-
-        scene->rotate( 30, KBX_Camera::HORIZONTAL );
-
+        // enter event loop
+        SDL_Event* event = new SDL_Event();
+        bool DONE=false;
         while ( !DONE ){
             // get next event
             SDL_PollEvent( event );
