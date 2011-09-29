@@ -41,6 +41,7 @@ public:
     KBX_Vec add(KBX_Vec v);
     KBX_Vec sub(KBX_Vec v);
     KBX_Vec rotate(KBX_Vec rotAxis, float angle);
+    KBX_Vec cross(KBX_Vec v);
 };
 
 

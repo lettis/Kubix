@@ -171,23 +171,32 @@ KBX_Vec KBX_Vec::rotate(KBX_Vec rotAxis, float angle){
             +this->z*(c+n3*n3*cc);
     return KBX_Vec(x,y,z);
 }
+/// calculate the cross product
+/**
+    \param v the other vector
+    \returns the cross product  (this X v)
+*/
+KBX_Vec KBX_Vec::cross(KBX_Vec v){
+    KBX_Vec result;
+    result.x = this->y*v.z - this->z*v.y;
+    result.y = this->z*v.x - this->x*v.z;
+    result.z = this->x*v.y - this->y*v.x;
+    return result;
+}
 /// constructor initializing to pos=(0,0,0) and target=(0,0,-1)
 KBX_Camera::KBX_Camera(){
     this->position = KBX_Vec(0,0,0);
     this->target = KBX_Vec(0,0,-1);
-//    this->updateView();
 }
 /// constructor initializing to given pos and target=(0,0,-1)
 KBX_Camera::KBX_Camera(KBX_Vec pos){
     this->position = pos;
     this->target = KBX_Vec(0,0,-1);
-//    this->updateView();
 }
 /// constructor initializing to given pos and target
 KBX_Camera::KBX_Camera(KBX_Vec pos, KBX_Vec target){
     this->position = pos;
     this->target = target;
-//    this->updateView();
 }
 /// update the OpenGL camera perspective
 void KBX_Camera::updateView(){
@@ -203,7 +212,6 @@ void KBX_Camera::updateView(){
 */
 void KBX_Camera::setTarget(KBX_Vec target){
     this->target = target;
-//    this->updateView();
 }
 /// set new position
 /**
@@ -211,7 +219,6 @@ void KBX_Camera::setTarget(KBX_Vec target){
 */
 void KBX_Camera::setPosition(KBX_Vec position){
     this->position = position;
-//    this->updateView();
 }
 /// set new camera position by rotating around target
 /**
@@ -225,18 +232,17 @@ void KBX_Camera::rotate(float angle, size_t direction){
     KBX_Vec v=this->position.sub( this->target );
     if (direction == this->HORIZONTAL){
         // rotate in horizontal plane, i.e. around the y-axis
-        this->position = this->target.add( v );
-        std::cout << "old pos: " << this->position.x << " " << this->position.y << " " << this->position.z << std::endl;
         v = v.rotate( KBX_Vec(0,1,0), angle );
         this->position = this->target.add( v );
-        std::cout << "new pos: " << this->position.x << " " << this->position.y << " " << this->position.z << std::endl;
-
     }else if (direction == this->VERTICAL){
-        // TODO: implement vertical camera movement
+        // rotate in vertical plane, i.e. around the axis
+        // orthogonal to the y-axis and the vector v.
+        KBX_Vec ortho = v.cross( KBX_Vec(0,1,0) );
+        v = v.rotate( ortho, angle );
+        this->position = this->target.add( v );
     }else{
         throw "cannot rotate in unknown direction";
     }
-//    this->updateView();
 }
 /// reset camera position by zooming in/out
 /**
@@ -253,7 +259,6 @@ void KBX_Camera::zoom(float factor){
     KBX_Vec diff = this->position.sub( this->target );
     diff = diff.scale( factor );
     this->position = this->target.add( diff );
-//    this->updateView();
 }
 
 
@@ -314,19 +319,19 @@ void KBX_Die::_render(){
 	 glVertex3f(1,1,1);
 	 glVertex3f(1,0,1);
 	// face 4
-	 glColor3f(0,0,1);
+	 glColor3f(0,1,1);
 	 glVertex3f(0,0,0);
 	 glVertex3f(0,1,0);
 	 glVertex3f(0,1,1);
 	 glVertex3f(0,0,1);
 	// face 5
-	 glColor3f(0,1,0);
+	 glColor3f(1,1,0);
 	 glVertex3f(0,1,0);
 	 glVertex3f(1,1,0);
 	 glVertex3f(1,1,1);
 	 glVertex3f(0,1,1);
 	// face 6
-	 glColor3f(1,0,0);
+	 glColor3f(1,0,1);
 	 glVertex3f(0,0,1);
 	 glVertex3f(1,0,1);
 	 glVertex3f(1,1,1);
@@ -401,7 +406,7 @@ void initOpenGL(){
 	glMatrixMode(GL_PROJECTION); // switch to setting the camera perspective
 	// set the camera perspective
 	glLoadIdentity(); // reset the camera
-	gluPerspective(	10.0,                  // the camera distance
+	gluPerspective(	10.0,          // the camera distance
 			(double)w / (double)h, // the width-to-height ratio
 			1.0,                   // the near z clipping coordinate
 			200.0);                // the far z clipping coordinate

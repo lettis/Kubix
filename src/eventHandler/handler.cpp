@@ -59,6 +59,14 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
             case SDLK_d:
                 this->scene->rotate(-angle, KBX_Camera::HORIZONTAL);
                 break;
+            case SDLK_UP:
+            case SDLK_w:
+                this->scene->rotate(angle, KBX_Camera::VERTICAL);
+                break;
+            case SDLK_DOWN:
+            case SDLK_s:
+                this->scene->rotate(-angle, KBX_Camera::VERTICAL);
+                break;
             default:
                 // do nothing
                 break;
