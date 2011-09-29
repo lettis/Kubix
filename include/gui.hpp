@@ -144,6 +144,7 @@ class KBX_Scene : public KBX_Object{
 public:
     void add(KBX_Object* obj);
     void rotate(float angle, size_t direction);
+    void zoom(float factor);
     KBX_Scene();
 };
 #endif

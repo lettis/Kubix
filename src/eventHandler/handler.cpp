@@ -51,21 +51,23 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
     float angle=5;
     if (event->type == SDL_KEYDOWN){
         switch(event->key.keysym.sym){
-            case SDLK_LEFT:
             case SDLK_a:
                 this->scene->rotate(angle, KBX_Camera::HORIZONTAL);
                 break;
-            case SDLK_RIGHT:
             case SDLK_d:
                 this->scene->rotate(-angle, KBX_Camera::HORIZONTAL);
                 break;
-            case SDLK_UP:
             case SDLK_w:
                 this->scene->rotate(angle, KBX_Camera::VERTICAL);
                 break;
-            case SDLK_DOWN:
             case SDLK_s:
                 this->scene->rotate(-angle, KBX_Camera::VERTICAL);
+                break;
+            case SDLK_q:
+                this->scene->zoom( 0.95 );
+                break;
+            case SDLK_e:
+                this->scene->zoom( 1.05 );
                 break;
             default:
                 // do nothing

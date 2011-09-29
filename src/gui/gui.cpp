@@ -382,6 +382,13 @@ void KBX_Scene::add(KBX_Object* obj){
 void KBX_Scene::rotate(float angle, size_t direction){
     this->cam.rotate( angle, direction );
 }
+/// zoom the scene in/out
+/**
+    \param factor the zoom factor
+*/
+void KBX_Scene::zoom(float factor){
+    this->cam.zoom( factor );
+}
 
 /// initialize sdl screen
 void initSDL(){
