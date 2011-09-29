@@ -11,7 +11,7 @@
 int main(){
     SDL_Event* event = new SDL_Event();
     bool DONE=false;
-    
+
     initSDL();
     initOpenGL();
 
@@ -21,15 +21,22 @@ int main(){
         KBX_Scene* scene = new KBX_Scene();
         scene->add( werrfel );
 
+
         KBX_ExitEventHandler exitEvents(scene);
+        KBX_MotionEventHandler motionEvents(scene);
+
+        scene->rotate( 30, KBX_Camera::HORIZONTAL );
 
         while ( !DONE ){
+            // get next event
             SDL_PollEvent( event );
-
+            // handle possible exit events
             if (exitEvents.handle( event ) != 0){
                 DONE=true;
             }
-
+            // handle possible motion events
+            motionEvents.handle( event );
+            // redraw scene
             scene->display();
             SDL_GL_SwapBuffers();
         }

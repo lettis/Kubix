@@ -10,16 +10,38 @@ void loadTexture(char* filename);
 void initOpenGL();
 void initSDL();
 
-// KBX_Vec
-//  defines a simple vector in 3d-cartesian coordinates
+/// defines a simple vector in 3d-cartesian coordinates
 class KBX_Vec{
 public:
 	float x;
 	float y;
 	float z;
 	KBX_Vec();
+    KBX_Vec(float x, float y, float z);
 	float norm();
-	void normalize();
+	KBX_Vec normalize();
+    KBX_Vec scale(float a);
+    KBX_Vec add(KBX_Vec v);
+    KBX_Vec sub(KBX_Vec v);
+    KBX_Vec rotate(KBX_Vec rotAxis, float angle);
+};
+
+
+/// defines a camera object for opengl
+class KBX_Camera{
+    KBX_Vec target;
+    KBX_Vec position;
+public:
+    static const size_t HORIZONTAL=1;
+    static const size_t VERTICAL  =2;
+    KBX_Camera();
+    KBX_Camera(KBX_Vec pos);
+    KBX_Camera(KBX_Vec pos, KBX_Vec target);
+    void updateView();
+    void setTarget(KBX_Vec target);
+    void setPosition(KBX_Vec pos);
+    void rotate(float angle, size_t direction);
+    void zoom(float factor);
 };
 
 // KBX_Object
@@ -99,10 +121,11 @@ class KBX_Board: public KBX_Object{
 */
 class KBX_Scene : public KBX_Object{
     std::vector<KBX_Object*> objList;
+    KBX_Camera cam;
     void _render();
-    void _rotate();
 public:
     void add(KBX_Object* obj);
+    void rotate(float angle, size_t direction);
     KBX_Scene();
 };
 #endif
