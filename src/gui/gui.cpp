@@ -107,9 +107,9 @@ KBX_Vec KBX_Vec::normalize(){
 	float norm = this->norm();
     if (norm != 0){
         return KBX_Vec(
-	        this->x /= norm,
-	        this->y /= norm,
-	        this->z /= norm
+	        this->x/norm,
+	        this->y/norm,
+	        this->z/norm
         );
     }else{
         throw "div by zero in vector norm";
@@ -237,9 +237,12 @@ void KBX_Camera::rotate(float angle, size_t direction){
     }else if (direction == this->VERTICAL){
         // rotate in vertical plane, i.e. around the axis
         // orthogonal to the y-axis and the vector v.
-        KBX_Vec ortho = v.cross( KBX_Vec(0,1,0) );
-        v = v.rotate( ortho, angle );
-        this->position = this->target.add( v );
+        if (   (v.normalize().y < 0.99 && angle > 0)  
+             ||(v.normalize().y > -0.99 && angle < 0) ){
+            KBX_Vec ortho = v.cross( KBX_Vec(0,1,0) );
+            v = v.rotate( ortho, angle );
+            this->position = this->target.add( v );
+        }
     }else{
         throw "cannot rotate in unknown direction";
     }
