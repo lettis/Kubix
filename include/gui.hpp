@@ -68,8 +68,8 @@ class KBX_Object{
 protected:
 	float   _angle;
 	KBX_Vec _rotAxis;
-	KBX_Vec _pos;
 	bool    _isVisible;
+	KBX_Vec _pos;
 	// define opengl for this object
 	virtual void _render() = 0;
 	// rotate object around _rotAxis by _angle
@@ -79,6 +79,7 @@ protected:
 public:
 	// constructor
 	KBX_Object();
+    KBX_Object(KBX_Vec pos);
 	// virtual destructor
 	virtual ~KBX_Object() {}
 	// sets angle and axis to define a rotation
@@ -104,6 +105,8 @@ protected:
 	void _animRotate(KBX_Vec axis, float angle);
 	void _animTranslate(KBX_Vec direction);
 public:
+    KBX_AnimObject();
+    KBX_AnimObject(KBX_Vec pos);
     void rotate(KBX_Vec axis, float angle){
         KBX_Object::rotate(axis, angle);
     }
@@ -121,7 +124,8 @@ class KBX_Die : public KBX_AnimObject{
 	void _render();
 	GLuint textures[6];
 public:
-	KBX_Die();
+    KBX_Die();
+    KBX_Die(KBX_Vec pos);
 };
 
 

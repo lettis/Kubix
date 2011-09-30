@@ -266,10 +266,13 @@ void KBX_Camera::zoom(float factor){
 
 
 /// default constructor
-KBX_Object::KBX_Object(){
-	this->_angle = 0;
-	this->_isVisible = true;
-}
+KBX_Object::KBX_Object() :_angle(0)
+                         ,_isVisible(true)
+                         ,_pos( KBX_Vec(0,0,0) ) {}
+/// constructor setting the object's position
+KBX_Object::KBX_Object(KBX_Vec pos) :_angle(0)
+                                    ,_isVisible(true)
+                                    ,_pos(pos) {}
 /// set object rotation
 void KBX_Object::rotate(KBX_Vec axis, float angle){
 	this->_angle = angle;
@@ -298,47 +301,55 @@ void KBX_Object::display(){
 	glPopMatrix();
 }
 
-/// constructor initializing a die
-KBX_Die::KBX_Die() :KBX_AnimObject(){}
+/// inherit parent constructor
+KBX_AnimObject::KBX_AnimObject() :KBX_Object() {}
+/// inherit parent constructor
+KBX_AnimObject::KBX_AnimObject(KBX_Vec pos) :KBX_Object(pos) {}
+
+
+/// inherit parent constructor
+KBX_Die::KBX_Die() :KBX_AnimObject() {}
+/// inherit parent constructor
+KBX_Die::KBX_Die(KBX_Vec pos) :KBX_AnimObject(pos) {}
 /// render the die
 void KBX_Die::_render(){
 	glBegin( GL_QUADS );
 	// face 1
 	 glColor3f(1,0,0);
-	 glVertex3f(0,0,0);
-	 glVertex3f(1,0,0);
-	 glVertex3f(1,1,0);
-	 glVertex3f(0,1,0);
+	 glVertex3f(-0.5,-0.5,-0.5);
+	 glVertex3f(+0.5,-0.5,-0.5);
+	 glVertex3f(+0.5,+0.5,-0.5);
+	 glVertex3f(-0.5,+0.5,-0.5);
 	// face 2
 	 glColor3f(0,1,0);
-	 glVertex3f(0,0,0);
-	 glVertex3f(1,0,0);
-	 glVertex3f(1,0,1);
-	 glVertex3f(0,0,1);
+	 glVertex3f(-0.5,-0.5,-0.5);
+	 glVertex3f(+0.5,-0.5,-0.5);
+	 glVertex3f(+0.5,-0.5,+0.5);
+	 glVertex3f(-0.5,-0.5,+0.5);
 	// face 3
 	 glColor3f(0,0,1);
-	 glVertex3f(1,0,0);
-	 glVertex3f(1,1,0);
-	 glVertex3f(1,1,1);
-	 glVertex3f(1,0,1);
+	 glVertex3f(+0.5,-0.5,-0.5);
+	 glVertex3f(+0.5,+0.5,-0.5);
+	 glVertex3f(+0.5,+0.5,+0.5);
+	 glVertex3f(+0.5,-0.5,+0.5);
 	// face 4
 	 glColor3f(0,1,1);
-	 glVertex3f(0,0,0);
-	 glVertex3f(0,1,0);
-	 glVertex3f(0,1,1);
-	 glVertex3f(0,0,1);
+	 glVertex3f(-0.5,-0.5,-0.5);
+	 glVertex3f(-0.5,+0.5,-0.5);
+	 glVertex3f(-0.5,+0.5,+0.5);
+	 glVertex3f(-0.5,-0.5,+0.5);
 	// face 5
 	 glColor3f(1,1,0);
-	 glVertex3f(0,1,0);
-	 glVertex3f(1,1,0);
-	 glVertex3f(1,1,1);
-	 glVertex3f(0,1,1);
+	 glVertex3f(-0.5,+0.5,-0.5);
+	 glVertex3f(+0.5,+0.5,-0.5);
+	 glVertex3f(+0.5,+0.5,+0.5);
+	 glVertex3f(-0.5,+0.5,+0.5);
 	// face 6
 	 glColor3f(1,0,1);
-	 glVertex3f(0,0,1);
-	 glVertex3f(1,0,1);
-	 glVertex3f(1,1,1);
-	 glVertex3f(0,1,1);
+	 glVertex3f(-0.5,-0.5,+0.5);
+	 glVertex3f(+0.5,-0.5,+0.5);
+	 glVertex3f(+0.5,+0.5,+0.5);
+	 glVertex3f(-0.5,+0.5,+0.5);
 	glEnd();
 }
 /// scene constructor
@@ -351,9 +362,8 @@ void KBX_Scene::_render(){
     glMatrixMode(GL_MODELVIEW); 
     // reset the drawing perspective
     glLoadIdentity();
-
+    // set correct camera position/view
     this->cam.updateView();
-
     // call every object's display method to draw
     // the object to the scene
     for (size_t i=0; i<this->objList.size(); i++){
@@ -392,41 +402,40 @@ void KBX_Scene::zoom(float factor){
 
 /// initialize sdl screen
 void initSDL(){
-        SDL_Surface *screen;
-        if (SDL_Init(SDL_INIT_VIDEO) == -1) {
-                printf("Can't init SDL:  %s\n", SDL_GetError());
-                exit(1);
-        }
-        atexit(SDL_Quit);
-        screen = SDL_SetVideoMode(800, 600, 16, SDL_OPENGL);
-        if (screen == NULL) {
-                printf("Can't set video mode: %s\n", SDL_GetError());
-                exit(1);
-        }
+    SDL_Surface *screen;
+    if (SDL_Init(SDL_INIT_VIDEO) == -1) {
+        printf("Can't init SDL:  %s\n", SDL_GetError());
+        exit(1);
+    }
+    atexit(SDL_Quit);
+    screen = SDL_SetVideoMode(800, 600, 16, SDL_OPENGL);
+    if (screen == NULL) {
+        printf("Can't set video mode: %s\n", SDL_GetError());
+        exit(1);
+    }
 }
 
 /// initialize opengl
 void initOpenGL(){
-	//TODO: get resolution from settings and implement fullscreen
-	int w = 800;
-	int h = 600;
-	// handle window size correctly
-	// TODO: this doesnt work
-	glViewport(0,0, w, h);
-	glMatrixMode(GL_PROJECTION); // switch to setting the camera perspective
-	// set the camera perspective
-	glLoadIdentity(); // reset the camera
-	gluPerspective(	10.0,          // the camera distance
-			(double)w / (double)h, // the width-to-height ratio
-			1.0,                   // the near z clipping coordinate
-			200.0);                // the far z clipping coordinate
-	// use double buffering
+    //TODO: get resolution from settings and implement fullscreen
+    int w = 800;
+    int h = 600;
+    // handle window size correctly
+    // TODO: this doesnt work
+    glViewport(0,0, w, h);
+    glMatrixMode(GL_PROJECTION); // switch to setting the camera perspective
+    glLoadIdentity(); // reset the camera
+    gluPerspective(	10.0,                  // the camera distance
+                    (double)w / (double)h, // the width-to-height ratio
+                    1.0,                   // the near z clipping coordinate
+                    200.0);                // the far z clipping coordinate
+    // use double buffering
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	// use black background
+    // use black background
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	// use smooth shading model
+    // use smooth shading model
     glShadeModel(GL_SMOOTH);
-	// draw objects respecting depth
-	glEnable(GL_DEPTH_TEST);
+    // draw objects respecting depth
+    glEnable(GL_DEPTH_TEST);
 }
 
