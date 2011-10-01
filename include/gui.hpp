@@ -50,6 +50,7 @@ public:
     float r;
     float g;
     float b;
+    KBX_Color();
     KBX_Color(float r, float g, float b);
 };
 
@@ -160,10 +161,10 @@ public:
 ///  defines game board tile
 class KBX_Tile: public KBX_Object{
     void _render();
-    KBX_Color* basicColor;
-    KBX_Color* activeColor;
+    KBX_Color basicColor;
+    KBX_Color activeColor;
 public:
-    KBX_Tile(KBX_Vec pos, KBX_Color* color);
+    KBX_Tile(KBX_Vec pos, KBX_Color color);
 };
 
 /// KBX_Board

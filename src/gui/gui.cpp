@@ -26,6 +26,11 @@
 #include "tools.hpp"
 
 /// constructor initializing the color
+KBX_Color::KBX_Color(){
+    this->r = 0;
+    this->g = 0;
+    this->b = 0;
+}
 KBX_Color::KBX_Color(float r, float g, float b){
     this->r = r;
     this->g = g;
@@ -64,10 +69,9 @@ float KBX_Vec::norm(){
 KBX_Vec KBX_Vec::normalize(){
     float norm = this->norm();
     if (norm != 0){
-        return KBX_Vec(
-		       this->x/norm,
-		       this->y/norm,
-		       this->z/norm
+        return KBX_Vec(   this->x/norm
+		                , this->y/norm
+		                , this->z/norm
 		       );
     }else{
         throw "div by zero in vector norm";
@@ -86,10 +90,9 @@ KBX_Vec KBX_Vec::scale(float a){
     \param v the vector to be added
 */
 KBX_Vec KBX_Vec::add(KBX_Vec v){
-    return KBX_Vec(
-		   this->x + v.x,
-		   this->y + v.y,
-		   this->z + v.z
+    return KBX_Vec(   this->x + v.x
+		            , this->y + v.y
+		            , this->z + v.z
 		   );
 }
 /// subtract vector
@@ -377,21 +380,21 @@ KBX_Board::KBX_Board(size_t rows, size_t cols){
     this->nRows = rows;
     this->nCols = cols;
     // define tile colors
-    KBX_Color* black = new KBX_Color(0, 0, 0);
-    KBX_Color* white = new KBX_Color(1, 1, 1);
-    KBX_Color* tileColor;
-    KBX_Vec* tilePosition;
+    KBX_Color black = KBX_Color(0, 0, 0);
+    KBX_Color white = KBX_Color(1, 1, 1);
+    KBX_Color tileColor;
+    KBX_Vec tilePosition;
     // allocate memory for tiles
     this->tiles = (KBX_Tile**) malloc( this->nCols*this->nRows * sizeof(KBX_Tile*) );     
     // setup tiles to form a checkered layout
     for(size_t row=0; row<this->nRows; row++){
         for(size_t col=0; col<this->nRows; col++){
             tileColor = ( (row%2 + col%2)%2 == 0 ) ? black : white ;
-            tilePosition = new KBX_Vec(  (float)row - (float)(this->nRows)/2
-                                        ,-0.5
-                                        ,(float)col - (float)(this->nCols)/2
+            tilePosition = KBX_Vec(  (float)row - (float)(this->nRows)/2
+                                     ,-0.5
+                                     ,(float)col - (float)(this->nCols)/2
                            );
-            this->tiles[row + this->nRows*col] = new KBX_Tile( *tilePosition, tileColor );
+            this->tiles[row + this->nRows*col] = new KBX_Tile( tilePosition, tileColor );
         }
     }
 }
@@ -403,13 +406,12 @@ void KBX_Board::_render(){
 }
 
 /// tile constructor
-KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color* color) :KBX_Object(pos) {
-    this->basicColor = color;
-    this->activeColor = color;
-}
+KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color color) : KBX_Object(pos)
+                                                 , basicColor(color)
+                                                 , activeColor(color) {}
 /// render the tile
 void KBX_Tile::_render(){
-    glColor3f(this->activeColor->r, this->activeColor->g, this->activeColor->b);
+    glColor3f(this->activeColor.r, this->activeColor.g, this->activeColor.b);
     glBegin( GL_QUADS );
      glVertex3f(0.0, 0.0, 0.0);
      glVertex3f(1.0, 0.0, 0.0);
