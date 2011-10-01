@@ -55,11 +55,11 @@ int main(){
         KBX_Die::textures.load(dieFaces);
         // initialize scene
         KBX_Scene* scene = new KBX_Scene();
-	// initialize the board and add it to the scene
-	KBX_Board* board = new KBX_Board(9, 9);
-	scene->add( board );
+        // initialize the board and add it to the scene
+        KBX_Board* board = new KBX_Board(9, 9);
+        scene->add( board );
         // add die to scene
-        KBX_Die* werrfel  = new KBX_Die( KBX_Vec(0,0.5,0) );
+        KBX_Die* werrfel  = new KBX_Die( KBX_Vec(0,0.5,0), KBX_Die::BLACK );
 //        KBX_Die* werrfel2 = new KBX_Die( KBX_Vec(1,0,0) );
         scene->add( werrfel );
  //       scene->add( werrfel2 );
