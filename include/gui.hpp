@@ -44,6 +44,14 @@ public:
     KBX_Vec cross(KBX_Vec v);
 };
 
+/// defines a color
+class KBX_Color{
+public:
+    float r;
+    float g;
+    float b;
+    KBX_Color(float r, float g, float b);
+};
 
 /// defines a camera object for opengl
 class KBX_Camera{
@@ -143,10 +151,25 @@ public:
     KBX_Die(KBX_Vec pos);
 };
 
-// KBX_Board
-//  defines game board
+/// KBX_Board Tile
+///  defines game board tile
+class KBX_Tile: public KBX_Object{
+    void _render();
+    KBX_Color* basicColor;
+    KBX_Color* activeColor;
+public:
+    KBX_Tile(KBX_Vec pos, KBX_Color* color);
+};
+
+/// KBX_Board
+///  defines game board
 class KBX_Board: public KBX_Object{
-	void _render();
+    size_t nRows;
+    size_t nCols;
+    KBX_Tile** tiles;
+    void _render();
+public:
+    KBX_Board(size_t rows, size_t cols);
 };
 
 /// Defines the whole scene.

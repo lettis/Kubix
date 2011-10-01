@@ -25,37 +25,51 @@
 #include "gui.hpp"
 #include "tools.hpp"
 
+/// constructor initializing the color
+KBX_Color::KBX_Color(float r, float g, float b){
+    this->r = r;
+    this->g = g;
+    this->b = b;
+}
+
 /// constructor initializing nullvector
 KBX_Vec::KBX_Vec(){
-	this->x = 0;
-	this->y = 0;
-	this->z = 0;
+    this->x = 0;
+    this->y = 0;
+    this->z = 0;
 }
+
+/// constructor of the KBX_Vec class 
+/**
+   \param x x-corrdinate (left-right in standard view)
+   \param y y-coordinate (up-down in standard view)
+   \param z z-coordinate (front-back in standard view)
+ */
 KBX_Vec::KBX_Vec(float x, float y, float z){
-	this->x = x;
-	this->y = y;
-	this->z = z;
+    this->x = x;
+    this->y = y;
+    this->z = z;
 }
 /// calculate the euclidian norm
 float KBX_Vec::norm(){
-	float norm = 0;
-	norm += this->x * this->x;
-	norm += this->y * this->y;
-	norm += this->z * this->z;
-	return sqrt(norm);
+    float norm = 0;
+    norm += this->x * this->x;
+    norm += this->y * this->y;
+    norm += this->z * this->z;
+    return sqrt(norm);
 }
 /// normalize vector to length=1
 /*
     \returns the normalized vector
 */
 KBX_Vec KBX_Vec::normalize(){
-	float norm = this->norm();
+    float norm = this->norm();
     if (norm != 0){
         return KBX_Vec(
-	        this->x/norm,
-	        this->y/norm,
-	        this->z/norm
-        );
+		       this->x/norm,
+		       this->y/norm,
+		       this->z/norm
+		       );
     }else{
         throw "div by zero in vector norm";
     }
@@ -74,10 +88,10 @@ KBX_Vec KBX_Vec::scale(float a){
 */
 KBX_Vec KBX_Vec::add(KBX_Vec v){
     return KBX_Vec(
-        this->x + v.x,
-        this->y + v.y,
-        this->z + v.z
-    );
+		   this->x + v.x,
+		   this->y + v.y,
+		   this->z + v.z
+		   );
 }
 /// subtract vector
 /**
@@ -220,30 +234,30 @@ KBX_Object::KBX_Object(KBX_Vec pos) :_angle(0)
                                     ,_pos(pos) {}
 /// set object rotation
 void KBX_Object::rotate(KBX_Vec axis, float angle){
-	this->_angle = angle;
-	this->_rotAxis = axis;
+    this->_angle = angle;
+    this->_rotAxis = axis;
 }
 /// set object translation
 void KBX_Object::translate(KBX_Vec direction){
-	this->_pos = direction;
+    this->_pos = direction;
 }
 /// actually rotate object (private, only called by 'display')
 void KBX_Object::_rotate(){
-	glRotatef( this->_angle, this->_rotAxis.x, this->_rotAxis.y, this->_rotAxis.z );
+    glRotatef( this->_angle, this->_rotAxis.x, this->_rotAxis.y, this->_rotAxis.z );
 }
 /// actually translate object (private, only called by 'display')
 void KBX_Object::_translate(){
-	glTranslatef( this->_pos.x, this->_pos.y, this->_pos.z );
+    glTranslatef( this->_pos.x, this->_pos.y, this->_pos.z );
 }
 /// display the object
 void KBX_Object::display(){
-	// save transformations done before
-	glPushMatrix();
-	this->_rotate();
-	this->_translate();
-	this->_render();
-	// reload transformations done before
-	glPopMatrix();
+    // save transformations done before
+    glPushMatrix();
+    this->_rotate();
+    this->_translate();
+    this->_render();
+    // reload transformations done before
+    glPopMatrix();
 }
 
 /// inherit parent constructor
@@ -276,6 +290,11 @@ KBX_Die::KBX_Die() :KBX_AnimObject() {}
 KBX_Die::KBX_Die(KBX_Vec pos) :KBX_AnimObject(pos) {}
 /// render the die
 void KBX_Die::_render(){
+    // setting the color is neccessary in order to ensure that the texture is drawn 'as-is'
+    // leaving this out might case the texture to be drawn with 'shaded' colors
+    // because all texture-pixel rgb values are multiplied with the corresponding values 
+    // of the current color before being drawn!
+    glColor3f(1, 1, 1);
     glEnable( GL_TEXTURE_2D );
     // face 1
     glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_1_W ) );
@@ -327,6 +346,54 @@ void KBX_Die::_render(){
     glEnd();
     glDisable( GL_TEXTURE_2D );
 }
+
+/// render the tile
+void KBX_Board::_render(){
+    for(size_t i=0; i<(this->nRows * this->nCols); i++){
+	this->tiles[i]->display();
+    }
+}
+
+/// board constructor
+KBX_Board::KBX_Board(size_t rows, size_t cols){
+    this->nRows = rows;
+    this->nCols = cols;
+
+    KBX_Color* black = new KBX_Color(0, 0, 0);
+    KBX_Color* white = new KBX_Color(1, 1, 1);
+
+    KBX_Color* tilecolor;
+    KBX_Vec* tileposition;
+
+    this->tiles = (KBX_Tile**)malloc(this->nCols*this->nRows*sizeof(KBX_Tile*));     
+    for(size_t row=0; row<this->nRows; row++){
+	for(size_t col=0; col<this->nRows; col++){
+	    tilecolor = ( (row%2 + col%2)%2 == 0 ) ? black : white ;
+	    tileposition = new KBX_Vec((float)row - (float)(this->nRows)/2, 0, (float)col - (float)(this->nCols)/2);
+	    this->tiles[row+this->nRows*col] = new KBX_Tile( *tileposition, tilecolor );
+	}
+    }
+}
+
+/// tile constructor
+KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color* color): 
+    KBX_Object(pos)
+{
+    this->basicColor = color;
+    this->activeColor = color;
+}
+
+/// render the tile
+void KBX_Tile::_render(){
+    glBegin( GL_QUADS );
+    glColor3f(this->activeColor->r, this->activeColor->g, this->activeColor->b);
+    glVertex3f(0,0,0);
+    glVertex3f(1,0,0);
+    glVertex3f(1,0,1);
+    glVertex3f(0,0,1);
+    glEnd();
+}
+
 /// scene constructor
 KBX_Scene::KBX_Scene() :cam( KBX_Vec(0,0,-100), KBX_Vec(0,0,0) ) {}
 /// render the scene
