@@ -276,7 +276,6 @@ KBX_Die::KBX_Die() :KBX_AnimObject() {}
 KBX_Die::KBX_Die(KBX_Vec pos) :KBX_AnimObject(pos) {}
 /// render the die
 void KBX_Die::_render(){
-checkGLError();
     glEnable( GL_TEXTURE_2D );
     // face 1
     glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_1_W ) );
