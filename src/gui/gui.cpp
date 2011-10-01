@@ -411,10 +411,36 @@ KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color color) : KBX_Object(pos)
 void KBX_Tile::_render(){
     glColor3f(this->activeColor.r, this->activeColor.g, this->activeColor.b);
     glBegin( GL_QUADS );
+     // upper face
      glVertex3f(0.0, 0.0, 0.0);
      glVertex3f(1.0, 0.0, 0.0);
      glVertex3f(1.0, 0.0, 1.0);
      glVertex3f(0.0, 0.0, 1.0);
+     // lower face
+     glVertex3f(0.0, -0.1, 0.0);
+     glVertex3f(1.0, -0.1, 0.0);
+     glVertex3f(1.0, -0.1, 1.0);
+     glVertex3f(0.0, -0.1, 1.0);
+     // sides
+     glVertex3f(0.0,  0.0, 0.0);
+     glVertex3f(1.0,  0.0, 0.0);
+     glVertex3f(1.0, -0.1, 0.0);
+     glVertex3f(0.0, -0.1, 0.0);
+
+     glVertex3f(0.0,  0.0, 1.0);
+     glVertex3f(1.0,  0.0, 1.0);
+     glVertex3f(1.0, -0.1, 1.0);
+     glVertex3f(0.0, -0.1, 1.0);
+
+     glVertex3f(0.0,  0.0, 0.0);
+     glVertex3f(0.0,  0.0, 1.0);
+     glVertex3f(0.0, -0.1, 1.0);
+     glVertex3f(0.0, -0.1, 0.0);
+
+     glVertex3f(1.0,  0.0, 0.0);
+     glVertex3f(1.0,  0.0, 1.0);
+     glVertex3f(1.0, -0.1, 1.0);
+     glVertex3f(1.0, -0.1, 0.0);
     glEnd();
 }
 
