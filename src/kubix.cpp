@@ -32,22 +32,22 @@ int main(){
     initSDL();
     // initialize OpenGL
     initOpenGL();
-    // declare filename-key-combinations for die faces
+    // declare filename-key combinations for die faces
     std::map<size_t, std::string> dieFaces;
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_K_W, "./res/side1.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_1_W, "./res/side1.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_2_W, "./res/side2.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_3_W, "./res/side3.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_4_W, "./res/side4.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_5_W, "./res/side5.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_6_W, "./res/side6.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_K_B, "./res/side1b.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_1_B, "./res/side1b.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_2_B, "./res/side2b.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_3_B, "./res/side3b.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_4_B, "./res/side4b.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_5_B, "./res/side5b.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_6_B, "./res/side6b.bmp"));
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_K_W, "./res/side1.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_1_W, "./res/side1.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_2_W, "./res/side2.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_3_W, "./res/side3.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_4_W, "./res/side4.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_5_W, "./res/side5.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_6_W, "./res/side6.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_K_B, "./res/side1b.bmp") );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_1_B, "./res/side1b.bmp") );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_2_B, "./res/side2b.bmp") );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_3_B, "./res/side3b.bmp") );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_4_B, "./res/side4b.bmp") );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_5_B, "./res/side5b.bmp") );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_6_B, "./res/side6b.bmp") );
 
     try{
         // initialize (load) die face textures
