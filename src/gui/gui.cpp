@@ -497,8 +497,8 @@ void initOpenGL(){
                     200.0);                // the far z clipping coordinate
     // use double buffering
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    // use black background
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    // use grey background
+    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     // use smooth shading model
     glShadeModel(GL_SMOOTH);
     // draw objects respecting depth

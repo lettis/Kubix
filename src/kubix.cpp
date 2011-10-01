@@ -59,7 +59,6 @@ int main(){
         scene->add( board );
         // add die to scene
         KBX_Die* werrfel = new KBX_Die( KBX_Vec(0,0,0), KBX_Die::BLACK );
-//        KBX_Die* werrfel2 = new KBX_Die( KBX_Vec(1,0,0) );
         scene->add( werrfel );
         // initialize event handlers
         KBX_ExitEventHandler exitEvents(scene);
