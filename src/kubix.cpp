@@ -57,9 +57,9 @@ int main(){
         KBX_Scene* scene = new KBX_Scene();
         // add die to scene
         KBX_Die* werrfel  = new KBX_Die( KBX_Vec(0,0,0) );
-        KBX_Die* werrfel2 = new KBX_Die( KBX_Vec(1,0,0) );
+//        KBX_Die* werrfel2 = new KBX_Die( KBX_Vec(1,0,0) );
         scene->add( werrfel );
-        scene->add( werrfel2 );
+ //       scene->add( werrfel2 );
         // initialize event handlers
         KBX_ExitEventHandler exitEvents(scene);
         KBX_MotionEventHandler motionEvents(scene);

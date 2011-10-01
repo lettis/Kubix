@@ -88,8 +88,6 @@ void TextureHandler::loadTexture(const char* filename, GLuint textureId ){
         // Bind the texture object
         glBindTexture( GL_TEXTURE_2D, textureId );
         // Set the texture's stretching properties
-        //glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-        //glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         // Edit the texture object's image data using the information SDL_Surface gives us
