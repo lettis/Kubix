@@ -287,9 +287,7 @@ const size_t KBX_Die::WHITE = 1;
 const size_t KBX_Die::BLACK = 2;
 /// the textures of the die surfaces are handled "globally" by this static member
 TextureHandler KBX_Die::textures = TextureHandler();
-/// inherit parent constructor
-//KBX_Die::KBX_Die() :KBX_AnimObject() {}
-/// inherit parent constructor
+/// inherit parent constructor and set color
 KBX_Die::KBX_Die(KBX_Vec pos, size_t color) :KBX_AnimObject(pos)
                                             ,_color(color) {}
 /// render the die
@@ -390,7 +388,7 @@ KBX_Board::KBX_Board(size_t rows, size_t cols){
     for(size_t row=0; row<this->nRows; row++){
         for(size_t col=0; col<this->nRows; col++){
             tileColor = ( (row%2 + col%2)%2 == 0 ) ? black : white ;
-            tilePosition = KBX_Vec(  (float)row - (float)(this->nRows)/2
+            tilePosition = KBX_Vec(   (float)row - (float)(this->nRows)/2
                                      ,-0.5
                                      ,(float)col - (float)(this->nCols)/2
                            );
@@ -414,10 +412,36 @@ KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color color) : KBX_Object(pos)
 void KBX_Tile::_render(){
     glColor3f(this->activeColor.r, this->activeColor.g, this->activeColor.b);
     glBegin( GL_QUADS );
+     // upper face
      glVertex3f(0.0, 0.0, 0.0);
      glVertex3f(1.0, 0.0, 0.0);
      glVertex3f(1.0, 0.0, 1.0);
      glVertex3f(0.0, 0.0, 1.0);
+     // lower face
+     glVertex3f(0.0, -0.1, 0.0);
+     glVertex3f(1.0, -0.1, 0.0);
+     glVertex3f(1.0, -0.1, 1.0);
+     glVertex3f(0.0, -0.1, 1.0);
+     // sides
+     glVertex3f(0.0,  0.0, 0.0);
+     glVertex3f(1.0,  0.0, 0.0);
+     glVertex3f(1.0, -0.1, 0.0);
+     glVertex3f(0.0, -0.1, 0.0);
+
+     glVertex3f(0.0,  0.0, 1.0);
+     glVertex3f(1.0,  0.0, 1.0);
+     glVertex3f(1.0, -0.1, 1.0);
+     glVertex3f(0.0, -0.1, 1.0);
+
+     glVertex3f(0.0,  0.0, 0.0);
+     glVertex3f(0.0,  0.0, 1.0);
+     glVertex3f(0.0, -0.1, 1.0);
+     glVertex3f(0.0, -0.1, 0.0);
+
+     glVertex3f(1.0,  0.0, 0.0);
+     glVertex3f(1.0,  0.0, 1.0);
+     glVertex3f(1.0, -0.1, 1.0);
+     glVertex3f(1.0, -0.1, 0.0);
     glEnd();
 }
 
