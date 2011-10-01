@@ -446,14 +446,12 @@ void KBX_Scene::zoom(float factor){
 void initSDL(){
     SDL_Surface *screen;
     if (SDL_Init(SDL_INIT_VIDEO) == -1) {
-        printf("Can't init SDL:  %s\n", SDL_GetError());
-        exit(1);
+        throw stringprintf("Can't init SDL:  %s\n", SDL_GetError()).c_str();
     }
     atexit(SDL_Quit);
     screen = SDL_SetVideoMode(800, 600, 16, SDL_OPENGL);
     if (screen == NULL) {
-        printf("Can't set video mode: %s\n", SDL_GetError());
-        exit(1);
+        throw stringprintf("Can't set video mode: %s\n", SDL_GetError()).c_str();
     }
 }
 
