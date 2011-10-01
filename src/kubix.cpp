@@ -32,7 +32,6 @@ int main(){
     initSDL();
     // initialize OpenGL
     initOpenGL();
-
     // declare filename-key-combinations for die faces
     std::map<size_t, std::string> dieFaces;
     dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_K_W, "./res/side1.bmp"));
@@ -59,10 +58,9 @@ int main(){
         KBX_Board* board = new KBX_Board(9, 9);
         scene->add( board );
         // add die to scene
-        KBX_Die* werrfel  = new KBX_Die( KBX_Vec(0,0.5,0), KBX_Die::BLACK );
+        KBX_Die* werrfel = new KBX_Die( KBX_Vec(0,0,0), KBX_Die::BLACK );
 //        KBX_Die* werrfel2 = new KBX_Die( KBX_Vec(1,0,0) );
         scene->add( werrfel );
- //       scene->add( werrfel2 );
         // initialize event handlers
         KBX_ExitEventHandler exitEvents(scene);
         KBX_MotionEventHandler motionEvents(scene);

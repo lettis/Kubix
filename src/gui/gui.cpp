@@ -388,7 +388,7 @@ KBX_Board::KBX_Board(size_t rows, size_t cols){
         for(size_t col=0; col<this->nRows; col++){
             tileColor = ( (row%2 + col%2)%2 == 0 ) ? black : white ;
             tilePosition = new KBX_Vec(  (float)row - (float)(this->nRows)/2
-                                        ,0
+                                        ,-0.5
                                         ,(float)col - (float)(this->nCols)/2
                            );
             this->tiles[row + this->nRows*col] = new KBX_Tile( *tilePosition, tileColor );
