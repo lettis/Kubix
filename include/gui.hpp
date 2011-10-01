@@ -18,9 +18,11 @@
 #ifndef GUI__HPP
 #define GUI__HPP
 
+#include <vector>
+
 #include "SDL_opengl.h"
 
-#include <vector>
+#include "tools.hpp"
 
 void loadTexture(char* filename);
 
@@ -118,16 +120,30 @@ public:
 // -- KBX_AnimObject
 
 
-// KBX_Die
-//  defines a die
+/// KBX_Die
+///  defines a die
 class KBX_Die : public KBX_AnimObject{
-	void _render();
-	GLuint textures[6];
+    void _render();
 public:
+    static TextureHandler textures;
+    static const size_t FACE_K_W;
+    static const size_t FACE_K_B;
+    static const size_t FACE_1_W;
+    static const size_t FACE_2_W;
+    static const size_t FACE_3_W;
+    static const size_t FACE_4_W;
+    static const size_t FACE_5_W;
+    static const size_t FACE_6_W;
+    static const size_t FACE_1_B;
+    static const size_t FACE_2_B;
+    static const size_t FACE_3_B;
+    static const size_t FACE_4_B;
+    static const size_t FACE_5_B;
+    static const size_t FACE_6_B;
+
     KBX_Die();
     KBX_Die(KBX_Vec pos);
 };
-
 
 // KBX_Board
 //  defines game board
