@@ -47,7 +47,7 @@ void list_hits(GLint hits, GLuint *names){
     printf("\n");
 }
 
-void gl_selall(GLint hits, GLuint *buff){
+void gl_selall(GLuint *buff){
     GLuint *p;
     int i;
     p = buff;
@@ -153,7 +153,7 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
     } else if (event->type == SDL_MOUSEBUTTONDOWN){
 	switch (event->button.button){
 	case SDL_BUTTON_LEFT: 
-	    printf("left mouse button pressed at %d %d\n", event->button.button, event->button.x, event->button.y);
+	    printf("left mouse button pressed at %d %d\n", event->button.x, event->button.y);
 	    //Important: gl (0,0) ist bottom left but window coords (0,0) are top left so we have to change this!
 	    //TODO: get resolution from settings and implement fullscreen
 	    this->select(event->button.x,600 - event->button.y); 
