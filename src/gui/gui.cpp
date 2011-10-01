@@ -26,6 +26,11 @@
 #include "tools.hpp"
 
 /// constructor initializing the color
+KBX_Color::KBX_Color(){
+    this->r = 0;
+    this->g = 0;
+    this->b = 0;
+}
 KBX_Color::KBX_Color(float r, float g, float b){
     this->r = r;
     this->g = g;
@@ -38,7 +43,6 @@ KBX_Vec::KBX_Vec(){
     this->y = 0;
     this->z = 0;
 }
-
 /// constructor of the KBX_Vec class 
 /**
    \param x x-corrdinate (left-right in standard view)
@@ -65,10 +69,9 @@ float KBX_Vec::norm(){
 KBX_Vec KBX_Vec::normalize(){
     float norm = this->norm();
     if (norm != 0){
-        return KBX_Vec(
-		       this->x/norm,
-		       this->y/norm,
-		       this->z/norm
+        return KBX_Vec(   this->x/norm
+		                , this->y/norm
+		                , this->z/norm
 		       );
     }else{
         throw "div by zero in vector norm";
@@ -87,10 +90,9 @@ KBX_Vec KBX_Vec::scale(float a){
     \param v the vector to be added
 */
 KBX_Vec KBX_Vec::add(KBX_Vec v){
-    return KBX_Vec(
-		   this->x + v.x,
-		   this->y + v.y,
-		   this->z + v.z
+    return KBX_Vec(   this->x + v.x
+		            , this->y + v.y
+		            , this->z + v.z
 		   );
 }
 /// subtract vector
@@ -280,24 +282,30 @@ const size_t KBX_Die::FACE_3_B = 23;
 const size_t KBX_Die::FACE_4_B = 24;
 const size_t KBX_Die::FACE_5_B = 25;
 const size_t KBX_Die::FACE_6_B = 26;
-
+// tags for black/white
+const size_t KBX_Die::WHITE = 1;
+const size_t KBX_Die::BLACK = 2;
 /// the textures of the die surfaces are handled "globally" by this static member
 TextureHandler KBX_Die::textures = TextureHandler();
-
 /// inherit parent constructor
-KBX_Die::KBX_Die() :KBX_AnimObject() {}
+//KBX_Die::KBX_Die() :KBX_AnimObject() {}
 /// inherit parent constructor
-KBX_Die::KBX_Die(KBX_Vec pos) :KBX_AnimObject(pos) {}
+KBX_Die::KBX_Die(KBX_Vec pos, size_t color) :KBX_AnimObject(pos)
+                                            ,_color(color) {}
 /// render the die
 void KBX_Die::_render(){
     // setting the color is neccessary in order to ensure that the texture is drawn 'as-is'
-    // leaving this out might case the texture to be drawn with 'shaded' colors
+    // leaving this out might cause the texture to be drawn with 'shaded' colors
     // because all texture-pixel rgb values are multiplied with the corresponding values 
     // of the current color before being drawn!
     glColor3f(1, 1, 1);
     glEnable( GL_TEXTURE_2D );
     // face 1
-    glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_1_W ) );
+    if (this->_color == KBX_Die::WHITE){
+        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_1_W ) );
+    } else {
+        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_1_B ) );
+    }
     glBegin( GL_QUADS );
      glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
      glTexCoord2f(1.0,1.0); glVertex3f(+0.5,-0.5,-0.5);
@@ -305,7 +313,11 @@ void KBX_Die::_render(){
      glTexCoord2f(0.0,0.0); glVertex3f(-0.5,+0.5,-0.5);
     glEnd();
     // face 2
-    glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_2_W ) );
+    if (this->_color == KBX_Die::WHITE){
+        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_2_W ) );
+    } else {
+        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_2_B ) );
+    }
     glBegin( GL_QUADS );
      glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
      glTexCoord2f(1.0,1.0); glVertex3f(+0.5,-0.5,-0.5);
@@ -313,7 +325,11 @@ void KBX_Die::_render(){
      glTexCoord2f(0.0,0.0); glVertex3f(-0.5,-0.5,+0.5);
     glEnd();
     // face 3
-    glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_3_W ) );
+    if (this->_color == KBX_Die::WHITE){
+        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_3_W ) );
+    } else {
+        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_3_B ) );
+    }
     glBegin( GL_QUADS );
      glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
      glTexCoord2f(1.0,1.0); glVertex3f(-0.5,+0.5,-0.5);
@@ -321,15 +337,23 @@ void KBX_Die::_render(){
      glTexCoord2f(0.0,0.0); glVertex3f(-0.5,-0.5,+0.5);
     glEnd();
     // face 4
-    glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_4_W ) );
+    if (this->_color == KBX_Die::WHITE){
+        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_4_W ) );
+    } else {
+        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_4_B ) );
+    }
     glBegin( GL_QUADS );
      glTexCoord2f(0.0,1.0); glVertex3f(+0.5,-0.5,-0.5);
      glTexCoord2f(1.0,1.0); glVertex3f(+0.5,+0.5,-0.5);
      glTexCoord2f(1.0,0.0); glVertex3f(+0.5,+0.5,+0.5);
      glTexCoord2f(0.0,0.0); glVertex3f(+0.5,-0.5,+0.5);
     glEnd();
-    // face 0.5
-    glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_5_W ) );
+    // face 5
+    if (this->_color == KBX_Die::WHITE){
+        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_5_W ) );
+    } else {
+        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_5_B ) );
+    }
     glBegin( GL_QUADS );
      glTexCoord2f(0.0,1.0); glVertex3f(-0.5,+0.5,-0.5);
      glTexCoord2f(1.0,1.0); glVertex3f(+0.5,+0.5,-0.5);
@@ -337,7 +361,11 @@ void KBX_Die::_render(){
      glTexCoord2f(0.0,0.0); glVertex3f(-0.5,+0.5,+0.5);
     glEnd();
     // face 6
-    glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_6_W ) );
+    if (this->_color == KBX_Die::WHITE){
+        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_6_W ) );
+    } else {
+        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_6_B ) );
+    }
     glBegin( GL_QUADS );
      glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,+0.5);
      glTexCoord2f(1.0,1.0); glVertex3f(+0.5,-0.5,+0.5);
@@ -347,50 +375,48 @@ void KBX_Die::_render(){
     glDisable( GL_TEXTURE_2D );
 }
 
-/// render the tile
-void KBX_Board::_render(){
-    for(size_t i=0; i<(this->nRows * this->nCols); i++){
-	this->tiles[i]->display();
-    }
-}
-
 /// board constructor
 KBX_Board::KBX_Board(size_t rows, size_t cols){
     this->nRows = rows;
     this->nCols = cols;
-
-    KBX_Color* black = new KBX_Color(0, 0, 0);
-    KBX_Color* white = new KBX_Color(1, 1, 1);
-
-    KBX_Color* tilecolor;
-    KBX_Vec* tileposition;
-
-    this->tiles = (KBX_Tile**)malloc(this->nCols*this->nRows*sizeof(KBX_Tile*));     
+    // define tile colors
+    KBX_Color black = KBX_Color(0, 0, 0);
+    KBX_Color white = KBX_Color(1, 1, 1);
+    KBX_Color tileColor;
+    KBX_Vec tilePosition;
+    // allocate memory for tiles
+    this->tiles = (KBX_Tile**) malloc( this->nCols*this->nRows * sizeof(KBX_Tile*) );     
+    // setup tiles to form a checkered layout
     for(size_t row=0; row<this->nRows; row++){
-	for(size_t col=0; col<this->nRows; col++){
-	    tilecolor = ( (row%2 + col%2)%2 == 0 ) ? black : white ;
-	    tileposition = new KBX_Vec((float)row - (float)(this->nRows)/2, 0, (float)col - (float)(this->nCols)/2);
-	    this->tiles[row+this->nRows*col] = new KBX_Tile( *tileposition, tilecolor );
-	}
+        for(size_t col=0; col<this->nRows; col++){
+            tileColor = ( (row%2 + col%2)%2 == 0 ) ? black : white ;
+            tilePosition = KBX_Vec(  (float)row - (float)(this->nRows)/2
+                                     ,-0.5
+                                     ,(float)col - (float)(this->nCols)/2
+                           );
+            this->tiles[row + this->nRows*col] = new KBX_Tile( tilePosition, tileColor );
+        }
+    }
+}
+/// display board by rendering every tile
+void KBX_Board::_render(){
+    for(size_t i=0; i<(this->nRows * this->nCols); i++){
+        this->tiles[i]->display();
     }
 }
 
 /// tile constructor
-KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color* color): 
-    KBX_Object(pos)
-{
-    this->basicColor = color;
-    this->activeColor = color;
-}
-
+KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color color) : KBX_Object(pos)
+                                                 , basicColor(color)
+                                                 , activeColor(color) {}
 /// render the tile
 void KBX_Tile::_render(){
+    glColor3f(this->activeColor.r, this->activeColor.g, this->activeColor.b);
     glBegin( GL_QUADS );
-    glColor3f(this->activeColor->r, this->activeColor->g, this->activeColor->b);
-    glVertex3f(0,0,0);
-    glVertex3f(1,0,0);
-    glVertex3f(1,0,1);
-    glVertex3f(0,0,1);
+     glVertex3f(0.0, 0.0, 0.0);
+     glVertex3f(1.0, 0.0, 0.0);
+     glVertex3f(1.0, 0.0, 1.0);
+     glVertex3f(0.0, 0.0, 1.0);
     glEnd();
 }
 
@@ -471,8 +497,8 @@ void initOpenGL(){
                     200.0);                // the far z clipping coordinate
     // use double buffering
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    // use black background
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    // use grey background
+    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     // use smooth shading model
     glShadeModel(GL_SMOOTH);
     // draw objects respecting depth

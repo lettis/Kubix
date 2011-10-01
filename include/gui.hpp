@@ -50,6 +50,7 @@ public:
     float r;
     float g;
     float b;
+    KBX_Color();
     KBX_Color(float r, float g, float b);
 };
 
@@ -130,8 +131,11 @@ public:
 ///  defines a die
 class KBX_Die : public KBX_AnimObject{
     void _render();
+    size_t _color;
 public:
+    // texture container
     static TextureHandler textures;
+    // faces of white dice
     static const size_t FACE_K_W;
     static const size_t FACE_K_B;
     static const size_t FACE_1_W;
@@ -140,25 +144,27 @@ public:
     static const size_t FACE_4_W;
     static const size_t FACE_5_W;
     static const size_t FACE_6_W;
+    // faces of black dice
     static const size_t FACE_1_B;
     static const size_t FACE_2_B;
     static const size_t FACE_3_B;
     static const size_t FACE_4_B;
     static const size_t FACE_5_B;
     static const size_t FACE_6_B;
-
-    KBX_Die();
-    KBX_Die(KBX_Vec pos);
+    // black/white tags
+    static const size_t WHITE;
+    static const size_t BLACK;
+    KBX_Die(KBX_Vec pos, size_t color);
 };
 
 /// KBX_Board Tile
 ///  defines game board tile
 class KBX_Tile: public KBX_Object{
     void _render();
-    KBX_Color* basicColor;
-    KBX_Color* activeColor;
+    KBX_Color basicColor;
+    KBX_Color activeColor;
 public:
-    KBX_Tile(KBX_Vec pos, KBX_Color* color);
+    KBX_Tile(KBX_Vec pos, KBX_Color color);
 };
 
 /// KBX_Board

@@ -32,37 +32,34 @@ int main(){
     initSDL();
     // initialize OpenGL
     initOpenGL();
-
-    // declare filename-key-combinations for die faces
+    // declare filename-key combinations for die faces
     std::map<size_t, std::string> dieFaces;
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_K_W, "./res/side1.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_1_W, "./res/side1.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_2_W, "./res/side2.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_3_W, "./res/side3.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_4_W, "./res/side4.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_5_W, "./res/side5.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_6_W, "./res/side6.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_K_B, "./res/side1b.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_1_B, "./res/side1b.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_2_B, "./res/side2b.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_3_B, "./res/side3b.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_4_B, "./res/side4b.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_5_B, "./res/side5b.bmp"));
-    dieFaces.insert(std::pair<size_t, std::string>(KBX_Die::FACE_6_B, "./res/side6b.bmp"));
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_K_W, "./res/side1.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_1_W, "./res/side1.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_2_W, "./res/side2.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_3_W, "./res/side3.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_4_W, "./res/side4.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_5_W, "./res/side5.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_6_W, "./res/side6.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_K_B, "./res/side1b.bmp") );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_1_B, "./res/side1b.bmp") );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_2_B, "./res/side2b.bmp") );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_3_B, "./res/side3b.bmp") );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_4_B, "./res/side4b.bmp") );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_5_B, "./res/side5b.bmp") );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_6_B, "./res/side6b.bmp") );
 
     try{
         // initialize (load) die face textures
         KBX_Die::textures.load(dieFaces);
         // initialize scene
         KBX_Scene* scene = new KBX_Scene();
-	// initialize the board and add it to the scene
-	KBX_Board* board = new KBX_Board(9, 9);
-	scene->add( board );
+        // initialize the board and add it to the scene
+        KBX_Board* board = new KBX_Board(9, 9);
+        scene->add( board );
         // add die to scene
-        KBX_Die* werrfel  = new KBX_Die( KBX_Vec(0,0.5,0) );
-//        KBX_Die* werrfel2 = new KBX_Die( KBX_Vec(1,0,0) );
+        KBX_Die* werrfel = new KBX_Die( KBX_Vec(0,0,0), KBX_Die::BLACK );
         scene->add( werrfel );
- //       scene->add( werrfel2 );
         // initialize event handlers
         KBX_ExitEventHandler exitEvents(scene);
         KBX_MotionEventHandler motionEvents(scene);
