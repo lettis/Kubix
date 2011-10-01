@@ -6,9 +6,11 @@ INCLUDE = -Iinclude
 #ENGINE = src/engine
 GUI = src/gui
 HANDLER = src/eventHandler
+TOOLS = src/tools
 MAIN = src/
 
-MODULES = $(ENGINE) $(GUI) $(HANDLER)
+
+MODULES = $(ENGINE) $(GUI) $(HANDLER) $(TOOLS)
 BIN = kubix
 
 

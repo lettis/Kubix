@@ -21,39 +21,44 @@
 
 #include "SDL.h"
 #include "SDL_opengl.h"
+
 #include "gui.hpp"
+#include "tools.hpp"
 
 void loadTexture(char* filename){
-    GLuint  texture;	// This is a handle to our texture object
-    SDL_Surface *surface;	// This surface will tell us the details of the image
-    GLenum texture_format;
-    GLint  nOfColors;
+    // This is a handle to our texture object
+    GLuint  texture;	
+    // This surface will tell us the details of the image
+    SDL_Surface *surface;	
+    GLenum textureFormat;
+    
     if ( (surface = SDL_LoadBMP(filename)) ) { 
         // Check that the image's width is a power of 2
         if ( (surface->w & (surface->w - 1)) != 0 ) {
-            printf("warning: image width is not a power of 2\n");
+            throw stringprintf("warning: image width of %s is not a power of 2", filename).c_str();
         }
         // Also check if the height is a power of 2
         if ( (surface->h & (surface->h - 1)) != 0 ) {
-            printf("warning: image height is not a power of 2\n");
+            throw stringprintf("warning: image height of %s is not a power of 2", filename).c_str();
         }
         // get the number of channels in the SDL surface
-        nOfColors = surface->format->BytesPerPixel;
-        if (nOfColors == 4)     // contains an alpha channel
-        {
-            if (surface->format->Rmask == 0x000000ff)
-                    texture_format = GL_RGBA;
-            else
-                    texture_format = GL_BGRA;
-        } else if (nOfColors == 3)     // no alpha channel
-        {
-            if (surface->format->Rmask == 0x000000ff)
-                    texture_format = GL_RGB;
-            else
-                    texture_format = GL_BGR;
+        GLint nColors = surface->format->BytesPerPixel;
+        // contains an alpha channel
+        if (nColors == 4){
+            if (surface->format->Rmask == 0x000000ff){
+                textureFormat = GL_RGBA;
+            } else {
+                textureFormat = GL_BGRA;
+            }
+        } else if (nColors == 3){
+            // no alpha channel
+            if (surface->format->Rmask == 0x000000ff){
+                textureFormat = GL_RGB;
+            } else {
+                textureFormat = GL_BGR;
+            }
         } else {
-            printf("warning: the image is not truecolor..  this will probably break\n");
-            // this error should not go unhandled
+            throw stringprintf("warning: %s is not truecolor..  this will probably break", filename).c_str();
         }
         // Have OpenGL generate a texture object handle for us
         glGenTextures( 1, &texture );
@@ -63,10 +68,9 @@ void loadTexture(char* filename){
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         // Edit the texture object's image data using the information SDL_Surface gives us
-        glTexImage2D( GL_TEXTURE_2D, 0, nOfColors, surface->w, surface->h, 0,
-                          texture_format, GL_UNSIGNED_BYTE, surface->pixels );
+        glTexImage2D( GL_TEXTURE_2D, 0, nColors, surface->w, surface->h, 0,
+                      textureFormat, GL_UNSIGNED_BYTE, surface->pixels );
     } 
-     
     // Free the SDL_Surface only if it was successfully created
     if ( surface ) { 
     	SDL_FreeSurface( surface );
@@ -299,6 +303,24 @@ KBX_AnimObject::KBX_AnimObject() :KBX_Object() {}
 /// inherit parent constructor
 KBX_AnimObject::KBX_AnimObject(KBX_Vec pos) :KBX_Object(pos) {}
 
+// this defines the keys for the die face textures
+const size_t KBX_Die::FACE_K_W = 10;
+const size_t KBX_Die::FACE_K_B = 20;
+const size_t KBX_Die::FACE_1_W = 11;
+const size_t KBX_Die::FACE_2_W = 12;
+const size_t KBX_Die::FACE_3_W = 13;
+const size_t KBX_Die::FACE_4_W = 14;
+const size_t KBX_Die::FACE_5_W = 15;
+const size_t KBX_Die::FACE_6_W = 16;
+const size_t KBX_Die::FACE_1_B = 21;
+const size_t KBX_Die::FACE_2_B = 22;
+const size_t KBX_Die::FACE_3_B = 23;
+const size_t KBX_Die::FACE_4_B = 24;
+const size_t KBX_Die::FACE_5_B = 25;
+const size_t KBX_Die::FACE_6_B = 26;
+
+/// the textures of the die surfaces are handled "globally" by this static member
+TextureHandler KBX_Die::textures = TextureHandler();
 
 /// inherit parent constructor
 KBX_Die::KBX_Die() :KBX_AnimObject() {}
