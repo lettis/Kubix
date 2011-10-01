@@ -372,50 +372,49 @@ void KBX_Die::_render(){
     glDisable( GL_TEXTURE_2D );
 }
 
-/// render the tile
-void KBX_Board::_render(){
-    for(size_t i=0; i<(this->nRows * this->nCols); i++){
-	this->tiles[i]->display();
-    }
-}
-
 /// board constructor
 KBX_Board::KBX_Board(size_t rows, size_t cols){
     this->nRows = rows;
     this->nCols = cols;
-
+    // define tile colors
     KBX_Color* black = new KBX_Color(0, 0, 0);
     KBX_Color* white = new KBX_Color(1, 1, 1);
-
-    KBX_Color* tilecolor;
-    KBX_Vec* tileposition;
-
-    this->tiles = (KBX_Tile**)malloc(this->nCols*this->nRows*sizeof(KBX_Tile*));     
+    KBX_Color* tileColor;
+    KBX_Vec* tilePosition;
+    // allocate memory for tiles
+    this->tiles = (KBX_Tile**) malloc( this->nCols*this->nRows * sizeof(KBX_Tile*) );     
+    // setup tiles to form a checkered layout
     for(size_t row=0; row<this->nRows; row++){
-	for(size_t col=0; col<this->nRows; col++){
-	    tilecolor = ( (row%2 + col%2)%2 == 0 ) ? black : white ;
-	    tileposition = new KBX_Vec((float)row - (float)(this->nRows)/2, 0, (float)col - (float)(this->nCols)/2);
-	    this->tiles[row+this->nRows*col] = new KBX_Tile( *tileposition, tilecolor );
-	}
+        for(size_t col=0; col<this->nRows; col++){
+            tileColor = ( (row%2 + col%2)%2 == 0 ) ? black : white ;
+            tilePosition = new KBX_Vec(  (float)row - (float)(this->nRows)/2
+                                        ,0
+                                        ,(float)col - (float)(this->nCols)/2
+                           );
+            this->tiles[row + this->nRows*col] = new KBX_Tile( *tilePosition, tileColor );
+        }
+    }
+}
+/// display board by rendering every tile
+void KBX_Board::_render(){
+    for(size_t i=0; i<(this->nRows * this->nCols); i++){
+        this->tiles[i]->display();
     }
 }
 
 /// tile constructor
-KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color* color): 
-    KBX_Object(pos)
-{
+KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color* color) :KBX_Object(pos) {
     this->basicColor = color;
     this->activeColor = color;
 }
-
 /// render the tile
 void KBX_Tile::_render(){
-    glBegin( GL_QUADS );
     glColor3f(this->activeColor->r, this->activeColor->g, this->activeColor->b);
-    glVertex3f(0,0,0);
-    glVertex3f(1,0,0);
-    glVertex3f(1,0,1);
-    glVertex3f(0,0,1);
+    glBegin( GL_QUADS );
+     glVertex3f(0.0, 0.0, 0.0);
+     glVertex3f(1.0, 0.0, 0.0);
+     glVertex3f(1.0, 0.0, 1.0);
+     glVertex3f(0.0, 0.0, 1.0);
     glEnd();
 }
 
