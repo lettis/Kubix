@@ -76,7 +76,7 @@ void KBX_MotionEventHandler::select(int x, int y){
     glPushMatrix();
     glLoadIdentity();
     // restrict the draw to an area around the cursor
-    gluPickMatrix(x, y, 1.0, 1.0, view);
+    gluPickMatrix(x, y, 5.0, 5.0, view);
     gluPerspective(60, (float)view[2]/(float)view[3], 0.0001, 1000.0);
     // Draw the objects onto the screen
     glMatrixMode(GL_MODELVIEW);
@@ -154,9 +154,11 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
 	switch (event->button.button){
 	case SDL_BUTTON_LEFT: 
 	    printf("left mouse button pressed at %d %d\n", event->button.x, event->button.y);
+	    // get resolution from settings
+	    GLint view[4];
+	    glGetIntegerv(GL_VIEWPORT, view);
 	    //Important: gl (0,0) ist bottom left but window coords (0,0) are top left so we have to change this!
-	    //TODO: get resolution from settings and implement fullscreen
-	    this->select(event->button.x,600 - event->button.y); 
+	    this->select(event->button.x,view[3] - event->button.y); 
 	    break;
 	case SDL_BUTTON_WHEELUP:
 	    this->scene->zoom( 0.95 );

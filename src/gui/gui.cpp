@@ -401,6 +401,7 @@ KBX_Board::KBX_Board(size_t rows, size_t cols){
 /// display board by rendering every tile
 void KBX_Board::_render(){
     for(size_t i=0; i<(this->nRows * this->nCols); i++){
+	glLoadName(i);
         this->tiles[i]->display();
     }
 }
@@ -435,6 +436,7 @@ void KBX_Scene::_render(){
     // call every object's display method to draw
     // the object to the scene
     for (size_t i=0; i<this->objList.size(); i++){
+	glLoadName(i);
         this->objList[i]->display();
     }
     // draw everything to screen
@@ -483,9 +485,12 @@ void initSDL(){
 
 /// initialize opengl
 void initOpenGL(){
-    //TODO: get resolution from settings and implement fullscreen
-    int w = 800;
-    int h = 600;
+    // get resolution from settings
+    GLint view[4];
+    glGetIntegerv(GL_VIEWPORT, view);
+    int w = view[2];
+    int h = view[3];
+    // TODO: implement fullscreen
     // handle window size correctly
     // TODO: this doesnt work
     glViewport(0,0, w, h);
