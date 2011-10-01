@@ -24,8 +24,6 @@
 
 #include "tools.hpp"
 
-void loadTexture(char* filename);
-
 void initOpenGL();
 void initSDL();
 

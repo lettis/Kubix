@@ -25,58 +25,6 @@
 #include "gui.hpp"
 #include "tools.hpp"
 
-void loadTexture(char* filename){
-    // This is a handle to our texture object
-    GLuint  texture;	
-    // This surface will tell us the details of the image
-    SDL_Surface *surface;	
-    GLenum textureFormat;
-    
-    if ( (surface = SDL_LoadBMP(filename)) ) { 
-        // Check that the image's width is a power of 2
-        if ( (surface->w & (surface->w - 1)) != 0 ) {
-            throw stringprintf("warning: image width of %s is not a power of 2", filename).c_str();
-        }
-        // Also check if the height is a power of 2
-        if ( (surface->h & (surface->h - 1)) != 0 ) {
-            throw stringprintf("warning: image height of %s is not a power of 2", filename).c_str();
-        }
-        // get the number of channels in the SDL surface
-        GLint nColors = surface->format->BytesPerPixel;
-        // contains an alpha channel
-        if (nColors == 4){
-            if (surface->format->Rmask == 0x000000ff){
-                textureFormat = GL_RGBA;
-            } else {
-                textureFormat = GL_BGRA;
-            }
-        } else if (nColors == 3){
-            // no alpha channel
-            if (surface->format->Rmask == 0x000000ff){
-                textureFormat = GL_RGB;
-            } else {
-                textureFormat = GL_BGR;
-            }
-        } else {
-            throw stringprintf("warning: %s is not truecolor..  this will probably break", filename).c_str();
-        }
-        // Have OpenGL generate a texture object handle for us
-        glGenTextures( 1, &texture );
-        // Bind the texture object
-        glBindTexture( GL_TEXTURE_2D, texture );
-        // Set the texture's stretching properties
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-        // Edit the texture object's image data using the information SDL_Surface gives us
-        glTexImage2D( GL_TEXTURE_2D, 0, nColors, surface->w, surface->h, 0,
-                      textureFormat, GL_UNSIGNED_BYTE, surface->pixels );
-    } 
-    // Free the SDL_Surface only if it was successfully created
-    if ( surface ) { 
-    	SDL_FreeSurface( surface );
-    }
-}
-
 /// constructor initializing nullvector
 KBX_Vec::KBX_Vec(){
 	this->x = 0;
