@@ -276,44 +276,52 @@ KBX_Die::KBX_Die() :KBX_AnimObject() {}
 KBX_Die::KBX_Die(KBX_Vec pos) :KBX_AnimObject(pos) {}
 /// render the die
 void KBX_Die::_render(){
-	glBegin( GL_QUADS );
-	// face 1
-	 glColor3f(1,0,0);
-	 glVertex3f(-0.5,-0.5,-0.5);
-	 glVertex3f(+0.5,-0.5,-0.5);
-	 glVertex3f(+0.5,+0.5,-0.5);
-	 glVertex3f(-0.5,+0.5,-0.5);
-	// face 2
-	 glColor3f(0,1,0);
-	 glVertex3f(-0.5,-0.5,-0.5);
-	 glVertex3f(+0.5,-0.5,-0.5);
-	 glVertex3f(+0.5,-0.5,+0.5);
-	 glVertex3f(-0.5,-0.5,+0.5);
-	// face 3
-	 glColor3f(0,0,1);
-	 glVertex3f(+0.5,-0.5,-0.5);
-	 glVertex3f(+0.5,+0.5,-0.5);
-	 glVertex3f(+0.5,+0.5,+0.5);
-	 glVertex3f(+0.5,-0.5,+0.5);
-	// face 4
-	 glColor3f(0,1,1);
-	 glVertex3f(-0.5,-0.5,-0.5);
-	 glVertex3f(-0.5,+0.5,-0.5);
-	 glVertex3f(-0.5,+0.5,+0.5);
-	 glVertex3f(-0.5,-0.5,+0.5);
-	// face 5
-	 glColor3f(1,1,0);
-	 glVertex3f(-0.5,+0.5,-0.5);
-	 glVertex3f(+0.5,+0.5,-0.5);
-	 glVertex3f(+0.5,+0.5,+0.5);
-	 glVertex3f(-0.5,+0.5,+0.5);
-	// face 6
-	 glColor3f(1,0,1);
-	 glVertex3f(-0.5,-0.5,+0.5);
-	 glVertex3f(+0.5,-0.5,+0.5);
-	 glVertex3f(+0.5,+0.5,+0.5);
-	 glVertex3f(-0.5,+0.5,+0.5);
-	glEnd();
+    glEnable( GL_TEXTURE_2D );
+    glBegin( GL_QUADS );
+    // face 1
+    glColor3f(1.0,1.0,1.0);
+    glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_1_W ) );
+    glVertex3f(-0.5,-0.5,-0.5);
+    glVertex3f(+0.5,-0.5,-0.5);
+    glVertex3f(+0.5,+0.5,-0.5);
+    glVertex3f(-0.5,+0.5,-0.5);
+    // face 2
+    //    glColor3f(0,1,0);
+    glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_2_W ) );
+    glVertex3f(-0.5,-0.5,-0.5);
+    glVertex3f(+0.5,-0.5,-0.5);
+    glVertex3f(+0.5,-0.5,+0.5);
+    glVertex3f(-0.5,-0.5,+0.5);
+    // face 3
+    //    glColor3f(0,0,1);
+    glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_3_W ) );
+    glVertex3f(+0.5,-0.5,-0.5);
+    glVertex3f(+0.5,+0.5,-0.5);
+    glVertex3f(+0.5,+0.5,+0.5);
+    glVertex3f(+0.5,-0.5,+0.5);
+    // face 4
+    //    glColor3f(0,1,1);
+    glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_4_W ) );
+    glVertex3f(-0.5,-0.5,-0.5);
+    glVertex3f(-0.5,+0.5,-0.5);
+    glVertex3f(-0.5,+0.5,+0.5);
+    glVertex3f(-0.5,-0.5,+0.5);
+    // face 5
+    //    glColor3f(1,1,0);
+    glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_5_W ) );
+    glVertex3f(-0.5,+0.5,-0.5);
+    glVertex3f(+0.5,+0.5,-0.5);
+    glVertex3f(+0.5,+0.5,+0.5);
+    glVertex3f(-0.5,+0.5,+0.5);
+    // face 6
+    //    glColor3f(1,0,1);
+    glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_6_W ) );
+    glVertex3f(-0.5,-0.5,+0.5);
+    glVertex3f(+0.5,-0.5,+0.5);
+    glVertex3f(+0.5,+0.5,+0.5);
+    glVertex3f(-0.5,+0.5,+0.5);
+    glEnd();
+    glDisable( GL_TEXTURE_2D );
 }
 /// scene constructor
 KBX_Scene::KBX_Scene() :cam( KBX_Vec(0,0,-100), KBX_Vec(0,0,0) ) {}
