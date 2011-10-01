@@ -2,11 +2,19 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string>
+#include <iostream>
 
 #include "tools.hpp"
 
 #include "SDL.h"
 #include "SDL_opengl.h"
+
+void checkGLError() {
+    GLuint err = glGetError();
+    if (err != GL_NO_ERROR){
+        std::cerr << std::hex << err << std::endl;
+    }
+}
 
 /// behaves like sprintf(char*, ...), but with c++ strings and returns the result
 /**
@@ -21,8 +29,8 @@ std::string stringprintf(std::string str, ...){
     char* buf = (char*)malloc(size*sizeof(char));
     va_start (args, str);
     while(size <= (unsigned int)vsnprintf(buf, size, str.c_str(), args)){
-	size *= 2;
-	buf = (char*)realloc(buf, size*sizeof(char));
+        size *= 2;
+        buf = (char*)realloc(buf, size*sizeof(char));
     }
     va_end (args);      
     return std::string(buf);
@@ -38,9 +46,9 @@ void TextureHandler::load(std::map<size_t, std::string> files){
     glGenTextures( files.size(), this->textures );
     size_t i=0;
     for(std::map<size_t, std::string>::iterator it = files.begin(); it != files.end(); it++){
-	loadTexture(it->second.c_str(), this->textures[i]);
-	this->keys.insert(std::pair<size_t, size_t>(it->first, i));
-	i++;
+        loadTexture(it->second.c_str(), this->textures[i]);
+        this->keys.insert(std::pair<size_t, size_t>(it->first, i));
+        i++;
     }
 }
 
@@ -80,6 +88,8 @@ void TextureHandler::loadTexture(const char* filename, GLuint textureId ){
         // Bind the texture object
         glBindTexture( GL_TEXTURE_2D, textureId );
         // Set the texture's stretching properties
+        //glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+        //glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         // Edit the texture object's image data using the information SDL_Surface gives us

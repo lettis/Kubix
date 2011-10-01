@@ -6,6 +6,8 @@
 
 #include "SDL_opengl.h"
 
+void checkGLError();
+
 class TextureHandler{
     GLuint* textures;
     /// point external keys to internal index of textures array
