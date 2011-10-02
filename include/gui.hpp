@@ -22,10 +22,20 @@
 
 #include "SDL_opengl.h"
 
-#include "tools.hpp"
-
 void initOpenGL();
 void initSDL();
+
+class KBX_Vec;
+class KBX_Color;
+class KBX_Camera;
+class KBX_Object;
+class KBX_AnimObject;
+class KBX_Die;
+class KBX_Tile;
+class KBX_Board;
+class KBX_Scene;
+
+#include "tools.hpp"
 
 /// defines a simple vector in 3d-cartesian coordinates
 class KBX_Vec{
@@ -47,12 +57,14 @@ public:
 /// defines a color
 class KBX_Color{
 public:
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
+    float r;
+    float g;
+    float b;
     KBX_Color();
     KBX_Color(size_t id);
     KBX_Color(unsigned char r, unsigned char g, unsigned char b);
+    KBX_Color(int r, int g, int b);
+    KBX_Color(float r, float g, float b);
     size_t id();
 };
 
@@ -88,13 +100,19 @@ protected:
     // translate object to _pos
     void _translate();
 public:
+    bool highlighted;
+    // a unique id of this object
     const size_t id;
-    static size_t idCounter;
+    // the object list handles all KBX_Objects ever constructed
+    static KBX_ObjectHandler objectList;
     // constructor
     KBX_Object();
     KBX_Object(KBX_Vec pos);
     // virtual destructor
-    virtual ~KBX_Object() {}
+    virtual ~KBX_Object() {
+	// we need to remove the object from the objectList
+	KBX_Object::objectList.remove(this);
+    }
     // sets angle and axis to define a rotation
     void rotate(KBX_Vec axis, float angle);
     // sets vector to define a translation

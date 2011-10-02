@@ -25,8 +25,6 @@
 #include "gui.hpp"
 #include "tools.hpp"
 
-#include <iostream>
-
 /// constructor initializing the color
 KBX_Color::KBX_Color(){
     this->r = 0;
@@ -35,17 +33,28 @@ KBX_Color::KBX_Color(){
 }
 
 KBX_Color::KBX_Color(size_t id){
-    this->r = (id%256);
-    this->g = (id/256)%256;
-    this->b = (id/(256*256))%256;
+    this->r = float(id%255)/255;
+    this->g = float((id/255)%255)/255;
+    this->b = float((id/(255*255))%255)/255;
 }
 
 size_t KBX_Color::id(){
-    printf("%d %d %d => %d\n", (int)r, (int)g, (int)b, (int)(this->r + 256*this->g + 256*256*this->b));
-    return this->r + 256*this->g + 256*256*this->b;
+    return this->r*255 + 255*255*this->g + 255*255*255*this->b;
 }
 
 KBX_Color::KBX_Color(unsigned char r, unsigned char g, unsigned char b){
+    this->r = float(r)/255;
+    this->g = float(g)/255;
+    this->b = float(b)/255;
+}
+
+KBX_Color::KBX_Color(int r, int g, int b){
+    this->r = float(r)/255;
+    this->g = float(g)/255;
+    this->b = float(b)/255;
+}
+
+KBX_Color::KBX_Color(float r, float g, float b){
     this->r = r;
     this->g = g;
     this->b = b;
@@ -239,25 +248,29 @@ void KBX_Camera::zoom(float factor){
     this->position = this->target.add( diff );
 }
 
-size_t KBX_Object::idCounter = 0;
+KBX_ObjectHandler KBX_Object::objectList;
 
 /// default constructor
 KBX_Object::KBX_Object() :
     _angle(0),
     _isVisible(true),
     _pos( KBX_Vec(0,0,0) ),
-    id(idCounter) 
+    // we need to add the object to the object list
+    // and retrieve our own unique id from there
+    id(KBX_Object::objectList.add(this)) 
 {
-    KBX_Object::idCounter+=10; 
+    this->highlighted = false;
 }
 /// constructor setting the object's position
 KBX_Object::KBX_Object(KBX_Vec pos) :
     _angle(0),
     _isVisible(true),
     _pos( pos ),
-    id(idCounter) 
+    // we need to add the object to the object list
+    // and retrieve our own unique id from there
+    id(KBX_Object::objectList.add(this)) 
 {
-    KBX_Object::idCounter+=10; 
+    this->highlighted = false;
 }
 
 /// set object rotation
@@ -328,9 +341,13 @@ void KBX_Die::_render(bool picking){
     // of the current color before being drawn!
     if(picking){
         KBX_Color pickerColor = KBX_Color(this->id);
-        glColor3d(pickerColor.r, pickerColor.g, pickerColor.b);
+        glColor3f(pickerColor.r, pickerColor.g, pickerColor.b);
     } else {
-        glColor3f(1.0, 1.0, 1.0);
+        if (this->highlighted){
+            glColor3f(1.0f, 0.0f, 0.0f);
+        } else {
+            glColor3f(1.0, 1.0, 1.0);
+        }
         glEnable( GL_TEXTURE_2D );
     }
     // prepare die face for king die if necessary
@@ -446,8 +463,8 @@ KBX_Board::KBX_Board(size_t rows, size_t cols){
     this->nRows = rows;
     this->nCols = cols;
     // define tile colors
-    KBX_Color black = KBX_Color(0, 0, 0);
-    KBX_Color white = KBX_Color(1, 1, 1);
+    KBX_Color black = KBX_Color(0.0f, 0.0f, 0.0f);
+    KBX_Color white = KBX_Color(1.0f, 1.0f, 1.0f);
     KBX_Color tileColor;
     KBX_Vec tilePosition;
     // allocate memory for tiles
@@ -480,10 +497,11 @@ KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color color) : KBX_Object(pos)
 void KBX_Tile::_render(bool picking){
     if(picking){
 	KBX_Color pickerColor = KBX_Color(this->id);
-	glColor3d(pickerColor.r, pickerColor.g, pickerColor.b);
-        std::cout << "rendering " << id << " " << (int)pickerColor.r <<","<< (int)pickerColor.g <<","<< (int)pickerColor.b<< std::endl;
-    } else {
-	glColor3d(this->activeColor.r, this->activeColor.g, this->activeColor.b);
+        glColor3f(pickerColor.r, pickerColor.g, pickerColor.b);
+    } else if (this->highlighted){
+        glColor3f(1.0f, 0.0f, 0.0f);
+    } else { 
+        glColor3f(this->activeColor.r, this->activeColor.g, this->activeColor.b);
     }
     glBegin( GL_QUADS );
      // upper face
@@ -525,9 +543,6 @@ KBX_Scene::KBX_Scene() :cam( KBX_Vec(0,0,-100), KBX_Vec(0,0,0) ) {}
 void KBX_Scene::_render(bool picking){
     // clear the graphics buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // use grey background
-    if(!picking) glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
-    //    else glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     // switch to the drawing perspective
     glMatrixMode(GL_MODELVIEW); 
     // reset the drawing perspective
@@ -595,6 +610,11 @@ void initOpenGL(){
     // handle window size correctly
     // TODO: this doesnt work
     glViewport(0,0, w, h);
+    // use grey background
+    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+    // and tell the object list that our background color
+    // does not correspond to any kind of object
+    KBX_Object::objectList.nullId = KBX_Color(0.2f, 0.2f, 0.2f).id();
     glMatrixMode(GL_PROJECTION); // switch to setting the camera perspective
     glLoadIdentity(); // reset the camera
     gluPerspective(	10.0,                  // the camera distance

@@ -20,11 +20,19 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 #include "SDL_opengl.h"
 
-void checkGLError();
+class TextureHandler;
+class KBX_ObjectHandler;
 
+void checkGLError();
+std::string stringprintf(std::string str, ...);
+
+#include "gui.hpp"
+
+/// handles the textures for OpenGL
 class TextureHandler{
     GLuint* textures;
     /// point external keys to internal index of textures array
@@ -35,7 +43,21 @@ public:
     GLuint get(size_t key);
 };
 
+/// handles all KBX_Objects (mainly for mouse selection) 
+class KBX_ObjectHandler{
+    std::vector<KBX_Object*> objects;
+public: 
+    // the nullId is the id that corresponds to the NULL pointer
+    // it is, however, not neccessarily zero
+    // as it is supposed to correspond to the color id 
+    // of the background color
+    size_t nullId;
+    KBX_ObjectHandler();
+    KBX_Object* get(size_t id);
+    size_t add(KBX_Object* obj);
+    void remove(KBX_Object* obj);
+    void remove(size_t id);
+};
 
-std::string stringprintf(std::string str, ...);
 
 #endif
