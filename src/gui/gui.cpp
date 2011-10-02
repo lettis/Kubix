@@ -315,7 +315,11 @@ const size_t KBX_Die::BLACK = 2;
 TextureHandler KBX_Die::textures = TextureHandler();
 /// inherit parent constructor and set color
 KBX_Die::KBX_Die(KBX_Vec pos, size_t color) :KBX_AnimObject(pos)
-                                            ,_color(color) {}
+                                            ,_color(color)
+                                            ,IS_KING(false) {}
+KBX_Die::KBX_Die(KBX_Vec pos, size_t color, bool IS_KING) :KBX_AnimObject(pos)
+                                                          ,_color(color)
+                                                          ,IS_KING(IS_KING) {}
 /// render the die
 void KBX_Die::_render(bool picking){
     // setting the color is neccessary in order to ensure that the texture is drawn 'as-is'
@@ -323,15 +327,26 @@ void KBX_Die::_render(bool picking){
     // because all texture-pixel rgb values are multiplied with the corresponding values 
     // of the current color before being drawn!
     if(picking){
-	KBX_Color pickerColor = KBX_Color(this->id);
-	glColor3d(pickerColor.r, pickerColor.g, pickerColor.b);
+        KBX_Color pickerColor = KBX_Color(this->id);
+        glColor3d(pickerColor.r, pickerColor.g, pickerColor.b);
     } else {
-	glColor3d(255, 255, 255);
+        glColor3f(1.0, 1.0, 1.0);
         glEnable( GL_TEXTURE_2D );
+    }
+    // prepare die face for king die if necessary
+    GLuint kingFace;
+    if (this->IS_KING){
+        if (this->_color == KBX_Die::WHITE){
+            kingFace = KBX_Die::textures.get( KBX_Die::FACE_K_W );
+        } else {
+            kingFace = KBX_Die::textures.get( KBX_Die::FACE_K_B );
+        }
     }
     // face 1
     if(!picking){
-        if (this->_color == KBX_Die::WHITE){
+        if (this->IS_KING){
+            glBindTexture( GL_TEXTURE_2D, kingFace );
+        } else if (this->_color == KBX_Die::WHITE){
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_1_W ) );
         } else {
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_1_B ) );
@@ -345,7 +360,9 @@ void KBX_Die::_render(bool picking){
     glEnd();
     // face 2
     if(!picking){
-        if (this->_color == KBX_Die::WHITE){
+        if (this->IS_KING){
+            glBindTexture( GL_TEXTURE_2D, kingFace );
+        } else if (this->_color == KBX_Die::WHITE){
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_2_W ) );
         } else {
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_2_B ) );
@@ -359,7 +376,9 @@ void KBX_Die::_render(bool picking){
     glEnd();
     // face 3
     if(!picking){
-        if (this->_color == KBX_Die::WHITE){
+        if (this->IS_KING){
+            glBindTexture( GL_TEXTURE_2D, kingFace );
+        } else if (this->_color == KBX_Die::WHITE){
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_3_W ) );
         } else {
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_3_B ) );
@@ -373,7 +392,9 @@ void KBX_Die::_render(bool picking){
     glEnd();
     // face 4
     if(!picking){
-        if (this->_color == KBX_Die::WHITE){
+        if (this->IS_KING){
+            glBindTexture( GL_TEXTURE_2D, kingFace );
+        } else if (this->_color == KBX_Die::WHITE){
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_4_W ) );
         } else {
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_4_B ) );
@@ -387,7 +408,9 @@ void KBX_Die::_render(bool picking){
     glEnd();
     // face 5
     if(!picking){
-        if (this->_color == KBX_Die::WHITE){
+        if (this->IS_KING){
+            glBindTexture( GL_TEXTURE_2D, kingFace );
+        } else if (this->_color == KBX_Die::WHITE){
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_5_W ) );
         } else {
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_5_B ) );
@@ -401,7 +424,9 @@ void KBX_Die::_render(bool picking){
     glEnd();
     // face 6
     if(!picking){
-        if (this->_color == KBX_Die::WHITE){
+        if (this->IS_KING){
+            glBindTexture( GL_TEXTURE_2D, kingFace );
+        } else if (this->_color == KBX_Die::WHITE){
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_6_W ) );
         } else {
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_6_B ) );

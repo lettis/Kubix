@@ -114,10 +114,9 @@ void TextureHandler::loadTexture(const char* filename, GLuint textureId ){
     } 
     // Free the SDL_Surface only if it was successfully created
     if ( surface ) { 
-    	SDL_FreeSurface( surface );
+        SDL_FreeSurface( surface );
     }
 }
-
 /// get an individual texture from the list
 /**
    \param key key of the desired texture (same as key to filename specified in TextureHandler::load)
@@ -127,3 +126,4 @@ GLuint TextureHandler::get(size_t key){
     // TODO: throw exception if key not in this->keys
     return this->textures[this->keys[key]];
 }
+

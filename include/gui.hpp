@@ -158,7 +158,10 @@ public:
     // black/white tags
     static const size_t WHITE;
     static const size_t BLACK;
+    
+    const bool IS_KING;
     KBX_Die(KBX_Vec pos, size_t color);
+    KBX_Die(KBX_Vec pos, size_t color, bool IS_KING);
 };
 
 /// KBX_Board Tile

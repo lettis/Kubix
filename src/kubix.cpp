@@ -27,6 +27,50 @@
 #include "gui.hpp"
 #include "handler.hpp"
 
+void setupBoard(KBX_Scene* scene){
+    // add dice to scene
+    KBX_Die* w1 = new KBX_Die( KBX_Vec(-4,0,-4), KBX_Die::WHITE );
+    KBX_Die* w2 = new KBX_Die( KBX_Vec(-3,0,-4), KBX_Die::WHITE );
+    KBX_Die* w3 = new KBX_Die( KBX_Vec(-2,0,-4), KBX_Die::WHITE );
+    KBX_Die* w4 = new KBX_Die( KBX_Vec(-1,0,-4), KBX_Die::WHITE );
+    KBX_Die* wK = new KBX_Die( KBX_Vec( 0,0,-4), KBX_Die::WHITE, true );
+    KBX_Die* w5 = new KBX_Die( KBX_Vec( 1,0,-4), KBX_Die::WHITE );
+    KBX_Die* w6 = new KBX_Die( KBX_Vec( 2,0,-4), KBX_Die::WHITE );
+    KBX_Die* w7 = new KBX_Die( KBX_Vec( 3,0,-4), KBX_Die::WHITE );
+    KBX_Die* w8 = new KBX_Die( KBX_Vec( 4,0,-4), KBX_Die::WHITE );
+    KBX_Die* b1 = new KBX_Die( KBX_Vec(-4,0, 4), KBX_Die::BLACK );
+    KBX_Die* b2 = new KBX_Die( KBX_Vec(-3,0, 4), KBX_Die::BLACK );
+    KBX_Die* b3 = new KBX_Die( KBX_Vec(-2,0, 4), KBX_Die::BLACK );
+    KBX_Die* b4 = new KBX_Die( KBX_Vec(-1,0, 4), KBX_Die::BLACK );
+    KBX_Die* bK = new KBX_Die( KBX_Vec( 0,0, 4), KBX_Die::BLACK, true );
+    KBX_Die* b5 = new KBX_Die( KBX_Vec( 1,0, 4), KBX_Die::BLACK );
+    KBX_Die* b6 = new KBX_Die( KBX_Vec( 2,0, 4), KBX_Die::BLACK );
+    KBX_Die* b7 = new KBX_Die( KBX_Vec( 3,0, 4), KBX_Die::BLACK );
+    KBX_Die* b8 = new KBX_Die( KBX_Vec( 4,0, 4), KBX_Die::BLACK );
+    scene->add( w1 );
+    scene->add( w2 );
+    scene->add( w3 );
+    scene->add( w4 );
+    scene->add( w5 );
+    scene->add( w6 );
+    scene->add( w7 );
+    scene->add( w8 );
+    scene->add( wK );
+    scene->add( b1 );
+    scene->add( b2 );
+    scene->add( b3 );
+    scene->add( b4 );
+    scene->add( b5 );
+    scene->add( b6 );
+    scene->add( b7 );
+    scene->add( b8 );
+    scene->add( bK );
+    // initialize the board and add it to the scene
+    KBX_Board* board = new KBX_Board(9, 9);
+    scene->add( board );
+}
+
+
 int main(){
     // initialize SDL
     initSDL();
@@ -34,32 +78,28 @@ int main(){
     initOpenGL();
     // declare filename-key combinations for die faces
     std::map<size_t, std::string> dieFaces;
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_K_W, "./res/side1.bmp")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_1_W, "./res/side1.bmp")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_2_W, "./res/side2.bmp")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_3_W, "./res/side3.bmp")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_4_W, "./res/side4.bmp")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_5_W, "./res/side5.bmp")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_6_W, "./res/side6.bmp")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_K_B, "./res/side1b.bmp") );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_1_B, "./res/side1b.bmp") );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_2_B, "./res/side2b.bmp") );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_3_B, "./res/side3b.bmp") );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_4_B, "./res/side4b.bmp") );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_5_B, "./res/side5b.bmp") );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_6_B, "./res/side6b.bmp") );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_K_W,  "./res/side1.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_1_W,  "./res/side1.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_2_W,  "./res/side2.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_3_W,  "./res/side3.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_4_W,  "./res/side4.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_5_W,  "./res/side5.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_6_W,  "./res/side6.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_K_B, "./res/side1b.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_1_B, "./res/side1b.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_2_B, "./res/side2b.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_3_B, "./res/side3b.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_4_B, "./res/side4b.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_5_B, "./res/side5b.bmp")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_6_B, "./res/side6b.bmp")  );
 
     try{
         // initialize (load) die face textures
         KBX_Die::textures.load(dieFaces);
         // initialize scene
         KBX_Scene* scene = new KBX_Scene();
-        // add die to scene
-        KBX_Die* werrfel = new KBX_Die( KBX_Vec(0,0,0), KBX_Die::BLACK );
-        scene->add( werrfel );
-        // initialize the board and add it to the scene
-        KBX_Board* board = new KBX_Board(9, 9);
-        scene->add( board );
+        // setup the board with all dice
+        setupBoard(scene);
         // initialize event handlers
         KBX_ExitEventHandler exitEvents(scene);
         KBX_MotionEventHandler motionEvents(scene);
