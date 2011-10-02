@@ -245,7 +245,9 @@ void KBX_Camera::zoom(float factor){
     }
     KBX_Vec diff = this->position.sub( this->target );
     diff = diff.scale( factor );
-    this->position = this->target.add( diff );
+    if(diff.norm() < 900 && diff.norm() > 15){
+        this->position = this->target.add( diff );
+    }
 }
 
 KBX_ObjectHandler KBX_Object::objectList;
@@ -620,7 +622,7 @@ void initOpenGL(){
     gluPerspective(	10.0,                  // the camera distance
                     (double)w / (double)h, // the width-to-height ratio
                     1.0,                   // the near z clipping coordinate
-                    200.0);                // the far z clipping coordinate
+                    1000.0);                // the far z clipping coordinate
     // use double buffering
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     // use smooth shading model
