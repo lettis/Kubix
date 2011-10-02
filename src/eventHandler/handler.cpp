@@ -27,6 +27,7 @@
 KBX_EventHandler::KBX_EventHandler(KBX_Scene* scene){
     this->scene = scene;
 }
+
 /// handle exit events
 /**
     \param event the given event
@@ -42,6 +43,7 @@ int KBX_ExitEventHandler::handle(SDL_Event* event){
     }
     return 0;
 }
+
 /// handle motion events
 /**
     \param event the given event
@@ -74,29 +76,28 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
                 break;
         }
     } else if (event->type == SDL_MOUSEBUTTONDOWN){
-	switch (event->button.button){
-	case SDL_BUTTON_WHEELUP:
-	    this->scene->zoom( 0.95 );
-	    break;
-	case SDL_BUTTON_WHEELDOWN:
-	    this->scene->zoom( 1.05 );
-	    break;
-	default: 
-	    break;
-	}
-    
+        switch (event->button.button){
+            case SDL_BUTTON_WHEELUP:
+                this->scene->zoom( 0.95 );
+                break;
+            case SDL_BUTTON_WHEELDOWN:
+                this->scene->zoom( 1.05 );
+                break;
+            default: 
+                break;
+        }
     }
     return 0;
 }
 
 int KBX_SelectionEventHandler::handle(SDL_Event* event){
     if (event->type == SDL_MOUSEBUTTONDOWN){
-	switch (event->button.button){
-	case SDL_BUTTON_LEFT: 
-	    printf("left mouse button pressed at %d %d\n", event->button.x, event->button.y);
-	    this->selected = this->getObject(event->button.x, event->button.y);
-	    return 1;
-	}
+        switch (event->button.button){
+            case SDL_BUTTON_LEFT: 
+                printf("left mouse button pressed at %d %d\n", event->button.x, event->button.y);
+                this->selected = this->getObject(event->button.x, event->button.y);
+                return 1;
+        }
     }
     return 0;
 }

@@ -76,9 +76,9 @@ int main(){
             }
             // handle possible selection events
             if(!selectionEvents.handle( event )){
-	      // handle possible motion events
-	      motionEvents.handle( event );
-	    }
+                // handle possible motion events
+                motionEvents.handle( event );
+            }
             // redraw scene
             scene->display();
             SDL_GL_SwapBuffers();
