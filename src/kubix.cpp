@@ -34,31 +34,57 @@ void setupBoard(KBX_Scene* scene){
     KBX_Vec toLeft ( 0.0, 0.0,  1.0);
     KBX_Vec toRight( 0.0, 0.0, -1.0);
     KBX_Vec clockwise( 0.0, -1.0, 0.0);
-    // add dice to scene
-    // w1 is in lower left corner, w8 in lower right
+    KBX_Vec counterClockwise( 0.0, 1.0, 0.0);
+    // setup dice with correct orientation
+    // white dice; w1 is in lower left corner, w8 in lower right
     KBX_Die* w1 = new KBX_Die( KBX_Vec(-4,0, 4), KBX_Die::WHITE );
-    w1->rotate( clockwise, 90 );
-    w1->rotate( toRight, 90 );
+    w1->rotate( counterClockwise, 90 );
     KBX_Die* w2 = new KBX_Die( KBX_Vec(-3,0, 4), KBX_Die::WHITE );
-    //w2->rotate( toLeft, 90 );
+    w2->rotate( toBack, 90 );
+    w2->rotate( counterClockwise, 90 );
     KBX_Die* w3 = new KBX_Die( KBX_Vec(-2,0, 4), KBX_Die::WHITE );
+    w3->rotate( toBack, 180 );
+    w3->rotate( counterClockwise, 90 );
     KBX_Die* w4 = new KBX_Die( KBX_Vec(-1,0, 4), KBX_Die::WHITE );
+    w4->rotate( toFront, 90 );
+    w4->rotate( counterClockwise, 90 );
     KBX_Die* wK = new KBX_Die( KBX_Vec( 0,0, 4), KBX_Die::WHITE, true );
     KBX_Die* w5 = new KBX_Die( KBX_Vec( 1,0, 4), KBX_Die::WHITE );
+    w5->rotate( toFront, 90 );
+    w5->rotate( counterClockwise, 90 );
     KBX_Die* w6 = new KBX_Die( KBX_Vec( 2,0, 4), KBX_Die::WHITE );
+    w6->rotate( toBack, 180 );
+    w6->rotate( counterClockwise, 90 );
     KBX_Die* w7 = new KBX_Die( KBX_Vec( 3,0, 4), KBX_Die::WHITE );
+    w7->rotate( toBack, 90 );
+    w7->rotate( counterClockwise, 90 );
     KBX_Die* w8 = new KBX_Die( KBX_Vec( 4,0, 4), KBX_Die::WHITE );
-    // w1 is in upper left corner, w8 in upper right
+    w8->rotate( counterClockwise, 90 );
+    // black dice; b1 is in upper left corner, b8 in upper right
     KBX_Die* b1 = new KBX_Die( KBX_Vec(-4,0,-4), KBX_Die::BLACK );
+    b1->rotate( clockwise, 90 );
     KBX_Die* b2 = new KBX_Die( KBX_Vec(-3,0,-4), KBX_Die::BLACK );
+    b2->rotate( toBack, 90 );
+    b2->rotate( clockwise, 90 );
     KBX_Die* b3 = new KBX_Die( KBX_Vec(-2,0,-4), KBX_Die::BLACK );
+    b3->rotate( toBack, 180 );
+    b3->rotate( clockwise, 90 );
     KBX_Die* b4 = new KBX_Die( KBX_Vec(-1,0,-4), KBX_Die::BLACK );
+    b4->rotate( toFront, 90 );
+    b4->rotate( clockwise, 90 );
     KBX_Die* bK = new KBX_Die( KBX_Vec( 0,0,-4), KBX_Die::BLACK, true );
     KBX_Die* b5 = new KBX_Die( KBX_Vec( 1,0,-4), KBX_Die::BLACK );
+    b5->rotate( toFront, 90 );
+    b5->rotate( clockwise, 90 );
     KBX_Die* b6 = new KBX_Die( KBX_Vec( 2,0,-4), KBX_Die::BLACK );
+    b6->rotate( toBack, 180 );
+    b6->rotate( clockwise, 90 );
     KBX_Die* b7 = new KBX_Die( KBX_Vec( 3,0,-4), KBX_Die::BLACK );
+    b7->rotate( toBack, 90 );
+    b7->rotate( clockwise, 90 );
     KBX_Die* b8 = new KBX_Die( KBX_Vec( 4,0,-4), KBX_Die::BLACK );
-    b8->rotate( toRight, 90 );
+    b8->rotate( clockwise, 90 );
+    // add dice to scene
     scene->add( w1 );
     scene->add( w2 );
     scene->add( w3 );
