@@ -30,13 +30,13 @@ void initSDL();
 /// defines a simple vector in 3d-cartesian coordinates
 class KBX_Vec{
 public:
-	float x;
-	float y;
-	float z;
-	KBX_Vec();
+    float x;
+    float y;
+    float z;
+    KBX_Vec();
     KBX_Vec(float x, float y, float z);
-	float norm();
-	KBX_Vec normalize();
+    float norm();
+    KBX_Vec normalize();
     KBX_Vec scale(float a);
     KBX_Vec add(KBX_Vec v);
     KBX_Vec sub(KBX_Vec v);
@@ -47,11 +47,13 @@ public:
 /// defines a color
 class KBX_Color{
 public:
-    float r;
-    float g;
-    float b;
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
     KBX_Color();
-    KBX_Color(float r, float g, float b);
+    KBX_Color(size_t id);
+    KBX_Color(unsigned char r, unsigned char g, unsigned char b);
+    size_t id();
 };
 
 /// defines a camera object for opengl
@@ -75,28 +77,30 @@ public:
 //  abstract class defining opengl object
 class KBX_Object{
 protected:
-	float   _angle;
-	KBX_Vec _rotAxis;
-	bool    _isVisible;
-	KBX_Vec _pos;
-	// define opengl for this object
-	virtual void _render() = 0;
-	// rotate object around _rotAxis by _angle
-	void _rotate();
-	// translate object to _pos
-	void _translate();
+    float   _angle;
+    KBX_Vec _rotAxis;
+    bool    _isVisible;
+    KBX_Vec _pos;
+    // define opengl for this object
+    virtual void _render(bool picking = false) = 0;
+    // rotate object around _rotAxis by _angle
+    void _rotate();
+    // translate object to _pos
+    void _translate();
 public:
-	// constructor
-	KBX_Object();
+    const size_t id;
+    static size_t idCounter;
+    // constructor
+    KBX_Object();
     KBX_Object(KBX_Vec pos);
-	// virtual destructor
-	virtual ~KBX_Object() {}
-	// sets angle and axis to define a rotation
-	void rotate(KBX_Vec axis, float angle);
-	// sets vector to define a translation
-	void translate(KBX_Vec direction);
-	// render the object and perform translation / rotation
-	void display();
+    // virtual destructor
+    virtual ~KBX_Object() {}
+    // sets angle and axis to define a rotation
+    void rotate(KBX_Vec axis, float angle);
+    // sets vector to define a translation
+    void translate(KBX_Vec direction);
+    // render the object and perform translation / rotation
+    void display(bool picking = false);
 };
 
 
@@ -104,25 +108,25 @@ public:
 //  abstract class defining opengl object with animation support
 class KBX_AnimObject : public KBX_Object {
 protected:
-	float _angleOrig;
-	float _angleDest;
-	float _rotStep;
-	KBX_Vec _posOrig;
-	KBX_Vec _posDest;
-	float   _transStep;
-//TODO: overload _rotate, _translate
-	void _animRotate(KBX_Vec axis, float angle);
-	void _animTranslate(KBX_Vec direction);
+    float _angleOrig;
+    float _angleDest;
+    float _rotStep;
+    KBX_Vec _posOrig;
+    KBX_Vec _posDest;
+    float   _transStep;
+    //TODO: overload _rotate, _translate
+    void _animRotate(KBX_Vec axis, float angle);
+    void _animTranslate(KBX_Vec direction);
 public:
     KBX_AnimObject();
     KBX_AnimObject(KBX_Vec pos);
     void rotate(KBX_Vec axis, float angle){
         KBX_Object::rotate(axis, angle);
     }
-	// sets angle and axis to define a rotation
-	void rotate(KBX_Vec axis, float angle, float step);
-	// sets vector to define a translation
-	void translate(KBX_Vec direction, float step);
+    // sets angle and axis to define a rotation
+    void rotate(KBX_Vec axis, float angle, float step);
+    // sets vector to define a translation
+    void translate(KBX_Vec direction, float step);
 };
 // -- KBX_AnimObject
 
@@ -130,7 +134,7 @@ public:
 /// KBX_Die
 ///  defines a die
 class KBX_Die : public KBX_AnimObject{
-    void _render();
+    void _render(bool picking = false);
     size_t _color;
 public:
     // texture container
@@ -160,7 +164,7 @@ public:
 /// KBX_Board Tile
 ///  defines game board tile
 class KBX_Tile: public KBX_Object{
-    void _render();
+    void _render(bool picking = false);
     KBX_Color basicColor;
     KBX_Color activeColor;
 public:
@@ -173,7 +177,7 @@ class KBX_Board: public KBX_Object{
     size_t nRows;
     size_t nCols;
     KBX_Tile** tiles;
-    void _render();
+    void _render(bool picking = false);
 public:
     KBX_Board(size_t rows, size_t cols);
 };
@@ -187,7 +191,7 @@ public:
 class KBX_Scene : public KBX_Object{
     std::vector<KBX_Object*> objList;
     KBX_Camera cam;
-    void _render();
+    void _render(bool picking = false);
 public:
     void add(KBX_Object* obj);
     void rotate(float angle, size_t direction);

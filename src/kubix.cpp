@@ -54,15 +54,16 @@ int main(){
         KBX_Die::textures.load(dieFaces);
         // initialize scene
         KBX_Scene* scene = new KBX_Scene();
-        // initialize the board and add it to the scene
-        KBX_Board* board = new KBX_Board(9, 9);
-        scene->add( board );
         // add die to scene
         KBX_Die* werrfel = new KBX_Die( KBX_Vec(0,0,0), KBX_Die::BLACK );
         scene->add( werrfel );
+        // initialize the board and add it to the scene
+        KBX_Board* board = new KBX_Board(9, 9);
+        scene->add( board );
         // initialize event handlers
         KBX_ExitEventHandler exitEvents(scene);
         KBX_MotionEventHandler motionEvents(scene);
+        KBX_SelectionEventHandler selectionEvents(scene);
         // enter event loop
         SDL_Event* event = new SDL_Event();
         bool DONE=false;
@@ -73,8 +74,11 @@ int main(){
             if (exitEvents.handle( event ) != 0){
                 DONE=true;
             }
-            // handle possible motion events
-            motionEvents.handle( event );
+            // handle possible selection events
+            if(!selectionEvents.handle( event )){
+	      // handle possible motion events
+	      motionEvents.handle( event );
+	    }
             // redraw scene
             scene->display();
             SDL_GL_SwapBuffers();

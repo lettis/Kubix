@@ -44,6 +44,14 @@ class KBX_MotionEventHandler : public KBX_EventHandler{
 public:
     KBX_MotionEventHandler(KBX_Scene* scene) :KBX_EventHandler(scene) {};
     int handle(SDL_Event* event);
-    void select(int x, int y);
+};
+
+/// handler for motion events
+class KBX_SelectionEventHandler : public KBX_EventHandler{
+public:
+    KBX_Object* selected;
+    KBX_SelectionEventHandler(KBX_Scene* scene) :KBX_EventHandler(scene) { this->selected = NULL; };
+    int handle(SDL_Event* event);
+    KBX_Object* getObject( size_t x, size_t y );
 };
 #endif

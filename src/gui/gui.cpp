@@ -25,13 +25,27 @@
 #include "gui.hpp"
 #include "tools.hpp"
 
+#include <iostream>
+
 /// constructor initializing the color
 KBX_Color::KBX_Color(){
     this->r = 0;
     this->g = 0;
     this->b = 0;
 }
-KBX_Color::KBX_Color(float r, float g, float b){
+
+KBX_Color::KBX_Color(size_t id){
+    this->r = (id%256);
+    this->g = (id/256)%256;
+    this->b = (id/(256*256))%256;
+}
+
+size_t KBX_Color::id(){
+    printf("%d %d %d => %d\n", (int)r, (int)g, (int)b, (int)(this->r + 256*this->g + 256*256*this->b));
+    return this->r + 256*this->g + 256*256*this->b;
+}
+
+KBX_Color::KBX_Color(unsigned char r, unsigned char g, unsigned char b){
     this->r = r;
     this->g = g;
     this->b = b;
@@ -225,15 +239,27 @@ void KBX_Camera::zoom(float factor){
     this->position = this->target.add( diff );
 }
 
+size_t KBX_Object::idCounter = 0;
 
 /// default constructor
-KBX_Object::KBX_Object() :_angle(0)
-                         ,_isVisible(true)
-                         ,_pos( KBX_Vec(0,0,0) ) {}
+KBX_Object::KBX_Object() :
+    _angle(0),
+    _isVisible(true),
+    _pos( KBX_Vec(0,0,0) ),
+    id(idCounter) 
+{
+    KBX_Object::idCounter+=10; 
+}
 /// constructor setting the object's position
-KBX_Object::KBX_Object(KBX_Vec pos) :_angle(0)
-                                    ,_isVisible(true)
-                                    ,_pos(pos) {}
+KBX_Object::KBX_Object(KBX_Vec pos) :
+    _angle(0),
+    _isVisible(true),
+    _pos( pos ),
+    id(idCounter) 
+{
+    KBX_Object::idCounter+=10; 
+}
+
 /// set object rotation
 void KBX_Object::rotate(KBX_Vec axis, float angle){
     this->_angle = angle;
@@ -252,12 +278,12 @@ void KBX_Object::_translate(){
     glTranslatef( this->_pos.x, this->_pos.y, this->_pos.z );
 }
 /// display the object
-void KBX_Object::display(){
+void KBX_Object::display(bool picking){
     // save transformations done before
     glPushMatrix();
     this->_rotate();
     this->_translate();
-    this->_render();
+    this->_render(picking);
     // reload transformations done before
     glPopMatrix();
 }
@@ -291,18 +317,25 @@ TextureHandler KBX_Die::textures = TextureHandler();
 KBX_Die::KBX_Die(KBX_Vec pos, size_t color) :KBX_AnimObject(pos)
                                             ,_color(color) {}
 /// render the die
-void KBX_Die::_render(){
+void KBX_Die::_render(bool picking){
     // setting the color is neccessary in order to ensure that the texture is drawn 'as-is'
     // leaving this out might cause the texture to be drawn with 'shaded' colors
     // because all texture-pixel rgb values are multiplied with the corresponding values 
     // of the current color before being drawn!
-    glColor3f(1, 1, 1);
-    glEnable( GL_TEXTURE_2D );
-    // face 1
-    if (this->_color == KBX_Die::WHITE){
-        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_1_W ) );
+    if(picking){
+	KBX_Color pickerColor = KBX_Color(this->id);
+	glColor3d(pickerColor.r, pickerColor.g, pickerColor.b);
     } else {
-        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_1_B ) );
+	glColor3d(255, 255, 255);
+        glEnable( GL_TEXTURE_2D );
+    }
+    // face 1
+    if(!picking){
+        if (this->_color == KBX_Die::WHITE){
+            glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_1_W ) );
+        } else {
+            glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_1_B ) );
+        }
     }
     glBegin( GL_QUADS );
      glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
@@ -311,10 +344,12 @@ void KBX_Die::_render(){
      glTexCoord2f(0.0,0.0); glVertex3f(-0.5,+0.5,-0.5);
     glEnd();
     // face 2
-    if (this->_color == KBX_Die::WHITE){
-        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_2_W ) );
-    } else {
-        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_2_B ) );
+    if(!picking){
+        if (this->_color == KBX_Die::WHITE){
+            glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_2_W ) );
+        } else {
+            glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_2_B ) );
+        }
     }
     glBegin( GL_QUADS );
      glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
@@ -323,10 +358,12 @@ void KBX_Die::_render(){
      glTexCoord2f(0.0,0.0); glVertex3f(-0.5,-0.5,+0.5);
     glEnd();
     // face 3
-    if (this->_color == KBX_Die::WHITE){
-        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_3_W ) );
-    } else {
-        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_3_B ) );
+    if(!picking){
+        if (this->_color == KBX_Die::WHITE){
+            glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_3_W ) );
+        } else {
+            glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_3_B ) );
+        }
     }
     glBegin( GL_QUADS );
      glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
@@ -335,10 +372,12 @@ void KBX_Die::_render(){
      glTexCoord2f(0.0,0.0); glVertex3f(-0.5,-0.5,+0.5);
     glEnd();
     // face 4
-    if (this->_color == KBX_Die::WHITE){
-        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_4_W ) );
-    } else {
-        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_4_B ) );
+    if(!picking){
+        if (this->_color == KBX_Die::WHITE){
+            glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_4_W ) );
+        } else {
+            glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_4_B ) );
+        }
     }
     glBegin( GL_QUADS );
      glTexCoord2f(0.0,1.0); glVertex3f(+0.5,-0.5,-0.5);
@@ -347,10 +386,12 @@ void KBX_Die::_render(){
      glTexCoord2f(0.0,0.0); glVertex3f(+0.5,-0.5,+0.5);
     glEnd();
     // face 5
-    if (this->_color == KBX_Die::WHITE){
-        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_5_W ) );
-    } else {
-        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_5_B ) );
+    if(!picking){
+        if (this->_color == KBX_Die::WHITE){
+            glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_5_W ) );
+        } else {
+            glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_5_B ) );
+        }
     }
     glBegin( GL_QUADS );
      glTexCoord2f(0.0,1.0); glVertex3f(-0.5,+0.5,-0.5);
@@ -359,10 +400,12 @@ void KBX_Die::_render(){
      glTexCoord2f(0.0,0.0); glVertex3f(-0.5,+0.5,+0.5);
     glEnd();
     // face 6
-    if (this->_color == KBX_Die::WHITE){
-        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_6_W ) );
-    } else {
-        glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_6_B ) );
+    if(!picking){
+        if (this->_color == KBX_Die::WHITE){
+            glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_6_W ) );
+        } else {
+            glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_6_B ) );
+        }
     }
     glBegin( GL_QUADS );
      glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,+0.5);
@@ -397,10 +440,10 @@ KBX_Board::KBX_Board(size_t rows, size_t cols){
     }
 }
 /// display board by rendering every tile
-void KBX_Board::_render(){
+void KBX_Board::_render(bool picking){
     for(size_t i=0; i<(this->nRows * this->nCols); i++){
 	glLoadName(i);
-        this->tiles[i]->display();
+        this->tiles[i]->display(picking);
     }
 }
 
@@ -409,8 +452,14 @@ KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color color) : KBX_Object(pos)
                                                  , basicColor(color)
                                                  , activeColor(color) {}
 /// render the tile
-void KBX_Tile::_render(){
-    glColor3f(this->activeColor.r, this->activeColor.g, this->activeColor.b);
+void KBX_Tile::_render(bool picking){
+    if(picking){
+	KBX_Color pickerColor = KBX_Color(this->id);
+	glColor3d(pickerColor.r, pickerColor.g, pickerColor.b);
+        std::cout << "rendering " << id << " " << (int)pickerColor.r <<","<< (int)pickerColor.g <<","<< (int)pickerColor.b<< std::endl;
+    } else {
+	glColor3d(this->activeColor.r, this->activeColor.g, this->activeColor.b);
+    }
     glBegin( GL_QUADS );
      // upper face
      glVertex3f(0.0, 0.0, 0.0);
@@ -448,9 +497,12 @@ void KBX_Tile::_render(){
 /// scene constructor
 KBX_Scene::KBX_Scene() :cam( KBX_Vec(0,0,-100), KBX_Vec(0,0,0) ) {}
 /// render the scene
-void KBX_Scene::_render(){
+void KBX_Scene::_render(bool picking){
     // clear the graphics buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // use grey background
+    if(!picking) glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+    //    else glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     // switch to the drawing perspective
     glMatrixMode(GL_MODELVIEW); 
     // reset the drawing perspective
@@ -461,10 +513,10 @@ void KBX_Scene::_render(){
     // the object to the scene
     for (size_t i=0; i<this->objList.size(); i++){
 	glLoadName(i);
-        this->objList[i]->display();
+        this->objList[i]->display(picking);
     }
     // draw everything to screen
-    SDL_GL_SwapBuffers();
+    if(!picking) SDL_GL_SwapBuffers();
 }
 /// add object to the scene
 /**
@@ -501,7 +553,7 @@ void initSDL(){
         throw stringprintf("Can't init SDL:  %s\n", SDL_GetError()).c_str();
     }
     atexit(SDL_Quit);
-    screen = SDL_SetVideoMode(800, 600, 16, SDL_OPENGL);
+    screen = SDL_SetVideoMode(800, 600, 24, SDL_OPENGL);
     if (screen == NULL) {
         throw stringprintf("Can't set video mode: %s\n", SDL_GetError()).c_str();
     }
@@ -526,8 +578,6 @@ void initOpenGL(){
                     200.0);                // the far z clipping coordinate
     // use double buffering
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    // use grey background
-    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     // use smooth shading model
     glShadeModel(GL_SMOOTH);
     // draw objects respecting depth
