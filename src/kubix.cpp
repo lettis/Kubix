@@ -147,17 +147,19 @@ int main(){
         bool DONE=false;
         while ( !DONE ){
             // get next event
-            SDL_PollEvent( event );
-            // handle possible exit events
-            if (exitEvents.handle( event ) != 0){
-                DONE=true;
-                break;
+            while ( SDL_PollEvent( event ) ){
+                // handle possible exit events
+                if (exitEvents.handle( event ) != 0){
+                    DONE=true;
+                    break;
+                }
+                // handle possible selection events
+                if(!selectionEvents.handle( event )){
+                    // handle possible motion events
+                    motionEvents.handle( event );
+                }
             }
-            // handle possible selection events
-            if(!selectionEvents.handle( event )){
-                // handle possible motion events
-                motionEvents.handle( event );
-            }
+            motionEvents.proceed();
             // redraw scene
             scene->display(false);
             SDL_GL_SwapBuffers();

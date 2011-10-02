@@ -51,25 +51,56 @@ int KBX_ExitEventHandler::handle(SDL_Event* event){
 */
 int KBX_MotionEventHandler::handle(SDL_Event* event){
     float angle=5;
+    // note: the actual camera manipulations are performed in the 
+    // KBX_MotionEventHandler::proceed() function
+    // this is neccessary to provide fast responses 
+    // and intuitive behaviour at the same time
+    // see there for details
     if (event->type == SDL_KEYDOWN){
+        this->active = true;
         switch(event->key.keysym.sym){
             case SDLK_a:
-                this->scene->rotate(angle, KBX_Camera::HORIZONTAL);
+                this->rotateHorizontal = angle;
                 break;
             case SDLK_d:
-                this->scene->rotate(-angle, KBX_Camera::HORIZONTAL);
+                this->rotateHorizontal = -angle;
                 break;
             case SDLK_w:
-                this->scene->rotate(angle, KBX_Camera::VERTICAL);
+                this->rotateVertical = angle;
                 break;
             case SDLK_s:
-                this->scene->rotate(-angle, KBX_Camera::VERTICAL);
+                this->rotateVertical = -angle;
                 break;
             case SDLK_q:
-                this->scene->zoom( 0.95 );
+                this->zoom = 1.05;
                 break;
             case SDLK_e:
-                this->scene->zoom( 1.05 );
+                this->zoom = 0.95;
+                break;
+            default:
+                // do nothing
+                break;
+        }
+    } else if (event->type == SDL_KEYUP){
+        this->active = false;
+        switch(event->key.keysym.sym){
+            case SDLK_a:
+                this->rotateHorizontal = 0;
+                break;
+            case SDLK_d:
+                this->rotateHorizontal = 0;
+                break;
+            case SDLK_w:
+                this->rotateVertical = 0;
+                break;
+            case SDLK_s:
+                this->rotateVertical = 0;
+                break;
+            case SDLK_q:
+                this->zoom = 1;
+                break;
+            case SDLK_e:
+                this->zoom = 1;
                 break;
             default:
                 // do nothing
@@ -97,11 +128,36 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
             break;
         }
     } else if (this->cameraDrag && (event->type == SDL_MOUSEMOTION)){
-        float anglePerPixel = 1;
-        this->scene->rotate(anglePerPixel*event->motion.xrel, KBX_Camera::HORIZONTAL);
-        this->scene->rotate(anglePerPixel*event->motion.yrel, KBX_Camera::VERTICAL);
+        float anglePerPixel = 0.5;
+        // get resolution from settings
+        GLint viewport[4];
+        glGetIntegerv(GL_VIEWPORT, viewport);
+        // find out whether the user clicked the "upper"/"lower" or "left/right" part of the screen
+        // that is, if the user wanted to grab the "front/back" or "left/right" part of the board
+        // in order to find the rotation direction
+        float directionVertical = (event->motion.x < viewport[2]/2) ? 1 : -1;
+        float directionHorizontal = (event->motion.y < viewport[3]/2) ? 1 : -1;
+        // actually perform the rotation
+        this->scene->rotate(anglePerPixel*event->motion.xrel*directionHorizontal, KBX_Camera::HORIZONTAL);
+        this->scene->rotate(anglePerPixel*event->motion.yrel*directionVertical, KBX_Camera::VERTICAL);
     }
     return 0;
+}
+
+/// apply the changes
+/**
+   this construction is neccessary due to handling of KEYDOWN and KEYUP events
+   since only one KEYDOWN event is produced per key press
+   we have to poll for KEYUP events in order to determine if a key is still pressed
+   in the mean time, we want to apply changes - otherwise the scene "freezes"
+   until the user releases the key!
+ */
+void KBX_MotionEventHandler::proceed(){
+    if(this->active){
+        this->scene->zoom( this->zoom );
+        this->scene->rotate( this->rotateHorizontal, KBX_Camera::HORIZONTAL);
+        this->scene->rotate( this->rotateVertical, KBX_Camera::VERTICAL);
+    }
 }
 
 /// handle selection events
