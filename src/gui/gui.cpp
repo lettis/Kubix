@@ -260,10 +260,30 @@ KBX_Object::KBX_Object(KBX_Vec pos) :
     KBX_Object::idCounter+=10; 
 }
 
-/// set object rotation
+/// set object rotation (accumulatively)
+/**
+    \param axis the axis around which the object will be rotated
+    \param angle angle of the rotation
+
+    Rotations will be done accumulatively. This means, you can
+    call .rotate(...) several times after another with different rotation
+    axes and angles. The orientation will always be in the direction of the 
+    first rotation. That way you can rotate the object with the same reference
+    of orientation and you do not have to account for the rotating coordinate system.
+    This is done by rotating the rotation axis inversely around the last rotation.
+    Thus the reference frame is always the same.
+*/
 void KBX_Object::rotate(KBX_Vec axis, float angle){
-    this->_angle = angle;
-    this->_rotAxis = axis;
+    // push angle to list of successive rotations
+    this->_angle.push_back( angle );
+    // push axis to list of succ. rotations by converting it
+    // to the local frame of reference
+    // (this is needed, since the OpenGL coordinate system rotates with the objects)
+    if ( !this->_rotAxis.empty() ){
+        size_t last = this->_rotAxis.size()-1;
+        axis = axis.rotate( this->_rotAxis[ last ].scale( -1 ), this->_angle[ last ] );
+    }
+    this->_rotAxis.push_back( axis );
 }
 /// set object translation
 void KBX_Object::translate(KBX_Vec direction){
@@ -271,7 +291,9 @@ void KBX_Object::translate(KBX_Vec direction){
 }
 /// actually rotate object (private, only called by 'display')
 void KBX_Object::_rotate(){
-    glRotatef( this->_angle, this->_rotAxis.x, this->_rotAxis.y, this->_rotAxis.z );
+    for(size_t i=0; i<this->_angle.size(); i++){
+        glRotatef( this->_angle[i], this->_rotAxis[i].x, this->_rotAxis[i].y, this->_rotAxis[i].z );
+    }
 }
 /// actually translate object (private, only called by 'display')
 void KBX_Object::_translate(){
@@ -281,8 +303,8 @@ void KBX_Object::_translate(){
 void KBX_Object::display(bool picking){
     // save transformations done before
     glPushMatrix();
-    this->_rotate();
     this->_translate();
+    this->_rotate();
     this->_render(picking);
     // reload transformations done before
     glPopMatrix();
@@ -520,7 +542,7 @@ void KBX_Tile::_render(bool picking){
 }
 
 /// scene constructor
-KBX_Scene::KBX_Scene() :cam( KBX_Vec(0,0,-100), KBX_Vec(0,0,0) ) {}
+KBX_Scene::KBX_Scene() :cam( KBX_Vec(0,0,100), KBX_Vec(0,0,0) ) {}
 /// render the scene
 void KBX_Scene::_render(bool picking){
     // clear the graphics buffer

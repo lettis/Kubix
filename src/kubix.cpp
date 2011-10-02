@@ -28,25 +28,37 @@
 #include "handler.hpp"
 
 void setupBoard(KBX_Scene* scene){
+    // define rotation axes
+    KBX_Vec toFront(-1.0, 0.0,  0.0);
+    KBX_Vec toBack ( 1.0, 0.0,  0.0);
+    KBX_Vec toLeft ( 0.0, 0.0,  1.0);
+    KBX_Vec toRight( 0.0, 0.0, -1.0);
+    KBX_Vec clockwise( 0.0, -1.0, 0.0);
     // add dice to scene
-    KBX_Die* w1 = new KBX_Die( KBX_Vec(-4,0,-4), KBX_Die::WHITE );
-    KBX_Die* w2 = new KBX_Die( KBX_Vec(-3,0,-4), KBX_Die::WHITE );
-    KBX_Die* w3 = new KBX_Die( KBX_Vec(-2,0,-4), KBX_Die::WHITE );
-    KBX_Die* w4 = new KBX_Die( KBX_Vec(-1,0,-4), KBX_Die::WHITE );
-    KBX_Die* wK = new KBX_Die( KBX_Vec( 0,0,-4), KBX_Die::WHITE, true );
-    KBX_Die* w5 = new KBX_Die( KBX_Vec( 1,0,-4), KBX_Die::WHITE );
-    KBX_Die* w6 = new KBX_Die( KBX_Vec( 2,0,-4), KBX_Die::WHITE );
-    KBX_Die* w7 = new KBX_Die( KBX_Vec( 3,0,-4), KBX_Die::WHITE );
-    KBX_Die* w8 = new KBX_Die( KBX_Vec( 4,0,-4), KBX_Die::WHITE );
-    KBX_Die* b1 = new KBX_Die( KBX_Vec(-4,0, 4), KBX_Die::BLACK );
-    KBX_Die* b2 = new KBX_Die( KBX_Vec(-3,0, 4), KBX_Die::BLACK );
-    KBX_Die* b3 = new KBX_Die( KBX_Vec(-2,0, 4), KBX_Die::BLACK );
-    KBX_Die* b4 = new KBX_Die( KBX_Vec(-1,0, 4), KBX_Die::BLACK );
-    KBX_Die* bK = new KBX_Die( KBX_Vec( 0,0, 4), KBX_Die::BLACK, true );
-    KBX_Die* b5 = new KBX_Die( KBX_Vec( 1,0, 4), KBX_Die::BLACK );
-    KBX_Die* b6 = new KBX_Die( KBX_Vec( 2,0, 4), KBX_Die::BLACK );
-    KBX_Die* b7 = new KBX_Die( KBX_Vec( 3,0, 4), KBX_Die::BLACK );
-    KBX_Die* b8 = new KBX_Die( KBX_Vec( 4,0, 4), KBX_Die::BLACK );
+    // w1 is in lower left corner, w8 in lower right
+    KBX_Die* w1 = new KBX_Die( KBX_Vec(-4,0, 4), KBX_Die::WHITE );
+    w1->rotate( clockwise, 90 );
+    w1->rotate( toRight, 90 );
+    KBX_Die* w2 = new KBX_Die( KBX_Vec(-3,0, 4), KBX_Die::WHITE );
+    //w2->rotate( toLeft, 90 );
+    KBX_Die* w3 = new KBX_Die( KBX_Vec(-2,0, 4), KBX_Die::WHITE );
+    KBX_Die* w4 = new KBX_Die( KBX_Vec(-1,0, 4), KBX_Die::WHITE );
+    KBX_Die* wK = new KBX_Die( KBX_Vec( 0,0, 4), KBX_Die::WHITE, true );
+    KBX_Die* w5 = new KBX_Die( KBX_Vec( 1,0, 4), KBX_Die::WHITE );
+    KBX_Die* w6 = new KBX_Die( KBX_Vec( 2,0, 4), KBX_Die::WHITE );
+    KBX_Die* w7 = new KBX_Die( KBX_Vec( 3,0, 4), KBX_Die::WHITE );
+    KBX_Die* w8 = new KBX_Die( KBX_Vec( 4,0, 4), KBX_Die::WHITE );
+    // w1 is in upper left corner, w8 in upper right
+    KBX_Die* b1 = new KBX_Die( KBX_Vec(-4,0,-4), KBX_Die::BLACK );
+    KBX_Die* b2 = new KBX_Die( KBX_Vec(-3,0,-4), KBX_Die::BLACK );
+    KBX_Die* b3 = new KBX_Die( KBX_Vec(-2,0,-4), KBX_Die::BLACK );
+    KBX_Die* b4 = new KBX_Die( KBX_Vec(-1,0,-4), KBX_Die::BLACK );
+    KBX_Die* bK = new KBX_Die( KBX_Vec( 0,0,-4), KBX_Die::BLACK, true );
+    KBX_Die* b5 = new KBX_Die( KBX_Vec( 1,0,-4), KBX_Die::BLACK );
+    KBX_Die* b6 = new KBX_Die( KBX_Vec( 2,0,-4), KBX_Die::BLACK );
+    KBX_Die* b7 = new KBX_Die( KBX_Vec( 3,0,-4), KBX_Die::BLACK );
+    KBX_Die* b8 = new KBX_Die( KBX_Vec( 4,0,-4), KBX_Die::BLACK );
+    b8->rotate( toRight, 90 );
     scene->add( w1 );
     scene->add( w2 );
     scene->add( w3 );

@@ -77,8 +77,8 @@ public:
 //  abstract class defining opengl object
 class KBX_Object{
 protected:
-    float   _angle;
-    KBX_Vec _rotAxis;
+    std::vector<float>   _angle;
+    std::vector<KBX_Vec> _rotAxis;
     bool    _isVisible;
     KBX_Vec _pos;
     // define opengl for this object
