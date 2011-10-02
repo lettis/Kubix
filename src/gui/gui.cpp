@@ -21,6 +21,7 @@
 
 #include "SDL.h"
 #include "SDL_opengl.h"
+#include "SDL_image.h"
 
 #include "gui.hpp"
 #include "tools.hpp"
@@ -594,6 +595,9 @@ void initSDL(){
     if (SDL_Init(SDL_INIT_VIDEO) == -1) {
         throw stringprintf("Can't init SDL:  %s\n", SDL_GetError()).c_str();
     }
+    SDL_WM_SetCaption("kubix", NULL);
+    SDL_Surface* icon = IMG_Load("./res/kubix.png");
+    SDL_WM_SetIcon(icon, NULL);
     atexit(SDL_Quit);
     screen = SDL_SetVideoMode(800, 600, 24, SDL_OPENGL);
     if (screen == NULL) {
