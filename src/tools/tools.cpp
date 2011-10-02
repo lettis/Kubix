@@ -15,12 +15,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string>
 #include <iostream>
 
+#include "gui.hpp"
 #include "tools.hpp"
 
 #include "SDL.h"
@@ -68,6 +70,55 @@ void TextureHandler::load(std::map<size_t, std::string> files){
         this->keys.insert(std::pair<size_t, size_t>(it->first, i));
         i++;
     }
+}
+
+/// get object with given id
+/**
+   \param id id of the desired object
+   \return KBX_Object with given id
+*/
+KBX_Object* KBX_ObjectHandler::get(size_t id){
+    if ( id == this->nullId ){
+        return NULL;
+    } else if(id > this->objects.size()){
+        throw stringprintf("cannot access object %d: not in list", int(id)).c_str();
+    } else return this->objects.at(id);
+}
+
+/// construct a new object handler
+KBX_ObjectHandler::KBX_ObjectHandler(){
+    this->nullId = 0;
+}
+
+/// add an object to the handler
+/**
+   \param obj object to add to the handler
+   \return number of object in list (object id)
+*/
+size_t KBX_ObjectHandler::add(KBX_Object* obj){
+    if(this->objects.size() == nullId){
+        this->objects.push_back(NULL);
+    }
+    this->objects.push_back(obj);
+    return this->objects.size()-1;
+}
+
+/// remove an object from the handler
+/**
+   \param obj object to remove from the handler
+ */
+void KBX_ObjectHandler::remove(KBX_Object* obj){
+    for(size_t i=0; i<this->objects.size(); i++){
+        if(objects[i] == obj) objects[i] = NULL;
+    }
+}
+
+/// remove an object from the handler
+/**
+   \param id id of object to remove from the handler
+ */
+void KBX_ObjectHandler::remove(size_t id){
+    if(id < objects.size()) objects[id] = NULL;
 }
 
 void TextureHandler::loadTexture(const char* filename, GLuint textureId ){

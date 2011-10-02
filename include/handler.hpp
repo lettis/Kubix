@@ -41,8 +41,9 @@ public:
 
 /// handler for motion events
 class KBX_MotionEventHandler : public KBX_EventHandler{
+    bool cameraDrag;
 public:
-    KBX_MotionEventHandler(KBX_Scene* scene) :KBX_EventHandler(scene) {};
+    KBX_MotionEventHandler(KBX_Scene* scene) :KBX_EventHandler(scene) { this->cameraDrag = false; };
     int handle(SDL_Event* event);
 };
 

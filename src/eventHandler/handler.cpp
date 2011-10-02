@@ -83,25 +83,58 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
             case SDL_BUTTON_WHEELDOWN:
                 this->scene->zoom( 1.05 );
                 break;
+            case SDL_BUTTON_LEFT: 
+                this->cameraDrag = true;
+                break;
             default: 
                 break;
         }
+    } else if (event->type == SDL_MOUSEBUTTONUP){
+        switch (event->button.button){
+        case SDL_BUTTON_LEFT: 
+            this->cameraDrag = false;
+        default: 
+            break;
+        }
+    } else if (this->cameraDrag && (event->type == SDL_MOUSEMOTION)){
+        float anglePerPixel = 1;
+        this->scene->rotate(anglePerPixel*event->motion.xrel, KBX_Camera::HORIZONTAL);
+        this->scene->rotate(anglePerPixel*event->motion.yrel, KBX_Camera::VERTICAL);
     }
     return 0;
 }
 
+/// handle selection events
+/**
+    \param event the given event
+    \returns 1 if event has been handled, else 0
+*/
 int KBX_SelectionEventHandler::handle(SDL_Event* event){
     if (event->type == SDL_MOUSEBUTTONDOWN){
         switch (event->button.button){
             case SDL_BUTTON_LEFT: 
-                printf("left mouse button pressed at %d %d\n", event->button.x, event->button.y);
+                if(this->selected) this->selected->highlighted = false;
                 this->selected = this->getObject(event->button.x, event->button.y);
-                return 1;
+                if(this->selected){
+                    this->selected->highlighted = true;
+                    return 1;
+                } else {
+                    return 0;
+                }
+        default:
+            return 0;
         }
     }
     return 0;
 }
 
+
+/// get Object at given mouse coordinates
+/**
+    \param x horizontal mouse coordinate
+    \param y vertical mouse coordinate
+    \returns KBX_Object pointer to object under mouse cursor
+*/
 KBX_Object* KBX_SelectionEventHandler::getObject( size_t x, size_t y ){
     // get resolution from settings
     GLint viewport[4];
@@ -111,9 +144,7 @@ KBX_Object* KBX_SelectionEventHandler::getObject( size_t x, size_t y ){
     this->scene->display(true);
     // Important: gl (0,0) ist bottom left but window coords (0,0) are top left so we have to change this!      
     glReadPixels(x, viewport[3] - y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
-    printf("desired object has color %d %d %d!\n", (int)pixel[0], (int)pixel[1], (int)pixel[2]);
     size_t id = KBX_Color(pixel[0], pixel[1], pixel[2]).id();
-    printf("desired object has number %d!\n", (int)id);
-    return NULL;
+    return KBX_Object::objectList.get(id);
 }
 

@@ -151,6 +151,7 @@ int main(){
             // handle possible exit events
             if (exitEvents.handle( event ) != 0){
                 DONE=true;
+                break;
             }
             // handle possible selection events
             if(!selectionEvents.handle( event )){
@@ -158,7 +159,7 @@ int main(){
                 motionEvents.handle( event );
             }
             // redraw scene
-            scene->display();
+            scene->display(false);
             SDL_GL_SwapBuffers();
         }
     }catch(const char* errMsg){

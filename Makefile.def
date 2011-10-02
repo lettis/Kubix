@@ -5,10 +5,10 @@ CC = gcc
 CPP = g++
 
 # flags
-SDL_FLAGS = $(shell sdl-config --cflags --libs)
+SDL_FLAGS = $(shell sdl-config --cflags --libs) -lSDL_image
 
 # show all warnings
-CPPFLAGS =-Wall -Wextra -pedantic -lGL -lGLU $(SDL_FLAGS)
+CPPFLAGS =-Wall -Wextra -pedantic -lGL -lGLU $(SDL_FLAGS) 
 
 # show all warnings
 CFLAGS =-Wall -Wextra -pedantic
