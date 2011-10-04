@@ -621,7 +621,7 @@ void initSDL(){
     SDL_Surface* icon = IMG_Load("./res/kubix.png");
     SDL_WM_SetIcon(icon, NULL);
     atexit(SDL_Quit);
-    screen = SDL_SetVideoMode(800, 600, 24, SDL_OPENGL);
+    screen = SDL_SetVideoMode(800, 600, 24, SDL_OPENGL | SDL_RESIZABLE);
     if (screen == NULL) {
         throw stringprintf("Can't set video mode: %s\n", SDL_GetError()).c_str();
     }
@@ -632,23 +632,13 @@ void initOpenGL(){
     // get resolution from settings
     GLint view[4];
     glGetIntegerv(GL_VIEWPORT, view);
-    int w = view[2];
-    int h = view[3];
     // TODO: implement fullscreen
-    // handle window size correctly
-    // TODO: this doesnt work
-    glViewport(0,0, w, h);
     // use grey background
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     // and tell the object list that our background color
     // does not correspond to any kind of object
     KBX_Object::objectList.nullId = KBX_Color(0.2f, 0.2f, 0.2f).id();
-    glMatrixMode(GL_PROJECTION); // switch to setting the camera perspective
-    glLoadIdentity(); // reset the camera
-    gluPerspective(	10.0,                  // the camera distance
-                    (double)w / (double)h, // the width-to-height ratio
-                    1.0,                   // the near z clipping coordinate
-                    1000.0);                // the far z clipping coordinate
+    setWindow(view[2], view[3]);
     // use double buffering
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     // use smooth shading model
@@ -657,3 +647,23 @@ void initOpenGL(){
     glEnable(GL_DEPTH_TEST);
 }
 
+void setWindow(int width, int height, bool fullscreen){
+    SDL_Surface* screen;
+    if(fullscreen){
+        screen = SDL_SetVideoMode(width, height, 24, SDL_OPENGL | SDL_RESIZABLE | fullscreen);
+    } else {
+        screen = SDL_SetVideoMode(width, height, 24, SDL_OPENGL | SDL_RESIZABLE | fullscreen);
+    }
+    if (screen == NULL) {
+        throw stringprintf("Can't set video mode: %s\n", SDL_GetError()).c_str();
+    }
+    GLfloat aspectRatio = (GLfloat)width / (GLfloat)height;
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(10.0,        // the camera distance
+                   aspectRatio, // the width-to-height ratio
+                   1.0,         // the near z clipping coordinate
+                   1000.0);     // the far z clipping coordinate
+}
+  

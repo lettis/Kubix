@@ -24,6 +24,7 @@
 
 void initOpenGL();
 void initSDL();
+void setWindow(int width, int height, bool fullscreen = false);
 
 class KBX_Vec;
 class KBX_Color;

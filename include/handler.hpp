@@ -42,6 +42,7 @@ public:
 /// handler for motion events
 class KBX_MotionEventHandler : public KBX_EventHandler{
     bool active;
+    bool fullscreen;
     float zoom;
     float rotateHorizontal;
     float rotateVertical;

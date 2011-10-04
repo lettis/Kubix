@@ -56,7 +56,9 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
     // this is neccessary to provide fast responses 
     // and intuitive behaviour at the same time
     // see there for details
-    if (event->type == SDL_KEYDOWN){
+    if(event->type == SDL_VIDEORESIZE){
+        setWindow(event->resize.w, event->resize.h);
+    } else if (event->type == SDL_KEYDOWN){
         this->active = true;
         switch(event->key.keysym.sym){
             case SDLK_a:
@@ -84,27 +86,31 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
     } else if (event->type == SDL_KEYUP){
         this->active = false;
         switch(event->key.keysym.sym){
-            case SDLK_a:
-                this->rotateHorizontal = 0;
-                break;
-            case SDLK_d:
-                this->rotateHorizontal = 0;
-                break;
-            case SDLK_w:
-                this->rotateVertical = 0;
-                break;
-            case SDLK_s:
-                this->rotateVertical = 0;
-                break;
-            case SDLK_q:
-                this->zoom = 1;
-                break;
-            case SDLK_e:
-                this->zoom = 1;
-                break;
-            default:
-                // do nothing
-                break;
+        case SDLK_a:
+            this->rotateHorizontal = 0;
+            break;
+        case SDLK_d:
+            this->rotateHorizontal = 0;
+            break;
+        case SDLK_w:
+            this->rotateVertical = 0;
+            break;
+        case SDLK_s:
+            this->rotateVertical = 0;
+            break;
+        case SDLK_q:
+            this->zoom = 1;
+            break;
+        case SDLK_e:
+            this->zoom = 1;
+            break;
+        case SDLK_F11:
+            this->fullscreen = !this->fullscreen;
+            setWindow(800, 600, this->fullscreen);
+            break;
+        default:
+            // do nothing
+            break;
         }
     } else if (event->type == SDL_MOUSEBUTTONDOWN){
         switch (event->button.button){
