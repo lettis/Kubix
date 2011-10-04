@@ -27,6 +27,9 @@
 class TextureHandler;
 class KBX_ObjectHandler;
 
+int sgn(float f);
+int sgn(int i);
+
 void checkGLError();
 std::string stringprintf(std::string str, ...);
 

@@ -74,6 +74,7 @@ class KBX_Camera{
     KBX_Vec target;
     KBX_Vec position;
 public:
+    KBX_Vec getOrientation();
     static const size_t HORIZONTAL=1;
     static const size_t VERTICAL  =2;
     KBX_Camera();
@@ -215,6 +216,7 @@ class KBX_Scene : public KBX_Object{
     KBX_Camera cam;
     void _render(bool picking = false);
 public:
+    KBX_Vec getOrientation();
     void add(KBX_Object* obj);
     void rotate(float angle, size_t direction);
     void zoom(float factor);

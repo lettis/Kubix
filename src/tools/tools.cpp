@@ -29,6 +29,19 @@
 #include "SDL_opengl.h"
 #include "SDL_image.h"
 
+int sgn(float f){
+    if( f < 0 ){
+        return -1;
+    }
+    return 1;
+}
+int sgn(int i){
+    if( i < 0 ){
+        return -1;
+    }
+    return 1;
+}
+
 /// write OpenGL error codes to stderr
 void checkGLError() {
     GLuint err = glGetError();

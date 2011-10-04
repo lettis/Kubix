@@ -41,15 +41,26 @@ public:
 
 /// handler for motion events
 class KBX_MotionEventHandler : public KBX_EventHandler{
-    bool active;
+    bool resize;
+    bool keydown;
     bool fullscreen;
     float zoom;
     float rotateHorizontal;
     float rotateVertical;
+    float width;
+    float height;
     bool cameraDrag;
+    float clickPosX;
+    float clickPosY;
+
 public:
     KBX_MotionEventHandler(KBX_Scene* scene) :KBX_EventHandler(scene) { 
-        this->active = false;
+        GLint viewport[4];
+        glGetIntegerv(GL_VIEWPORT, viewport);
+        this->width = viewport[2];
+        this->height = viewport[3];
+        this->resize = false;
+        this->keydown = false;
         this->zoom = 1;
         this->rotateHorizontal = 0;
         this->rotateVertical = 0;

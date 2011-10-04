@@ -20,6 +20,8 @@
 #include "handler.hpp"
 #include "gui.hpp"
 
+#include <iostream>
+
 /// constructor for event handling classes
 /**
     \param scene pointer to the scene
@@ -50,16 +52,19 @@ int KBX_ExitEventHandler::handle(SDL_Event* event){
     \returns 1 if event has been handled, else 0
 */
 int KBX_MotionEventHandler::handle(SDL_Event* event){
-    float angle=5;
+    float angle;
     // note: the actual camera manipulations are performed in the 
     // KBX_MotionEventHandler::proceed() function
     // this is neccessary to provide fast responses 
     // and intuitive behaviour at the same time
     // see there for details
     if(event->type == SDL_VIDEORESIZE){
-        setWindow(event->resize.w, event->resize.h);
+        this->width = event->resize.w;
+        this->height = event->resize.h;
+        this->resize = true;
     } else if (event->type == SDL_KEYDOWN){
-        this->active = true;
+        angle = 5.0;
+        this->keydown = true;
         switch(event->key.keysym.sym){
             case SDLK_a:
                 this->rotateHorizontal = angle;
@@ -84,7 +89,7 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
                 break;
         }
     } else if (event->type == SDL_KEYUP){
-        this->active = false;
+        this->keydown = false;
         switch(event->key.keysym.sym){
         case SDLK_a:
             this->rotateHorizontal = 0;
@@ -113,6 +118,7 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
             break;
         }
     } else if (event->type == SDL_MOUSEBUTTONDOWN){
+        angle = 0.3;
         switch (event->button.button){
             case SDL_BUTTON_WHEELUP:
                 this->scene->zoom( 0.95 );
@@ -122,6 +128,17 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
                 break;
             case SDL_BUTTON_LEFT: 
                 this->cameraDrag = true;
+                this->clickPosX = event->button.x;
+                this->clickPosY = event->button.y;
+                // find out whether the user clicked the "upper"/"lower" or "left/right" part of the screen
+                // that is, if the user wanted to grab the "front/back" or "left/right" part of the board
+                // in order to find the rotation direction
+                angle *= sgn(this->scene->getOrientation().y);
+                if(this->clickPosY > this->height/2){
+                    angle *= -1;
+                }
+                this->rotateHorizontal = angle;
+                this->rotateVertical = -angle;
                 break;
             default: 
                 break;
@@ -130,22 +147,15 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
         switch (event->button.button){
         case SDL_BUTTON_LEFT: 
             this->cameraDrag = false;
+            this->rotateHorizontal = 0;
+            this->rotateVertical = 0;
         default: 
             break;
         }
     } else if (this->cameraDrag && (event->type == SDL_MOUSEMOTION)){
-        float anglePerPixel = 0.5;
-        // get resolution from settings
-        GLint viewport[4];
-        glGetIntegerv(GL_VIEWPORT, viewport);
-        // find out whether the user clicked the "upper"/"lower" or "left/right" part of the screen
-        // that is, if the user wanted to grab the "front/back" or "left/right" part of the board
-        // in order to find the rotation direction
-        float directionVertical = (event->motion.x < viewport[2]/2) ? 1 : -1;
-        float directionHorizontal = (event->motion.y < viewport[3]/2) ? 1 : -1;
         // actually perform the rotation
-        this->scene->rotate(anglePerPixel*event->motion.xrel*directionHorizontal, KBX_Camera::HORIZONTAL);
-        this->scene->rotate(anglePerPixel*event->motion.yrel*directionVertical, KBX_Camera::VERTICAL);
+        this->scene->rotate(event->motion.xrel*this->rotateHorizontal, KBX_Camera::HORIZONTAL);
+        this->scene->rotate(event->motion.yrel*this->rotateVertical, KBX_Camera::VERTICAL);
     }
     return 0;
 }
@@ -159,7 +169,12 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
    until the user releases the key!
  */
 void KBX_MotionEventHandler::proceed(){
-    if(this->active){
+    if(this->resize){
+        setWindow(this->width, this->height);
+        glFlush();
+        this->resize = false;
+    }
+    if(this->keydown){
         this->scene->zoom( this->zoom );
         this->scene->rotate( this->rotateHorizontal, KBX_Camera::HORIZONTAL);
         this->scene->rotate( this->rotateVertical, KBX_Camera::VERTICAL);

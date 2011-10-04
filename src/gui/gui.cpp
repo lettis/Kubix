@@ -191,6 +191,11 @@ void KBX_Camera::updateView(){
                0,1,0
     );
 }
+/// get orientation of camera
+KBX_Vec KBX_Camera::getOrientation(){
+  return this->position.sub( this->target );
+}
+
 /// set new target
 /**
     \param target the target to be set (i.e. the point where to look at)
@@ -603,6 +608,12 @@ void KBX_Scene::add(KBX_Object* obj){
 void KBX_Scene::rotate(float angle, size_t direction){
     this->cam.rotate( angle, direction );
 }
+
+/// obtain camera orientation relative to center of scene
+KBX_Vec KBX_Scene::getOrientation(){
+  return this->cam.getOrientation();
+}
+
 /// zoom the scene in/out
 /**
     \param factor the zoom factor
