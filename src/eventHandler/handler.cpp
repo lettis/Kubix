@@ -111,7 +111,10 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
             break;
         case SDLK_F11:
             this->fullscreen = !this->fullscreen;
-            setWindow(800, 600, this->fullscreen);
+            SDL_Quit();
+            initSDL(this->width, this->height, this->fullscreen);
+            initOpenGL(this->width, this->height);
+            loadTextures();
             break;
         default:
             // do nothing
@@ -152,10 +155,23 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
         default: 
             break;
         }
-    } else if (this->cameraDrag && (event->type == SDL_MOUSEMOTION)){
-        // actually perform the rotation
-        this->scene->rotate(event->motion.xrel*this->rotateHorizontal, KBX_Camera::HORIZONTAL);
-        this->scene->rotate(event->motion.yrel*this->rotateVertical, KBX_Camera::VERTICAL);
+    } else if (event->type == SDL_MOUSEMOTION){
+        int border = 1;
+        if(event->motion.x < border || event->motion.x > this->width - border-1 || event->motion.y < border || event->motion.y > this->height - border-1){
+            SDL_WM_GrabInput( SDL_GRAB_OFF );
+            //            setSDLWindow(this->width, this->height, false);
+        }
+        if(this->cameraDrag){
+            // actually perform the rotation
+            this->scene->rotate(event->motion.xrel*this->rotateHorizontal, KBX_Camera::HORIZONTAL);
+            this->scene->rotate(event->motion.yrel*this->rotateVertical, KBX_Camera::VERTICAL);
+        }
+    } else if (event->type == SDL_VIDEOEXPOSE ){
+        //std::cout << "videoexpose event" << std::endl;
+    } else if (event->type == SDL_SYSWMEVENT ){
+        //std::cout << "sys-wm event" << std::endl;
+    } else if (event->type == SDL_ACTIVEEVENT ){
+        if(event->active.gain == 1) SDL_WM_GrabInput( SDL_GRAB_ON );
     }
     return 0;
 }
@@ -170,8 +186,8 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
  */
 void KBX_MotionEventHandler::proceed(){
     if(this->resize){
-        setWindow(this->width, this->height);
-        glFlush();
+        setSDLWindow(this->width, this->height);
+        setGLWindow(this->width, this->height);
         this->resize = false;
     }
     if(this->keydown){

@@ -108,62 +108,56 @@ void setupBoard(KBX_Scene* scene){
     scene->add( board );
 }
 
-
 int main(){
-    // initialize SDL
-    initSDL();
-    // initialize OpenGL
-    initOpenGL();
-    // declare filename-key combinations for die faces
-    std::map<size_t, std::string> dieFaces;
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_K_W,  "./res/sidek.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_1_W,  "./res/side1.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_2_W,  "./res/side2.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_3_W,  "./res/side3.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_4_W,  "./res/side4.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_5_W,  "./res/side5.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_6_W,  "./res/side6.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_K_B, "./res/sidekb.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_1_B, "./res/side1b.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_2_B, "./res/side2b.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_3_B, "./res/side3b.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_4_B, "./res/side4b.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_5_B, "./res/side5b.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_6_B, "./res/side6b.png")  );
+
+  SDL_KeyboardEvent f11;
+  f11.type = SDL_KEYDOWN;
+  f11.which = 0;
+  f11.state = SDL_PRESSED;
+  f11.keysym.sym = SDLK_F11;
+  SDL_PushEvent((SDL_Event*)&f11); // Send the F11 key press
+  f11.type = SDL_KEYUP;
+  f11.state = SDL_RELEASED;
+  SDL_PushEvent((SDL_Event*)&f11); // Send the F11 key release 
+  
 
     try{
-        // initialize (load) die face textures
-        KBX_Die::textures.load(dieFaces);
-        // initialize scene
-        KBX_Scene* scene = new KBX_Scene();
-        // setup the board with all dice
-        setupBoard(scene);
-        // initialize event handlers
-        KBX_ExitEventHandler exitEvents(scene);
-        KBX_MotionEventHandler motionEvents(scene);
-        KBX_SelectionEventHandler selectionEvents(scene);
-        // enter event loop
-        SDL_Event* event = new SDL_Event();
-        bool DONE=false;
-        while ( !DONE ){
-            // get next event
-            while ( SDL_PollEvent( event ) ){
-                // handle possible exit events
-                if (exitEvents.handle( event ) != 0){
-                    DONE=true;
-                    break;
-                }
-                // handle possible selection events
-                if(!selectionEvents.handle( event )){
-                    // handle possible motion events
-                    motionEvents.handle( event );
-                }
-            }
-            motionEvents.proceed();
-            // redraw scene
-            scene->display(false);
-            SDL_GL_SwapBuffers();
-        }
+      // initialize SDL
+      initSDL(800, 600, false);
+      // initialize OpenGL
+      initOpenGL(800, 600);
+      // load the textures
+      loadTextures();
+      // initialize scene
+      KBX_Scene* scene = new KBX_Scene();
+      // setup the board with all dice
+      setupBoard(scene);
+      // initialize event handlers
+      KBX_ExitEventHandler exitEvents(scene);
+      KBX_MotionEventHandler motionEvents(scene);
+      KBX_SelectionEventHandler selectionEvents(scene);
+      // enter event loop
+      SDL_Event* event = new SDL_Event();
+      bool DONE=false;
+      while ( !DONE ){
+	// get next event
+	while ( SDL_PollEvent( event ) ){
+	  // handle possible exit events
+	  if (exitEvents.handle( event ) != 0){
+	    DONE=true;
+	    break;
+	  }
+	  // handle possible selection events
+	  if(!selectionEvents.handle( event )){
+	    // handle possible motion events
+	    motionEvents.handle( event );
+	  }
+	}
+	motionEvents.proceed();
+	// redraw scene
+	scene->display(false);
+	SDL_GL_SwapBuffers();
+      }
     }catch(const char* errMsg){
         std::cout << "error: " << errMsg << std::endl;
     }

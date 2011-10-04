@@ -22,9 +22,10 @@
 
 #include "SDL_opengl.h"
 
-void initOpenGL();
-void initSDL();
-void setWindow(int width, int height, bool fullscreen = false);
+void initOpenGL(int width, int height);
+void initSDL(int width, int height, bool fullscreen);
+void setSDLWindow(int width, int height, bool resizeable = true);
+void setGLWindow(int width, int height);
 
 class KBX_Vec;
 class KBX_Color;

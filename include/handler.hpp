@@ -57,6 +57,7 @@ public:
     KBX_MotionEventHandler(KBX_Scene* scene) :KBX_EventHandler(scene) { 
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
+        this->fullscreen = false;
         this->width = viewport[2];
         this->height = viewport[3];
         this->resize = false;

@@ -623,51 +623,67 @@ void KBX_Scene::zoom(float factor){
 }
 
 /// initialize sdl screen
-void initSDL(){
-    SDL_Surface *screen;
-    if (SDL_Init(SDL_INIT_VIDEO) == -1) {
-        throw stringprintf("Can't init SDL:  %s\n", SDL_GetError()).c_str();
+void initSDL(int width, int height, bool fullscreen){
+    // Color depth in bits of our window.
+    int bpp = 0;
+    // Flags we will pass into SDL_SetVideoMode
+    int flags = 0;
+    //initialize SDL's video subsystem.
+    if( SDL_Init( SDL_INIT_VIDEO ) < 0 ) {
+        throw stringprintf("Video initialization failed: %s\n",
+                           SDL_GetError( ) ).c_str();
+    }
+    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+    SDL_WM_GrabInput( SDL_GRAB_ON );
+    SDL_EventState( SDL_VIDEOEXPOSE, SDL_DISABLE );
+    SDL_EventState( SDL_SYSWMEVENT, SDL_DISABLE );
+
+    flags = SDL_OPENGL;
+    // fullscreen and resizable exclude each other!
+    if (fullscreen){
+        flags |= SDL_FULLSCREEN;
+    } else {
+        flags |= SDL_RESIZABLE;
+    }
+    // set the video mode
+    if( SDL_SetVideoMode( width, height, bpp, flags ) == 0 ) {
+        throw stringprintf("Video mode set failed: %s\n",
+                            SDL_GetError( ) ).c_str();
     }
     SDL_WM_SetCaption("kubix", NULL);
     SDL_Surface* icon = IMG_Load("./res/kubix.png");
     SDL_WM_SetIcon(icon, NULL);
     atexit(SDL_Quit);
-    screen = SDL_SetVideoMode(800, 600, 24, SDL_OPENGL | SDL_RESIZABLE);
-    if (screen == NULL) {
-        throw stringprintf("Can't set video mode: %s\n", SDL_GetError()).c_str();
-    }
 }
 
 /// initialize opengl
-void initOpenGL(){
-    // get resolution from settings
-    GLint view[4];
-    glGetIntegerv(GL_VIEWPORT, view);
-    // TODO: implement fullscreen
-    // use grey background
+void initOpenGL(int width, int height){
+    /* Our shading model--Gouraud (smooth). */
+    glShadeModel( GL_SMOOTH );
+     // use grey background
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     // and tell the object list that our background color
     // does not correspond to any kind of object
     KBX_Object::objectList.nullId = KBX_Color(0.2f, 0.2f, 0.2f).id();
-    setWindow(view[2], view[3]);
-    // use double buffering
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    setGLWindow(width, height);
     // use smooth shading model
     glShadeModel(GL_SMOOTH);
     // draw objects respecting depth
     glEnable(GL_DEPTH_TEST);
 }
 
-void setWindow(int width, int height, bool fullscreen){
-    SDL_Surface* screen;
-    if(fullscreen){
-        screen = SDL_SetVideoMode(width, height, 24, SDL_OPENGL | SDL_RESIZABLE | fullscreen);
-    } else {
-        screen = SDL_SetVideoMode(width, height, 24, SDL_OPENGL | SDL_RESIZABLE | fullscreen);
+
+void setSDLWindow(int width, int height, bool resizable){
+    int flags = 0;
+    flags |= SDL_OPENGL;
+    if(resizable) flags |= SDL_RESIZABLE;
+    SDL_Surface* screen = SDL_SetVideoMode(width, height, 0, flags);
+    if(!screen){
+      throw stringprintf("Unable to open SDL Window!").c_str();
     }
-    if (screen == NULL) {
-        throw stringprintf("Can't set video mode: %s\n", SDL_GetError()).c_str();
-    }
+}
+
+void setGLWindow(int width, int height){
     GLfloat aspectRatio = (GLfloat)width / (GLfloat)height;
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
@@ -675,6 +691,5 @@ void setWindow(int width, int height, bool fullscreen){
     gluPerspective(10.0,        // the camera distance
                    aspectRatio, // the width-to-height ratio
                    1.0,         // the near z clipping coordinate
-                   1000.0);     // the far z clipping coordinate
-}
-  
+                   1024.0);     // the far z clipping coordinate
+}  

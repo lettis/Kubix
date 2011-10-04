@@ -27,6 +27,8 @@
 class TextureHandler;
 class KBX_ObjectHandler;
 
+void loadTextures();
+
 int sgn(float f);
 int sgn(int i);
 
