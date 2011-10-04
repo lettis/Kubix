@@ -20,30 +20,27 @@
 #include <string.h>
 #include <math.h>
 
-#include "engine.h"
+#include "engine.hpp"
 
-
-/* ----- tools ------------------ */
+/// return sign of number (-1, 0 or 1)
+/**
+    \returns  1, if sign of x is positive 
+    \returns -1, if sign of x is negative
+    \returns  0, if x is zero
+*/
 int sign(int x){
-/* returns */
-/*	 1, if sign of x is positive */
-/*	-1, if sign of x is negative */
-/*	 0, if x is zero */
-	if	( x==0 )	return  0;
-	else if ( x >0 )	return  1;
-	else			return -1;
+	if      ( x==0 )    return  0;
+	else if ( x >0 )    return  1;
+	else                return -1;
 }
-
+/// check if given string is a number
 int isNumber( char* str ){
-	if ( strspn( str, "1234567890 " ) == strlen( str ) )	return TRUE;
-	else							return FALSE;
+    if ( strspn( str, "1234567890 " ) == strlen(str) )    return TRUE;
+    else                                                  return FALSE;
 }
-/* ----- end tools -------------- */
-
 
 /* list of possible dice-states */
 /* TODO: write more about the idea behind the dice states */
-/* TODO: define dice states in header file */
 int state[26][5];
 
 /* initialize dice state list */
@@ -87,21 +84,16 @@ void initializeDiceStates(){
 	initState(state[25], 0,25,25,25,25 ); /* DESTROY!!! */
 }
 
-
-
-
-
 /* list of possible (relative) moves for a die */
 RelMove* possibleMoves[7];
 int numberOfPosMoves[7];
 
-/* initialize given relative move */
-int initMove (RelMove* move, int x, int y, int firstX){
-	(*move).x = x;
-	(*move).y = y;
-	(*move).firstX = firstX;
-	return 0;
-}
+
+KBX_RelativeMove::KBX_RelativeMove(int x, int y, int FIRST_X) :
+     x(x)
+    ,y(y)
+    ,FIRST_X(FIRST_X)
+{}
 
 /* initialize array "possibleMoves" */
 void initializeMoveArray(){
@@ -156,81 +148,65 @@ void initializeMoveArray(){
 	}
 }
 
-
-
-
-
-
-/* move die over board */
-int moveDice(Move* move, Board* board ){
-	int i=0;
-
-	int xVal = (*(*move).relMove).x, dirX;
-	int yVal = (*(*move).relMove).y, dirY;
+/// move die over board
+void makeMove(KBX_Move& move){
+	int xVal = move.relMove.x, dirX;
+	int yVal = move.relMove.y, dirY;
 	int first, sec, dirFirst, dirSec;
 	int keyOldDice=-1;
+	// get current state of this die
+	int stateNow = this->dice[ move.die ].state;
 
-	/* get current state of this die */
-	int stateNow = (*board).dices[ (*move).dice ].state;
-
-	if ((*(*move).relMove).x < 0){
+	if (move.relMove.x < 0){
 		xVal = (-1)*xVal;
 		dirX = WEST;
 	} else{
 		dirX = EAST;
 	}
 
-	if ((*(*move).relMove).y < 0){
+	if (move.relMove.y < 0){
 		yVal = (-1)*yVal;
 		dirY = SOUTH;
 	} else{
 		dirY = NORTH;
 	}
 
-	if ((*(*move).relMove).firstX){
+	if (move.relMove.FIRST_X){
 		first=xVal; dirFirst=dirX;
 		sec  =yVal; dirSec  =dirY;
 	} else{
 		first = yVal; dirFirst=dirY;
 		sec   = xVal; dirSec  =dirX;
 	}
-
-	/* traverse through dice states */
-	for ( i=first; i>0; i--){
-		/* rotate in first direction */
+	// traverse through dice states
+	for ( size_t i=first; i>0; i--){
+		// rotate in first direction
 		stateNow = state[ stateNow ][ dirFirst ];
 	}
-
-	for ( i=sec; i>0; i--){
-		/* rotate in second direction */
+	for ( size_t i=sec; i>0; i--){
+		// rotate in second direction
 		stateNow = state[ stateNow ][ dirSec ];
 	}
-
-	/* write new current state to die */
-	(*board).dices[ (*move).dice ].state = stateNow;
-
-	/* delete dice from current position on board */
-	(*board).fields[ (*board).dices[ (*move).dice ].x + 9*(*board).dices[ (*move).dice ].y ] = -1;
-
-	/* write new position to die */
-	(*board).dices[ (*move).dice ].x += (*(*move).relMove).x;
-	(*board).dices[ (*move).dice ].y += (*(*move).relMove).y;
-
-	/* set new position on board */
-	if ((*board).fields[ (*board).dices[ (*move).dice ].x + 9*(*board).dices[ (*move).dice ].y ]  != -1 ){
-		/* delete dice on this position before moving new dice to this position
-		   ( by setting its coordinates to -1 */
-		keyOldDice = (*board).fields[ (*board).dices[ (*move).dice ].x + 9*(*board).dices[ (*move).dice ].y ];
-		(*board).dices[ keyOldDice ].state = DEAD;
+	// write new current state to die
+	this->dices[ move->dice ].state = stateNow;
+	// delete dice from current position on board
+	this->fields[ this->dices[ (*move).dice ].x + 9*this->dices[ (*move).dice ].y ] = -1;
+	// write new position to die
+	this->dices[ move->dice ].x += (*move->relMove).x;
+	this->dices[ move->dice ].y += (*move->relMove).y;
+	// set new position on board
+	if ((*board).fields[ this->dices[ move->dice ].x + 9*this->dices[ move->dice ].y ]  != -1 ){
+		// delete dice on this position before moving new dice to this position
+		// ( by setting its coordinates to -1
+		keyOldDice = this->fields[ this->dices[ move->dice ].x + 9*this->dices[ move->dice ].y ];
+		this->dices[ keyOldDice ].state = DEAD;
 	}
-	/* move the new dice to given position */
-	(*board).fields[ (*board).dices[ (*move).dice ].x + 9*(*board).dices[ (*move).dice ].y ] = (*move).dice;
-
-	return 0;
+	// move the new dice to given position
+	this->fields[ this->dices[ move->dice ].x + 9*this->dices[ move->dice ].y ] = move->dice;
 }
 
 
-int moveIsValid(Move* move, Board* board ){
+int moveIsValid(KBX_Move& move ){
 	int i,end;
 	/* *d is a pointer to the dice to be moved */
 	Dice* d = &(*board).dices[(*move).dice];

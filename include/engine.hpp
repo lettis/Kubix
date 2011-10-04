@@ -16,30 +16,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define __engine_h
-
+#ifndef ENGINE__HPP
+#define ENGINE__HPP
 
 /* error codes / commands */
-#define OK				0
-#define GAME_OVER			1
-#define EXIT				1
-#define EXIT_ARGUMENT_PARSING_ERROR	2
-#define EXIT_UNKNOWN_COMMAND		3
-#define PRINT_HELP			4
-#define PRINT_BOARD			5
-#define PRINT_DICE_STATE		6
-#define MOVE				7
-#define PRINT_CONFIG			8
+#define OK                          0
+#define GAME_OVER                   1
+#define EXIT                        1
+#define EXIT_ARGUMENT_PARSING_ERROR 2
+#define EXIT_UNKNOWN_COMMAND        3
+#define PRINT_HELP                  4
+#define PRINT_BOARD                 5
+#define PRINT_DICE_STATE            6
+#define MOVE                        7
+#define PRINT_CONFIG                8
 
 /* color handling */
-#define NONE   0
-#define WHITE  1
-#define BLACK -1
+#define NONE                0
+#define WHITE               1
+#define BLACK              -1
 #define SWITCH_COLOR(a)  -1*a
-#define KING_WHITE  4
-#define KING_BLACK 13
-#define KING_FIELD_WHITE  4
-#define KING_FIELD_BLACK 76
+#define KING_WHITE          4
+#define KING_BLACK         13
+#define KING_FIELD_WHITE    4
+#define KING_FIELD_BLACK   76
 
 /* directions */
 #define NORTH 0
@@ -61,59 +61,50 @@
 
 
 /* playing strategy of cpu */
-typedef struct {
+class KBX_Strategy{
 	int coeffDiceRatio;
-} Strategy;
+public:
+};
 
 
 /* configuration */
-typedef struct {
+class KBX_Config{
 	int mode;
 	int cpuColor;
 	int cpuLevel;
 	Strategy strategy;
-} Config;
+public:
+};
 
 
-
-typedef struct {
+class KBX_DieState{
 	int state;
 	int x;
 	int y;
 	int color;
-} Dice;
+public:
+};
 
-typedef struct {
-	int	fields[81];
-	Dice	dices[18];
-} Board;
-
-typedef struct {
+class KBX_RelativeMove{
 	int x;
 	int y;
-	int firstX;
-} RelMove;
+	int FIRST_X;
+public:
+    KBX_RelativeMove(int x, int y, bool FIRST_X);
+};
 
-typedef struct {
-	int		dice;
-	RelMove*	relMove;
-} Move;
+class KBX_Move{
+	int                 die;
+	KBX_RelativeMove*   relMove;
+public:
+};
 
-
-
-/* forward declarations */
-int moveDice(Move* move, Board* board );
-int moveIsValid(Move* move, Board* board );
-float evaluateMoves(Board* board, Move* bestMove, Strategy strategy, int level, int color, float alpha, float beta, int firstCall);
-
-
-
-/* includes of sub-modules */
-#ifndef __rating_h
- #include "rating.h"
+class KBX_BoardState{
+	int             fields[81];
+	KBX_DieState    dice[18];
+public:
+    int moveIsValid(KBX_Move& move );
+    int makeMove(KBX_Move& move);
+    float evaluateMoves(KBX_Move& bestMove, KBX_Strategy strategy, int level, int color, float alpha, float beta, int firstCall);
+};
 #endif
-
-#ifndef __terminal_h
- #include "controller.h"
-#endif
-
