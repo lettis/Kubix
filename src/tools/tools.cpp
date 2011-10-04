@@ -27,6 +27,7 @@
 
 #include "SDL.h"
 #include "SDL_opengl.h"
+#include "SDL_image.h"
 
 /// write OpenGL error codes to stderr
 void checkGLError() {
@@ -126,7 +127,7 @@ void TextureHandler::loadTexture(const char* filename, GLuint textureId ){
     SDL_Surface *surface;	
     GLenum textureFormat;
     
-    if ( (surface = SDL_LoadBMP(filename)) ) { 
+    if ( (surface = IMG_Load(filename)) ) { 
         // Check that the image's width is a power of 2
         if ( (surface->w & (surface->w - 1)) != 0 ) {
             throw stringprintf("warning: image width of %s is not a power of 2", filename).c_str();
