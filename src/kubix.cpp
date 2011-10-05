@@ -109,18 +109,6 @@ void setupBoard(KBX_Scene* scene){
 }
 
 int main(){
-
-  SDL_KeyboardEvent f11;
-  f11.type = SDL_KEYDOWN;
-  f11.which = 0;
-  f11.state = SDL_PRESSED;
-  f11.keysym.sym = SDLK_F11;
-  SDL_PushEvent((SDL_Event*)&f11); // Send the F11 key press
-  f11.type = SDL_KEYUP;
-  f11.state = SDL_RELEASED;
-  SDL_PushEvent((SDL_Event*)&f11); // Send the F11 key release 
-  
-
     try{
       // initialize SDL
       initSDL(800, 600, false);
@@ -136,22 +124,27 @@ int main(){
       KBX_ExitEventHandler exitEvents(scene);
       KBX_MotionEventHandler motionEvents(scene);
       KBX_SelectionEventHandler selectionEvents(scene);
+      KBX_ConsoleEventHandler consoleEvents(scene);
       // enter event loop
       SDL_Event* event = new SDL_Event();
       bool DONE=false;
+      bool handeled;
       while ( !DONE ){
 	// get next event
 	while ( SDL_PollEvent( event ) ){
+	    handeled = false;
 	  // handle possible exit events
 	  if (exitEvents.handle( event ) != 0){
 	    DONE=true;
+	    handeled = true;
 	    break;
 	  }
+	  // handle possible console events
+	  if(!handeled) handeled = consoleEvents.handle( event );
 	  // handle possible selection events
-	  if(!selectionEvents.handle( event )){
-	    // handle possible motion events
-	    motionEvents.handle( event );
-	  }
+	  if(!handeled) handeled = selectionEvents.handle( event );
+	  // handle possible motion events
+	  if(!handeled) handeled = motionEvents.handle( event );
 	}
 	motionEvents.proceed();
 	// redraw scene

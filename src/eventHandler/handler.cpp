@@ -160,7 +160,7 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
         if(event->motion.x < border || event->motion.x > this->width - border-1 || event->motion.y < border || event->motion.y > this->height - border-1){
             SDL_WM_GrabInput( SDL_GRAB_OFF );
             //            setSDLWindow(this->width, this->height, false);
-        }
+        } 
         if(this->cameraDrag){
             // actually perform the rotation
             this->scene->rotate(event->motion.xrel*this->rotateHorizontal, KBX_Camera::HORIZONTAL);
@@ -221,7 +221,6 @@ int KBX_SelectionEventHandler::handle(SDL_Event* event){
     return 0;
 }
 
-
 /// get Object at given mouse coordinates
 /**
     \param x horizontal mouse coordinate
@@ -240,4 +239,31 @@ KBX_Object* KBX_SelectionEventHandler::getObject( size_t x, size_t y ){
     size_t id = KBX_Color(pixel[0], pixel[1], pixel[2]).id();
     return KBX_Object::objectList.get(id);
 }
+
+/// handle console events
+/**
+    \param event the given event
+    \returns 1 if event has been handled, else 0
+*/
+int KBX_ConsoleEventHandler::handle(SDL_Event* event){
+    if (event->type == SDL_KEYDOWN){
+        if(!this->active && event->key.keysym.sym == SDLK_RETURN){
+            this->active = !this->active;
+            return 1;
+        } else if(this->active){
+            if(event->key.keysym.sym == SDLK_RETURN){
+                this->scene->setText(input.str());
+                this->input.clear();
+                this->input.str("");
+                this->active = !this->active;
+                return 1;
+            } else if ( (event->key.keysym.unicode < 0x80) && ( event->key.keysym.unicode > 0)){
+                this->input << (char)event->key.keysym.unicode; 
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+    
 

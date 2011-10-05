@@ -18,6 +18,9 @@
 #ifndef HANDLER__HPP
 #define HANDLER__HPP
 
+#include <sstream>
+#include <string>
+
 #include "SDL.h"
 
 #include "gui.hpp"
@@ -78,5 +81,14 @@ public:
     KBX_SelectionEventHandler(KBX_Scene* scene) :KBX_EventHandler(scene) { this->selected = NULL; };
     int handle(SDL_Event* event);
     KBX_Object* getObject( size_t x, size_t y );
+};
+
+/// handler for text/console events
+class KBX_ConsoleEventHandler : public KBX_EventHandler{
+    std::stringstream input;
+    bool active;
+public:
+    KBX_ConsoleEventHandler(KBX_Scene* scene) :KBX_EventHandler(scene) { this->active = false; };
+    int handle(SDL_Event* event);
 };
 #endif
