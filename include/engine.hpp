@@ -15,11 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifndef ENGINE__HPP
 #define ENGINE__HPP
-
-/* error codes / commands */
+// error codes / commands
 #define OK                          0
 #define GAME_OVER                   1
 #define EXIT                        1
@@ -30,81 +28,95 @@
 #define PRINT_DICE_STATE            6
 #define MOVE                        7
 #define PRINT_CONFIG                8
-
-/* color handling */
-#define NONE                0
-#define WHITE               1
-#define BLACK              -1
-#define SWITCH_COLOR(a)  -1*a
-#define KING_WHITE          4
-#define KING_BLACK         13
-#define KING_FIELD_WHITE    4
-#define KING_FIELD_BLACK   76
-
-/* directions */
+// directions for die states
 #define NORTH 0
 #define SOUTH 1
 #define EAST  2
 #define WEST  3
 #define VALUE 4
-
-#define TRUE  1
-#define FALSE 0
-
-/* define state out of game */
+// define state for clear field
+#define CLEAR -1
+// define state out of game
 #define DEAD 25
+#define KING_WHITE          4
+#define KING_BLACK         13
+#define KING_FIELD_WHITE    4
+#define KING_FIELD_BLACK   76
 
-/* game modes */
-#define HUMAN_VS_CPU     1
-#define NETWORK_VS_CPU   2
-#define NETWORK_VS_HUMAN 3
+enum KBX_PlayMode{
+      HUMAN_HUMAN
+    , HUMAN_AI
+    , AI_HUMAN
+};
+
+enum KBX_PlayColor{
+      BLACK = -1
+    , WHITE =  1
+};
 
 
-/* playing strategy of cpu */
+int sign(int x);
+int isNumber( char* str );
+void swap(int& a, int& b);
+
+
+/// defines playing strategy of cpu
 class KBX_Strategy{
-	int coeffDiceRatio;
+    int coeffDiceRatio;
 public:
 };
 
-
-/* configuration */
+/// configuration settings
 class KBX_Config{
-	int mode;
-	int cpuColor;
-	int cpuLevel;
-	Strategy strategy;
 public:
+	const KBX_PlayMode mode;
+	const size_t cpuLevel;
+	const KBX_Strategy strategy;
+    KBX_Config(KBX_PlayMode mode, size_t cpuLevel, KBX_Strategy strategy);
 };
 
-
+/// defines the current state of a die (i.e. position, orientation, value, color, etc.)
 class KBX_DieState{
-	int state;
-	int x;
-	int y;
-	int color;
+    static const size_t _state[26][5];
+	size_t _x;
+	size_t _y;
+	KBX_PlayColor _color;
+	size_t _curState;
 public:
+    KBx_DieState(int x, int y, KBX_PlayColor color, size_t state);
+    void move(size_t direction);
+    void moveNorth();
+    void moveSouth();
+    void moveEast();
+    void moveWest();
+    void kill();
+    size_t getValue();
+    size_t getColor();
 };
 
 class KBX_RelativeMove{
-	int x;
-	int y;
-	int FIRST_X;
 public:
+	const int x;
+	const int y;
+	const bool FIRST_X;
     KBX_RelativeMove(int x, int y, bool FIRST_X);
 };
 
 class KBX_Move{
-	int                 die;
-	KBX_RelativeMove*   relMove;
 public:
+	const size_t dieIndex;
+	const KBX_RelativeMove relMove;
+    KBX_Move(size_t dieIndex, KBX_RelativeMove relMove);
 };
 
-class KBX_BoardState{
-	int             fields[81];
-	KBX_DieState    dice[18];
+class KBX_Game{
+	int             _fields[9][9];
+	KBX_DieState    _dice[18];
+    KBX_Config      _config;
 public:
-    int moveIsValid(KBX_Move& move );
+    KBX_Game(KBX_Config config);
+    int moveIsValid(KBX_Move& move);
     int makeMove(KBX_Move& move);
-    float evaluateMoves(KBX_Move& bestMove, KBX_Strategy strategy, int level, int color, float alpha, float beta, int firstCall);
+    float evaluateMoves(KBX_Move& bestMove, int color, float alpha, float beta, int firstCall);
 };
 #endif
