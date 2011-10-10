@@ -72,13 +72,23 @@ bool KBX_Logger::_loggingEnabled = false;
 void KBX_Logger::enableLogging(){
     KBX_Logger::_loggingEnabled = true;
 }
+/// return local time as string
+std::string KBX_Logger::_getTime(){
+    time_t rawTime;
+    struct tm* timeInfo;
+    // get current time (raw)
+    time(&rawTime);
+    // convert to local time
+    timeInfo = localtime(&rawTime);
+    return std::string( asctime(timeInfo) );
+}
 /// use this method to disable logging
 void KBX_Logger::disableLogging(){
     KBX_Logger::_loggingEnabled = false;
 }
 /// write message to logfile / stdout
 void KBX_Logger::_sendMessage(std::string category, std::string msg){
-    this->_out << this->_getTime() << " " << category << ": " << msg << std::endl;
+    this->_out << this->_getTime() << " " << this->_name << " | " << category << ": " << msg << std::endl;
 }
 /// write info to logfile / stdout
 void KBX_Logger::info(std::string msg){

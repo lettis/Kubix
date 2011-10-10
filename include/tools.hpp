@@ -37,22 +37,22 @@ int sgn(int i);
 void checkGLError();
 std::string stringprintf(std::string str, ...);
 
-/// represents a simple logger class, use it instead of cout-statements!
+/// represents a simple logger class, use it instead of cout/cerr-statements!
 class KBX_Logger{
-    std::ostream _out;
-    std::ostream _err;
-    string       _name;
+    std::string  _name;
+    std::ostream& _out;
+    std::ostream& _err;
     static bool  _loggingEnabled;
-    static string _getTime();
-    void _sendMessage(string category, string msg);
+    static std::string _getTime();
+    void _sendMessage(std::string category, std::string msg);
 public:
-    KBX_Logger(string name);
-    KBX_Logger(string name, std::ostream out, std::ostream err);
+    KBX_Logger(std::string name);
+    KBX_Logger(std::string name, std::ostream out, std::ostream err);
     static void enableLogging();
     static void disableLogging();
-    void info(string msg);
-    void warning(string msg);
-    void error(string msg);
+    void info(std::string msg);
+    void warning(std::string msg);
+    void error(std::string msg);
 };
 
 /// handles the textures for OpenGL
