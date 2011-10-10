@@ -24,16 +24,36 @@
 
 #include "SDL_opengl.h"
 
+#include "gui.hpp"
+
+
 class TextureHandler;
 class KBX_ObjectHandler;
 
+template<class NumType> int sgn(NumType n);
 int sgn(float f);
 int sgn(int i);
 
 void checkGLError();
 std::string stringprintf(std::string str, ...);
 
-#include "gui.hpp"
+/// represents a simple logger class, use it instead of cout-statements!
+class KBX_Logger{
+    std::ostream _out;
+    std::ostream _err;
+    string       _name;
+    static bool  _loggingEnabled;
+    static string _getTime();
+    void _sendMessage(string category, string msg);
+public:
+    KBX_Logger(string name);
+    KBX_Logger(string name, std::ostream out, std::ostream err);
+    static void enableLogging();
+    static void disableLogging();
+    void info(string msg);
+    void warning(string msg);
+    void error(string msg);
+};
 
 /// handles the textures for OpenGL
 class TextureHandler{
@@ -61,6 +81,4 @@ public:
     void remove(KBX_Object* obj);
     void remove(size_t id);
 };
-
-
 #endif

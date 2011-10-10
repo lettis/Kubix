@@ -29,18 +29,70 @@
 #include "SDL_opengl.h"
 #include "SDL_image.h"
 
-int sgn(float f){
-    if( f < 0 ){
+template<class NumType>
+int sgn(NumType n){
+    if( n < 0 ){
         return -1;
     }
     return 1;
+}
+
+int sgn(float f){
+    return sgn<float> (f);
 }
 int sgn(int i){
-    if( i < 0 ){
-        return -1;
-    }
-    return 1;
+    return sgn<int> (i);
 }
+
+/// initialize logger and give it a name
+/**
+    \param name logger will print this name in the logs
+    errors will be printed to stderr,
+    warnings and infos will be printed to stdout.
+*/
+KBX_Logger::KBX_Logger(std::string name) :
+     _name(name)
+    ,_out(std::cout)
+    ,_err(std::cerr)
+{}
+/// initialize logger and give it a name
+/**
+    \param name logger will print this name in the logs
+    \param out  alternative outstream (maybe a file), infos and warnings go here
+    \param err  alternative error stream (maybe a file), errors go there
+*/
+KBX_Logger::KBX_Logger(std::string name, std::ostream out, std::ostream err) :
+     _name(name)
+    ,_out(out) 
+    ,_err(err) 
+{}
+// logging will be disabled per default
+bool KBX_Logger::_loggingEnabled = false;
+/// use this method to enable logging
+void KBX_Logger::enableLogging(){
+    KBX_Logger::_loggingEnabled = true;
+}
+/// use this method to disable logging
+void KBX_Logger::disableLogging(){
+    KBX_Logger::_loggingEnabled = false;
+}
+/// write message to logfile / stdout
+void KBX_Logger::_sendMessage(std::string category, std::string msg){
+    this->_out << this->_getTime() << " " << category << ": " << msg << std::endl;
+}
+/// write info to logfile / stdout
+void KBX_Logger::info(std::string msg){
+    this->_sendMessage("INFO", msg);
+}
+/// write warning to logfile / stdout
+void KBX_Logger::warning(std::string msg){
+    this->_sendMessage("WARNING", msg);
+}
+/// write error to logfile / stdout
+void KBX_Logger::error(std::string msg){
+    this->_sendMessage("ERROR", msg);
+}
+
 
 /// write OpenGL error codes to stderr
 void checkGLError() {
