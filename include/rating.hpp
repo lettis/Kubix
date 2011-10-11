@@ -15,24 +15,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef RATING__HPP
+#define RATING__HPP
 
-#define __rating_h
+#include "engine.hpp"
 
-/* rate the board for a specified side with all rating functions and
-   value the single ratings based on strategy */
-float rateBoard(Board* board, int color, Strategy strategy);
+                                /* rating functions */
 
-
-/*
-//// rating functions ////
-
-// numberOfDices: //
-//
-// represents the ratio of the number of dices on the board
-// 	values:
-//		100%:	only own dices on board
-//		  0%:   only opponent's dices on board
-*/
-int rateDiceRatio(Board* board, int color);
-
-
+#endif

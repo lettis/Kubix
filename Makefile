@@ -3,7 +3,7 @@ include Makefile.def
 
 INCLUDE = -Iinclude
 
-#ENGINE = src/engine
+ENGINE = src/engine
 GUI = src/gui
 HANDLER = src/eventHandler
 TOOLS = src/tools

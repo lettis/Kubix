@@ -17,31 +17,20 @@
 */
 #ifndef ENGINE__HPP
 #define ENGINE__HPP
-// error codes / commands
-#define OK                          0
-#define GAME_OVER                   1
-#define EXIT                        1
-#define EXIT_ARGUMENT_PARSING_ERROR 2
-#define EXIT_UNKNOWN_COMMAND        3
-#define PRINT_HELP                  4
-#define PRINT_BOARD                 5
-#define PRINT_DICE_STATE            6
-#define MOVE                        7
-#define PRINT_CONFIG                8
+
 // directions for die states
-#define NORTH 0
-#define SOUTH 1
-#define EAST  2
-#define WEST  3
-#define VALUE 4
-// define state for clear field
+#define VALUE 0
+#define NORTH 1
+#define SOUTH 2
+#define EAST  3
+#define WEST  4
+// define state for clear field (i.e., field without a die)
 #define CLEAR -1
-// define state out of game
-#define DEAD 25
-#define KING_WHITE          4
-#define KING_BLACK         13
-#define KING_FIELD_WHITE    4
-#define KING_FIELD_BLACK   76
+// define alias for state 'die got killed'
+#define DEAD        25
+// define aliases for die indices of kings
+#define KING_WHITE   4
+#define KING_BLACK  13
 
 enum KBX_PlayMode{
       HUMAN_HUMAN
@@ -52,18 +41,20 @@ enum KBX_PlayMode{
 enum KBX_PlayColor{
       BLACK = -1
     , WHITE =  1
+    , NONE_OF_BOTH = 0
 };
 
-
+/* helper functions */
 int sign(int x);
 int isNumber( char* str );
 void swap(int& a, int& b);
-
+KBX_PlayColor inverse(KBX_PlayColor color);
+/*                  */
 
 /// defines playing strategy of cpu
 class KBX_Strategy{
-    int coeffDiceRatio;
 public:
+    const int coeffDiceRatio;
 };
 
 /// configuration settings
@@ -75,48 +66,64 @@ public:
     KBX_Config(KBX_PlayMode mode, size_t cpuLevel, KBX_Strategy strategy);
 };
 
+class KBX_Move{
+public:
+    int dx;
+    int dy;
+    bool FIRST_X;
+    KBX_Move();
+    KBX_Move(int dx, int dy, bool FIRST_X);
+    KBX_Move invert();
+};
+
 /// defines the current state of a die (i.e. position, orientation, value, color, etc.)
 class KBX_DieState{
     static const size_t _state[26][5];
-	size_t _x;
-	size_t _y;
+	int _x;
+	int _y;
 	KBX_PlayColor _color;
+    size_t _formerState;
 	size_t _curState;
 public:
-    KBx_DieState(int x, int y, KBX_PlayColor color, size_t state);
+    static const size_t nPossibleMoves[7];
+    // list of possible (relative) moves for a die
+    static const std::vector< std::vector<KBX_Move> > possibleMoves;
+    static const std::vector< std::vector<KBX_Move> > initPossibleMoves();
+
+    KBX_DieState();
+    KBX_DieState(int x, int y, KBX_PlayColor color, size_t state);
+
     void move(size_t direction);
-    void moveNorth();
-    void moveSouth();
-    void moveEast();
-    void moveWest();
     void kill();
+    void revive();
+    bool gotKilled();
     size_t getValue();
     size_t getColor();
+    int x();
+    int y();
 };
 
-class KBX_RelativeMove{
+class KBX_Evaluation{
 public:
-	const int x;
-	const int y;
-	const bool FIRST_X;
-    KBX_RelativeMove(int x, int y, bool FIRST_X);
-};
-
-class KBX_Move{
-public:
-	const size_t dieIndex;
-	const KBX_RelativeMove relMove;
-    KBX_Move(size_t dieIndex, KBX_RelativeMove relMove);
+    float rating;
+    int dieIndex;
+    KBX_Move move;
+    KBX_Evaluation(float rating);
+    KBX_Evaluation(float rating, int dieIndex, KBX_Move move);
 };
 
 class KBX_Game{
-	int             _fields[9][9];
-	KBX_DieState    _dice[18];
-    KBX_Config      _config;
+	int          _fields[9][9];
+	KBX_DieState _dice[18];
+    KBX_Config   _config;
 public:
     KBX_Game(KBX_Config config);
-    int moveIsValid(KBX_Move& move);
-    int makeMove(KBX_Move& move);
-    float evaluateMoves(KBX_Move& bestMove, int color, float alpha, float beta, int firstCall);
+    bool            moveIsValid(size_t dieIndex, KBX_Move& move);
+    void            makeMove(size_t dieIndex, KBX_Move& move);
+    KBX_PlayColor   getWinner();
+    float           rate(KBX_PlayColor color);
+    KBX_Evaluation  evaluateMoves(int level, KBX_PlayColor color, float alpha, float beta, bool initialCall);
+    // rating functions
+    float           rateDiceRatio(KBX_PlayColor color);
 };
 #endif

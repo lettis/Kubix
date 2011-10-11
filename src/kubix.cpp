@@ -26,15 +26,16 @@
 
 #include "gui.hpp"
 #include "handler.hpp"
+#include "engine.hpp"
 
 void setupBoard(KBX_Scene* scene){
     // define rotation axes
-    KBX_Vec toFront(-1.0, 0.0,  0.0);
-    KBX_Vec toBack ( 1.0, 0.0,  0.0);
-    KBX_Vec toLeft ( 0.0, 0.0,  1.0);
-    KBX_Vec toRight( 0.0, 0.0, -1.0);
-    KBX_Vec clockwise( 0.0, -1.0, 0.0);
-    KBX_Vec counterClockwise( 0.0, 1.0, 0.0);
+    KBX_Vec toFront         (-1.0,  0.0,  0.0);
+    KBX_Vec toBack          ( 1.0,  0.0,  0.0);
+    KBX_Vec toLeft          ( 0.0,  0.0,  1.0);
+    KBX_Vec toRight         ( 0.0,  0.0, -1.0);
+    KBX_Vec clockwise       ( 0.0, -1.0,  0.0);
+    KBX_Vec counterClockwise( 0.0,  1.0,  0.0);
     // setup dice with correct orientation
     // white dice; w1 is in lower left corner, w8 in lower right
     KBX_Die* w1 = new KBX_Die( KBX_Vec(-4,0, 4), KBX_Die::WHITE );
@@ -114,6 +115,7 @@ int main(){
     initSDL();
     // initialize OpenGL
     initOpenGL();
+    // TODO: do this stuff in a configuration class
     // declare filename-key combinations for die faces
     std::map<size_t, std::string> dieFaces;
     dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_K_W,  "./res/sidek.png")  );
@@ -144,13 +146,13 @@ int main(){
         KBX_SelectionEventHandler selectionEvents(scene);
         // enter event loop
         SDL_Event* event = new SDL_Event();
-        bool DONE=false;
-        while ( !DONE ){
+        bool done=false;
+        while ( !done ){
             // get next event
             while ( SDL_PollEvent( event ) ){
                 // handle possible exit events
                 if (exitEvents.handle( event ) != 0){
-                    DONE=true;
+                    done=true;
                     break;
                 }
                 // handle possible selection events
