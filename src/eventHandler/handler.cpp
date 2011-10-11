@@ -52,7 +52,6 @@ int KBX_ExitEventHandler::handle(SDL_Event* event){
     \returns 1 if event has been handled, else 0
 */
 int KBX_MotionEventHandler::handle(SDL_Event* event){
-    float angle;
     // note: the actual camera manipulations are performed in the 
     // KBX_MotionEventHandler::proceed() function
     // this is neccessary to provide fast responses 
@@ -63,26 +62,27 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
         this->height = event->resize.h;
         this->resize = true;
     } else if (event->type == SDL_KEYDOWN){
-        angle = 5.0;
+        float angle = 5.0;
+        float zoom  = 0.05;
         this->keydown = true;
         switch(event->key.keysym.sym){
             case SDLK_a:
-                this->rotateHorizontal = angle;
+                this->rotateHorizontal =  angle;
                 break;
             case SDLK_d:
                 this->rotateHorizontal = -angle;
                 break;
             case SDLK_w:
-                this->rotateVertical = angle;
+                this->rotateVertical =  angle;
                 break;
             case SDLK_s:
                 this->rotateVertical = -angle;
                 break;
             case SDLK_q:
-                this->zoom = 1.05;
+                this->zoom = 1.0 + zoom;
                 break;
             case SDLK_e:
-                this->zoom = 0.95;
+                this->zoom = 1.0 - zoom;
                 break;
             default:
                 // do nothing
@@ -121,7 +121,7 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
                 break;
         }
     } else if (event->type == SDL_MOUSEBUTTONDOWN){
-        angle = 0.3;
+        float angle = 0.2;
         switch (event->button.button){
             case SDL_BUTTON_WHEELUP:
                 this->scene->zoom( 0.95 );
@@ -129,19 +129,10 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
             case SDL_BUTTON_WHEELDOWN:
                 this->scene->zoom( 1.05 );
                 break;
-            case SDL_BUTTON_LEFT: 
-                this->cameraDrag = true;
-                this->clickPosX = event->button.x;
-                this->clickPosY = event->button.y;
-                // find out whether the user clicked the "upper"/"lower" or "left/right" part of the screen
-                // that is, if the user wanted to grab the "front/back" or "left/right" part of the board
-                // in order to find the rotation direction
-                angle *= sgn(this->scene->getOrientation().y);
-                if(this->clickPosY > this->height/2){
-                    angle *= -1;
-                }
+            case SDL_BUTTON_RIGHT: 
+                this->cameraDrag       = true;
                 this->rotateHorizontal = angle;
-                this->rotateVertical = -angle;
+                this->rotateVertical   = angle;
                 break;
             default: 
                 // do nothing
@@ -149,10 +140,10 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
         }
     } else if (event->type == SDL_MOUSEBUTTONUP){
         switch (event->button.button){
-            case SDL_BUTTON_LEFT: 
-                this->cameraDrag = false;
+            case SDL_BUTTON_RIGHT: 
+                this->cameraDrag       = false;
                 this->rotateHorizontal = 0;
-                this->rotateVertical = 0;
+                this->rotateVertical   = 0;
             default: 
                 break;
         }
@@ -267,7 +258,7 @@ int KBX_ConsoleEventHandler::handle(SDL_Event* event){
                 this->scene->setText(input.str());
                 this->input.clear();
                 this->input.str("");
-                this->active != this->active;
+                this->active = !this->active;
                 return 1;
             } else if ( (event->key.keysym.unicode < 0x80) && ( event->key.keysym.unicode > 0)){
                 this->input << (char)event->key.keysym.unicode; 
