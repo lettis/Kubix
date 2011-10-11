@@ -128,16 +128,16 @@ int main(){
         KBX_ConsoleEventHandler consoleEvents(scene);
         // enter event loop
         SDL_Event* event = new SDL_Event();
-        bool DONE=false;
-        bool handeled;
-        while ( !DONE ){
+        bool done=false;
+        bool handled;
+        while ( !done ){
             // get next event
             while ( SDL_PollEvent( event ) ){
-                handeled = false;
+                handled = false;
                 // handle possible exit events
                 if (exitEvents.handle( event ) != 0){
-                    DONE=true;
-                    handeled = true;
+                    done=true;
+                    handled = true;
                     break;
                 }
                 // handle possible console events
