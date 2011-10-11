@@ -39,8 +39,8 @@ int KBX_ExitEventHandler::handle(SDL_Event* event){
     if (event->type == SDL_QUIT){
         return 1;
     }
-    if (event->type == SDL_KEYDOWN &&
-        event->key.keysym.sym == SDLK_ESCAPE){
+    if (   event->type == SDL_KEYDOWN
+        && event->key.keysym.sym == SDLK_ESCAPE){
         return 1;
     }
     return 0;
@@ -91,34 +91,34 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
     } else if (event->type == SDL_KEYUP){
         this->keydown = false;
         switch(event->key.keysym.sym){
-        case SDLK_a:
-            this->rotateHorizontal = 0;
-            break;
-        case SDLK_d:
-            this->rotateHorizontal = 0;
-            break;
-        case SDLK_w:
-            this->rotateVertical = 0;
-            break;
-        case SDLK_s:
-            this->rotateVertical = 0;
-            break;
-        case SDLK_q:
-            this->zoom = 1;
-            break;
-        case SDLK_e:
-            this->zoom = 1;
-            break;
-        case SDLK_F11:
-            this->fullscreen = !this->fullscreen;
-            SDL_Quit();
-            initSDL(this->width, this->height, this->fullscreen);
-            initOpenGL(this->width, this->height);
-            loadTextures();
-            break;
-        default:
-            // do nothing
-            break;
+            case SDLK_a:
+                this->rotateHorizontal = 0;
+                break;
+            case SDLK_d:
+                this->rotateHorizontal = 0;
+                break;
+            case SDLK_w:
+                this->rotateVertical = 0;
+                break;
+            case SDLK_s:
+                this->rotateVertical = 0;
+                break;
+            case SDLK_q:
+                this->zoom = 1;
+                break;
+            case SDLK_e:
+                this->zoom = 1;
+                break;
+            case SDLK_F11:
+                this->fullscreen = !this->fullscreen;
+                SDL_Quit();
+                initSDL(this->width, this->height, this->fullscreen);
+                initOpenGL(this->width, this->height);
+                loadTextures();
+                break;
+            default:
+                // do nothing
+                break;
         }
     } else if (event->type == SDL_MOUSEBUTTONDOWN){
         angle = 0.3;
@@ -144,21 +144,26 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
                 this->rotateVertical = -angle;
                 break;
             default: 
+                // do nothing
                 break;
         }
     } else if (event->type == SDL_MOUSEBUTTONUP){
         switch (event->button.button){
-        case SDL_BUTTON_LEFT: 
-            this->cameraDrag = false;
-            this->rotateHorizontal = 0;
-            this->rotateVertical = 0;
-        default: 
-            break;
+            case SDL_BUTTON_LEFT: 
+                this->cameraDrag = false;
+                this->rotateHorizontal = 0;
+                this->rotateVertical = 0;
+            default: 
+                break;
         }
     } else if (event->type == SDL_MOUSEMOTION){
         int border = 1;
-        if(event->motion.x < border || event->motion.x > this->width - border-1 || event->motion.y < border || event->motion.y > this->height - border-1){
+        if(    event->motion.x < border
+            || event->motion.x > this->width-border-1
+            || event->motion.y < border
+            || event->motion.y > this->height-border-1){
             SDL_WM_GrabInput( SDL_GRAB_OFF );
+            //TODO: is this below still needed? if not: delete
             //            setSDLWindow(this->width, this->height, false);
         } 
         if(this->cameraDrag){
@@ -171,7 +176,9 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
     } else if (event->type == SDL_SYSWMEVENT ){
         //std::cout << "sys-wm event" << std::endl;
     } else if (event->type == SDL_ACTIVEEVENT ){
-        if(event->active.gain == 1) SDL_WM_GrabInput( SDL_GRAB_ON );
+        if(event->active.gain == 1){
+            SDL_WM_GrabInput( SDL_GRAB_ON );
+        }
     }
     return 0;
 }
@@ -192,8 +199,8 @@ void KBX_MotionEventHandler::proceed(){
     }
     if(this->keydown){
         this->scene->zoom( this->zoom );
-        this->scene->rotate( this->rotateHorizontal, KBX_Camera::HORIZONTAL);
-        this->scene->rotate( this->rotateVertical, KBX_Camera::VERTICAL);
+        this->scene->rotate( this->rotateHorizontal, KBX_Camera::HORIZONTAL );
+        this->scene->rotate( this->rotateVertical, KBX_Camera::VERTICAL );
     }
 }
 
@@ -206,26 +213,30 @@ int KBX_SelectionEventHandler::handle(SDL_Event* event){
     if (event->type == SDL_MOUSEBUTTONDOWN){
         switch (event->button.button){
             case SDL_BUTTON_LEFT: 
-                if(this->selected) this->selected->highlighted = false;
+                // mark former object de-selected
+                if(this->selected){
+                    this->selected->highlighted = false;
+                }
+                // get new object
                 this->selected = this->getObject(event->button.x, event->button.y);
+                // if new object has been hit, select it
                 if(this->selected){
                     this->selected->highlighted = true;
                     return 1;
                 } else {
                     return 0;
                 }
-        default:
-            return 0;
+            default:
+                return 0;
         }
     }
     return 0;
 }
-
 /// get Object at given mouse coordinates
 /**
     \param x horizontal mouse coordinate
     \param y vertical mouse coordinate
-    \returns KBX_Object pointer to object under mouse cursor
+    \returns KBX_Object* to object under mouse cursor
 */
 KBX_Object* KBX_SelectionEventHandler::getObject( size_t x, size_t y ){
     // get resolution from settings
@@ -234,7 +245,8 @@ KBX_Object* KBX_SelectionEventHandler::getObject( size_t x, size_t y ){
     // get color information from frame buffer
     unsigned char pixel[3];
     this->scene->display(true);
-    // Important: gl (0,0) ist bottom left but window coords (0,0) are top left so we have to change this!      
+    //TODO: 'so we have to change this': is this a TODO, or is it done with the code below?
+    // Important: gl (0,0) is bottom left but window coords (0,0) are top left so we have to change this!      
     glReadPixels(x, viewport[3] - y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
     size_t id = KBX_Color(pixel[0], pixel[1], pixel[2]).id();
     return KBX_Object::objectList.get(id);
@@ -255,7 +267,7 @@ int KBX_ConsoleEventHandler::handle(SDL_Event* event){
                 this->scene->setText(input.str());
                 this->input.clear();
                 this->input.str("");
-                this->active = !this->active;
+                this->active != this->active;
                 return 1;
             } else if ( (event->key.keysym.unicode < 0x80) && ( event->key.keysym.unicode > 0)){
                 this->input << (char)event->key.keysym.unicode; 
@@ -265,5 +277,4 @@ int KBX_ConsoleEventHandler::handle(SDL_Event* event){
     }
     return 0;
 }
-    
 

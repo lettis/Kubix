@@ -88,7 +88,7 @@ void KBX_Logger::disableLogging(){
 }
 /// write message to logfile / stdout
 void KBX_Logger::_sendMessage(std::string category, std::string msg){
-    this->_out << this->_getTime() << " " << this->_name << " | " << category << ": " << msg << std::endl;
+    this->_out << this->_getTime() << "\t" << this->_name << " | " << category << ": " << msg << std::endl;
 }
 /// write info to logfile / stdout
 void KBX_Logger::info(std::string msg){

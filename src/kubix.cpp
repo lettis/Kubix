@@ -110,6 +110,10 @@ void setupBoard(KBX_Scene* scene){
 }
 
 int main(){
+    // enable logging
+    KBX_Logger::enableLogging();
+    // build logger instance for main
+    KBX_Logger mainLog("main");
     try{
         // initialize SDL
         initSDL(800, 600, false);
@@ -122,10 +126,10 @@ int main(){
         // setup the board with all dice
         setupBoard(scene);
         // initialize event handlers
-        KBX_ExitEventHandler exitEvents(scene);
-        KBX_MotionEventHandler motionEvents(scene);
+        KBX_ExitEventHandler      exitEvents(scene);
+        KBX_MotionEventHandler    motionEvents(scene);
         KBX_SelectionEventHandler selectionEvents(scene);
-        KBX_ConsoleEventHandler consoleEvents(scene);
+        KBX_ConsoleEventHandler   consoleEvents(scene);
         // enter event loop
         SDL_Event* event = new SDL_Event();
         bool done=false;
@@ -159,7 +163,7 @@ int main(){
             SDL_GL_SwapBuffers();
         }
     }catch(const char* errMsg){
-        std::cout << "error: " << errMsg << std::endl;
+        mainLog.error( std::string(errMsg) );
     }
     SDL_Quit();
     return 0;
