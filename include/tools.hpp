@@ -34,6 +34,8 @@ template<class NumType> int sgn(NumType n);
 int sgn(float f);
 int sgn(int i);
 
+void loadTextures();
+
 void checkGLError();
 std::string stringprintf(std::string str, ...);
 

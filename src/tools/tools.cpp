@@ -254,3 +254,23 @@ GLuint TextureHandler::get(size_t key){
     return this->textures[this->keys[key]];
 }
 
+void loadTextures(){
+    // declare filename-key combinations for die faces
+    std::map<size_t, std::string> dieFaces;
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_K_W,  "./res/sidek.png")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_1_W,  "./res/side1.png")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_2_W,  "./res/side2.png")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_3_W,  "./res/side3.png")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_4_W,  "./res/side4.png")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_5_W,  "./res/side5.png")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_6_W,  "./res/side6.png")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_K_B, "./res/sidekb.png")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_1_B, "./res/side1b.png")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_2_B, "./res/side2b.png")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_3_B, "./res/side3b.png")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_4_B, "./res/side4b.png")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_5_B, "./res/side5b.png")  );
+    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_6_B, "./res/side6b.png")  );
+    // initialize (load) die face textures
+    KBX_Die::textures.load(dieFaces);
+}

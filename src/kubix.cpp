@@ -109,33 +109,14 @@ void setupBoard(KBX_Scene* scene){
     scene->add( board );
 }
 
-
 int main(){
-    // initialize SDL
-    initSDL();
-    // initialize OpenGL
-    initOpenGL();
-    // TODO: do this stuff in a configuration class
-    // declare filename-key combinations for die faces
-    std::map<size_t, std::string> dieFaces;
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_K_W,  "./res/sidek.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_1_W,  "./res/side1.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_2_W,  "./res/side2.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_3_W,  "./res/side3.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_4_W,  "./res/side4.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_5_W,  "./res/side5.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_6_W,  "./res/side6.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_K_B, "./res/sidekb.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_1_B, "./res/side1b.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_2_B, "./res/side2b.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_3_B, "./res/side3b.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_4_B, "./res/side4b.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_5_B, "./res/side5b.png")  );
-    dieFaces.insert(  std::pair<size_t, std::string> (KBX_Die::FACE_6_B, "./res/side6b.png")  );
-
     try{
-        // initialize (load) die face textures
-        KBX_Die::textures.load(dieFaces);
+        // initialize SDL
+        initSDL(800, 600, false);
+        // initialize OpenGL
+        initOpenGL(800, 600);
+        // load the textures
+        loadTextures();
         // initialize scene
         KBX_Scene* scene = new KBX_Scene();
         // setup the board with all dice
@@ -144,21 +125,32 @@ int main(){
         KBX_ExitEventHandler exitEvents(scene);
         KBX_MotionEventHandler motionEvents(scene);
         KBX_SelectionEventHandler selectionEvents(scene);
+        KBX_ConsoleEventHandler consoleEvents(scene);
         // enter event loop
         SDL_Event* event = new SDL_Event();
-        bool done=false;
-        while ( !done ){
+        bool DONE=false;
+        bool handeled;
+        while ( !DONE ){
             // get next event
             while ( SDL_PollEvent( event ) ){
+                handeled = false;
                 // handle possible exit events
                 if (exitEvents.handle( event ) != 0){
-                    done=true;
+                    DONE=true;
+                    handeled = true;
                     break;
                 }
+                // handle possible console events
+                if(!handled){
+                    handled = consoleEvents.handle( event );
+                }
                 // handle possible selection events
-                if(!selectionEvents.handle( event )){
-                    // handle possible motion events
-                    motionEvents.handle( event );
+                if(!handled){
+                    handled = selectionEvents.handle( event );
+                }
+                // handle possible motion events
+                if(!handled){
+                    handled = motionEvents.handle( event );
                 }
             }
             motionEvents.proceed();

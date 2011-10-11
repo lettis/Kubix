@@ -22,9 +22,14 @@
 
 #include "SDL_opengl.h"
 
-void initOpenGL();
-void initSDL();
-void setWindow(int width, int height, bool fullscreen = false);
+void initOpenGL(int width, int height);
+void initSDL(int width, int height, bool fullscreen);
+void setSDLWindow(int width, int height, bool resizeable = true);
+void setGLWindow(int width, int height);
+
+GLvoid glPrint(const char *text, GLuint base);
+GLvoid glKillFont( GLuint base );
+GLuint glBuildFont();
 
 class KBX_Vec;
 class KBX_Color;
@@ -215,11 +220,16 @@ class KBX_Scene : public KBX_Object{
     std::vector<KBX_Object*> objList;
     KBX_Camera cam;
     void _render(bool picking = false);
+    GLuint font;
+    std::string text;
+    float textOpacity;
 public:
+    void setText(std::string);
     KBX_Vec getOrientation();
     void add(KBX_Object* obj);
     void rotate(float angle, size_t direction);
     void zoom(float factor);
     KBX_Scene();
+    ~KBX_Scene();
 };
 #endif

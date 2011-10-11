@@ -23,6 +23,10 @@
 #include "SDL_opengl.h"
 #include "SDL_image.h"
 
+
+#include <GL/glu.h>
+#include <GL/glx.h>
+
 #include "gui.hpp"
 #include "tools.hpp"
 
@@ -567,8 +571,22 @@ void KBX_Tile::_render(bool picking){
     glEnd();
 }
 
+void KBX_Scene::setText(std::string s){
+    this->textOpacity = 1.0f;
+    this->text = s;
+}
+
 /// scene constructor
-KBX_Scene::KBX_Scene() :cam( KBX_Vec(0,0,100), KBX_Vec(0,0,0) ) {}
+KBX_Scene::KBX_Scene() :cam( KBX_Vec(0,0,100), KBX_Vec(0,0,0) ) {
+    this->font = glBuildFont();
+    this->textOpacity = 0;
+}
+
+// scene destructor
+KBX_Scene::~KBX_Scene(){
+    glKillFont(this->font);
+}
+
 /// render the scene
 void KBX_Scene::_render(bool picking){
     // clear the graphics buffer
@@ -585,6 +603,17 @@ void KBX_Scene::_render(bool picking){
 	glLoadName(i);
         this->objList[i]->display(picking);
     }
+
+    // draw the text
+    if(this->textOpacity > 0.2f){
+        glColor4f(this->textOpacity, this->textOpacity, this->textOpacity, this->textOpacity);
+        this->textOpacity -= 0.005f;
+        glPushMatrix();  
+        glRasterPos3f(0,3,0);  
+        glPrint(this->text.c_str(), this->font);
+        glPopMatrix();
+    }
+
     // draw everything to screen
     if(!picking) SDL_GL_SwapBuffers();
 }
@@ -623,51 +652,68 @@ void KBX_Scene::zoom(float factor){
 }
 
 /// initialize sdl screen
-void initSDL(){
-    SDL_Surface *screen;
-    if (SDL_Init(SDL_INIT_VIDEO) == -1) {
-        throw stringprintf("Can't init SDL:  %s\n", SDL_GetError()).c_str();
+void initSDL(int width, int height, bool fullscreen){
+    // Color depth in bits of our window.
+    int bpp = 0;
+    // Flags we will pass into SDL_SetVideoMode
+    int flags = 0;
+    //initialize SDL's video subsystem.
+    if( SDL_Init( SDL_INIT_VIDEO ) < 0 ) {
+        throw stringprintf("Video initialization failed: %s\n",
+                           SDL_GetError( ) ).c_str();
+    }
+    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+    SDL_WM_GrabInput( SDL_GRAB_ON );
+    SDL_EventState( SDL_VIDEOEXPOSE, SDL_DISABLE );
+    SDL_EventState( SDL_SYSWMEVENT, SDL_DISABLE );
+    SDL_EnableUNICODE( 1 );
+
+    flags = SDL_OPENGL;
+    // fullscreen and resizable exclude each other!
+    if (fullscreen){
+        flags |= SDL_FULLSCREEN;
+    } else {
+        flags |= SDL_RESIZABLE;
+    }
+    // set the video mode
+    if( SDL_SetVideoMode( width, height, bpp, flags ) == 0 ) {
+        throw stringprintf("Video mode set failed: %s\n",
+                            SDL_GetError( ) ).c_str();
     }
     SDL_WM_SetCaption("kubix", NULL);
     SDL_Surface* icon = IMG_Load("./res/kubix.png");
     SDL_WM_SetIcon(icon, NULL);
     atexit(SDL_Quit);
-    screen = SDL_SetVideoMode(800, 600, 24, SDL_OPENGL | SDL_RESIZABLE);
-    if (screen == NULL) {
-        throw stringprintf("Can't set video mode: %s\n", SDL_GetError()).c_str();
-    }
 }
 
 /// initialize opengl
-void initOpenGL(){
-    // get resolution from settings
-    GLint view[4];
-    glGetIntegerv(GL_VIEWPORT, view);
-    // TODO: implement fullscreen
-    // use grey background
+void initOpenGL(int width, int height){
+    /* Our shading model--Gouraud (smooth). */
+    glShadeModel( GL_SMOOTH );
+     // use grey background
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     // and tell the object list that our background color
     // does not correspond to any kind of object
     KBX_Object::objectList.nullId = KBX_Color(0.2f, 0.2f, 0.2f).id();
-    setWindow(view[2], view[3]);
-    // use double buffering
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    setGLWindow(width, height);
     // use smooth shading model
     glShadeModel(GL_SMOOTH);
     // draw objects respecting depth
     glEnable(GL_DEPTH_TEST);
 }
 
-void setWindow(int width, int height, bool fullscreen){
-    SDL_Surface* screen;
-    if(fullscreen){
-        screen = SDL_SetVideoMode(width, height, 24, SDL_OPENGL | SDL_RESIZABLE | fullscreen);
-    } else {
-        screen = SDL_SetVideoMode(width, height, 24, SDL_OPENGL | SDL_RESIZABLE | fullscreen);
+
+void setSDLWindow(int width, int height, bool resizable){
+    int flags = 0;
+    flags |= SDL_OPENGL;
+    if(resizable) flags |= SDL_RESIZABLE;
+    SDL_Surface* screen = SDL_SetVideoMode(width, height, 0, flags);
+    if(!screen){
+      throw stringprintf("Unable to open SDL Window!").c_str();
     }
-    if (screen == NULL) {
-        throw stringprintf("Can't set video mode: %s\n", SDL_GetError()).c_str();
-    }
+}
+
+void setGLWindow(int width, int height){
     GLfloat aspectRatio = (GLfloat)width / (GLfloat)height;
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
@@ -675,6 +721,56 @@ void setWindow(int width, int height, bool fullscreen){
     gluPerspective(10.0,        // the camera distance
                    aspectRatio, // the width-to-height ratio
                    1.0,         // the near z clipping coordinate
-                   1000.0);     // the far z clipping coordinate
+                   1024.0);     // the far z clipping coordinate
+}  
+
+GLuint glBuildFont(){
+    Display *dpy;
+    XFontStruct *fontInfo;  // storage for our font.
+    GLuint base = glGenLists(96);                      // storage for 96 characters.
+    // get the current display.  This opens a second
+    // connection to the display in the DISPLAY environment
+    // value, and will be around only long enough to load 
+    // the font. 
+    dpy = XOpenDisplay(NULL); // default to DISPLAY env.   
+    fontInfo = XLoadQueryFont(dpy, "-adobe-helvetica-medium-r-normal--18-*-*-*-p-*-iso8859-1");
+    if (fontInfo == NULL) {
+	fontInfo = XLoadQueryFont(dpy, "fixed");
+	if (fontInfo == NULL) {
+            throw "no X font available!";
+	}
+    }
+    // after loading this font info, this would probably be the time
+    // to rotate, scale, or otherwise twink your fonts.  
+    // start at character 32 (space), get 96 characters (a few characters past z), and
+    // store them starting at base.
+    glXUseXFont(fontInfo->fid, 32, 96, base);
+    // free that font's info now that we've got the 
+    // display lists.
+    XFreeFont(dpy, fontInfo);
+    // close down the 2nd display connection.
+    XCloseDisplay(dpy);
+    return base;
 }
-  
+
+// delete the font.
+GLvoid glKillFont( GLuint base ){
+    // delete all 96 characters.
+    glDeleteLists(base, 96);
+}
+
+GLvoid glPrint(const char *text, GLuint base){
+    // if there's no text, do nothing.
+    if (text == NULL) {                         
+        return;
+    }
+    // alert that we're about to offset the display lists with glListBase
+    glPushAttrib(GL_LIST_BIT);                  
+    // sets the base character to 32.
+    glListBase(base - 32);                      
+    // draws the display list text.
+    //    glCallLists(strlen(text), GL_UNSIGNED_BYTE, text); 
+    glCallLists(strlen(text), GL_UNSIGNED_BYTE, text); 
+    // undoes the glPushAttrib(GL_LIST_BIT);
+    glPopAttrib();                              
+}
