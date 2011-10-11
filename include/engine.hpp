@@ -55,6 +55,7 @@ KBX_PlayColor inverse(KBX_PlayColor color);
 class KBX_Strategy{
 public:
     const int coeffDiceRatio;
+    KBX_Strategy( float coeffDiceRatio );
 };
 
 /// configuration settings

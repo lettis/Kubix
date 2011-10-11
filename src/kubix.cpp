@@ -27,87 +27,7 @@
 #include "gui.hpp"
 #include "handler.hpp"
 #include "engine.hpp"
-
-void setupBoard(KBX_Scene* scene){
-    // define rotation axes
-    KBX_Vec toFront         (-1.0,  0.0,  0.0);
-    KBX_Vec toBack          ( 1.0,  0.0,  0.0);
-    KBX_Vec toLeft          ( 0.0,  0.0,  1.0);
-    KBX_Vec toRight         ( 0.0,  0.0, -1.0);
-    KBX_Vec clockwise       ( 0.0, -1.0,  0.0);
-    KBX_Vec counterClockwise( 0.0,  1.0,  0.0);
-    // setup dice with correct orientation
-    // white dice; w1 is in lower left corner, w8 in lower right
-    KBX_Die* w1 = new KBX_Die( KBX_Vec(-4,0, 4), KBX_Die::WHITE );
-    w1->rotate( counterClockwise, 90 );
-    KBX_Die* w2 = new KBX_Die( KBX_Vec(-3,0, 4), KBX_Die::WHITE );
-    w2->rotate( toBack, 90 );
-    w2->rotate( counterClockwise, 90 );
-    KBX_Die* w3 = new KBX_Die( KBX_Vec(-2,0, 4), KBX_Die::WHITE );
-    w3->rotate( toBack, 180 );
-    w3->rotate( counterClockwise, 90 );
-    KBX_Die* w4 = new KBX_Die( KBX_Vec(-1,0, 4), KBX_Die::WHITE );
-    w4->rotate( toFront, 90 );
-    w4->rotate( counterClockwise, 90 );
-    KBX_Die* wK = new KBX_Die( KBX_Vec( 0,0, 4), KBX_Die::WHITE, true );
-    KBX_Die* w5 = new KBX_Die( KBX_Vec( 1,0, 4), KBX_Die::WHITE );
-    w5->rotate( toFront, 90 );
-    w5->rotate( counterClockwise, 90 );
-    KBX_Die* w6 = new KBX_Die( KBX_Vec( 2,0, 4), KBX_Die::WHITE );
-    w6->rotate( toBack, 180 );
-    w6->rotate( counterClockwise, 90 );
-    KBX_Die* w7 = new KBX_Die( KBX_Vec( 3,0, 4), KBX_Die::WHITE );
-    w7->rotate( toBack, 90 );
-    w7->rotate( counterClockwise, 90 );
-    KBX_Die* w8 = new KBX_Die( KBX_Vec( 4,0, 4), KBX_Die::WHITE );
-    w8->rotate( counterClockwise, 90 );
-    // black dice; b1 is in upper left corner, b8 in upper right
-    KBX_Die* b1 = new KBX_Die( KBX_Vec(-4,0,-4), KBX_Die::BLACK );
-    b1->rotate( clockwise, 90 );
-    KBX_Die* b2 = new KBX_Die( KBX_Vec(-3,0,-4), KBX_Die::BLACK );
-    b2->rotate( toBack, 90 );
-    b2->rotate( clockwise, 90 );
-    KBX_Die* b3 = new KBX_Die( KBX_Vec(-2,0,-4), KBX_Die::BLACK );
-    b3->rotate( toBack, 180 );
-    b3->rotate( clockwise, 90 );
-    KBX_Die* b4 = new KBX_Die( KBX_Vec(-1,0,-4), KBX_Die::BLACK );
-    b4->rotate( toFront, 90 );
-    b4->rotate( clockwise, 90 );
-    KBX_Die* bK = new KBX_Die( KBX_Vec( 0,0,-4), KBX_Die::BLACK, true );
-    KBX_Die* b5 = new KBX_Die( KBX_Vec( 1,0,-4), KBX_Die::BLACK );
-    b5->rotate( toFront, 90 );
-    b5->rotate( clockwise, 90 );
-    KBX_Die* b6 = new KBX_Die( KBX_Vec( 2,0,-4), KBX_Die::BLACK );
-    b6->rotate( toBack, 180 );
-    b6->rotate( clockwise, 90 );
-    KBX_Die* b7 = new KBX_Die( KBX_Vec( 3,0,-4), KBX_Die::BLACK );
-    b7->rotate( toBack, 90 );
-    b7->rotate( clockwise, 90 );
-    KBX_Die* b8 = new KBX_Die( KBX_Vec( 4,0,-4), KBX_Die::BLACK );
-    b8->rotate( clockwise, 90 );
-    // add dice to scene
-    scene->add( w1 );
-    scene->add( w2 );
-    scene->add( w3 );
-    scene->add( w4 );
-    scene->add( w5 );
-    scene->add( w6 );
-    scene->add( w7 );
-    scene->add( w8 );
-    scene->add( wK );
-    scene->add( b1 );
-    scene->add( b2 );
-    scene->add( b3 );
-    scene->add( b4 );
-    scene->add( b5 );
-    scene->add( b6 );
-    scene->add( b7 );
-    scene->add( b8 );
-    scene->add( bK );
-    // initialize the board and add it to the scene
-    KBX_Board* board = new KBX_Board(9, 9);
-    scene->add( board );
-}
+#include "controller.hpp"
 
 int main(){
     // enable logging
@@ -115,6 +35,9 @@ int main(){
     // build logger instance for main
     KBX_Logger mainLog("main");
     try{
+        // TODO: get config from cmd arguments + rc-files
+        // define standard config
+        KBX_Config config( HUMAN_AI, 4, KBX_Strategy(1.0) );
         // initialize SDL
         initSDL(800, 600, false);
         // initialize OpenGL
@@ -123,8 +46,10 @@ int main(){
         loadTextures();
         // initialize scene
         KBX_Scene* scene = new KBX_Scene();
-        // setup the board with all dice
-        setupBoard(scene);
+        // initialize AI
+        KBX_Game* game = new KBX_Game( config );
+        // initialize controller (connection between view (scene) and model (game-engine))
+        KBX_Controller controller(scene, game);
         // initialize event handlers
         KBX_ExitEventHandler      exitEvents(scene);
         KBX_MotionEventHandler    motionEvents(scene);
@@ -155,6 +80,11 @@ int main(){
                 // handle possible motion events
                 if(!handled){
                     handled = motionEvents.handle( event );
+                }
+
+                // handle events generated especially for the controller
+                if(!handled){
+                    controller.handle( event );
                 }
             }
             motionEvents.proceed();

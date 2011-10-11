@@ -60,6 +60,16 @@ KBX_PlayColor inverse(KBX_PlayColor color){
     }
 }
 
+KBX_Strategy::KBX_Strategy(float coeffDiceRatio) :
+     coeffDiceRatio(coeffDiceRatio)
+{}
+
+KBX_Config::KBX_Config(KBX_PlayMode mode, size_t cpuLevel, KBX_Strategy strategy) :
+     mode(mode)
+    ,cpuLevel(cpuLevel)
+    ,strategy(strategy)
+{}
+
 /// initialize a move
 KBX_Move::KBX_Move() :
      dx(0)

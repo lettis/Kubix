@@ -63,6 +63,18 @@ public:
 /// defines a color
 class KBX_Color{
 public:
+    // define some colors fixed
+    static const KBX_Color BLACK;
+    static const KBX_Color WHITE;
+    static const KBX_Color GREY10;
+    static const KBX_Color GREY20;
+    static const KBX_Color GREY30;
+    static const KBX_Color GREY40;
+    static const KBX_Color GREY50;
+    static const KBX_Color GREY60;
+    static const KBX_Color GREY70;
+    static const KBX_Color GREY80;
+    static const KBX_Color GREY90;
     float r;
     float g;
     float b;
@@ -71,7 +83,7 @@ public:
     KBX_Color(unsigned char r, unsigned char g, unsigned char b);
     KBX_Color(int r, int g, int b);
     KBX_Color(float r, float g, float b);
-    size_t id();
+    size_t id() const;
 };
 
 /// defines a camera object for opengl

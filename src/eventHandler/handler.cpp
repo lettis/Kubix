@@ -176,10 +176,10 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
 
 /// apply the changes
 /**
-   this construction is neccessary due to handling of KEYDOWN and KEYUP events
-   since only one KEYDOWN event is produced per key press
-   we have to poll for KEYUP events in order to determine if a key is still pressed
-   in the mean time, we want to apply changes - otherwise the scene "freezes"
+   this construction is necessary due to handling of KEYDOWN and KEYUP events.
+   since only one KEYDOWN event is produced per key press,
+   we have to poll for KEYUP events in order to determine if a key is still pressed.
+   in the mean time, we want to apply the changes - otherwise the scene "freezes"
    until the user releases the key!
  */
 void KBX_MotionEventHandler::proceed(){

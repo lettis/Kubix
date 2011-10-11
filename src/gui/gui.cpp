@@ -23,46 +23,55 @@
 #include "SDL_opengl.h"
 #include "SDL_image.h"
 
-
 #include <GL/glu.h>
 #include <GL/glx.h>
 
 #include "gui.hpp"
 #include "tools.hpp"
 
-/// constructor initializing the color
+// define fixed color values
+const KBX_Color KBX_Color::BLACK(0.0f, 0.0f, 0.0f);
+const KBX_Color KBX_Color::GREY10(0.1f, 0.1f, 0.1f);
+const KBX_Color KBX_Color::GREY20(0.2f, 0.2f, 0.2f);
+const KBX_Color KBX_Color::GREY30(0.3f, 0.3f, 0.3f);
+const KBX_Color KBX_Color::GREY40(0.4f, 0.4f, 0.4f);
+const KBX_Color KBX_Color::GREY50(0.5f, 0.5f, 0.5f);
+const KBX_Color KBX_Color::GREY60(0.6f, 0.6f, 0.6f);
+const KBX_Color KBX_Color::GREY70(0.7f, 0.7f, 0.7f);
+const KBX_Color KBX_Color::GREY80(0.8f, 0.8f, 0.8f);
+const KBX_Color KBX_Color::GREY90(0.9f, 0.9f, 0.9f);
+const KBX_Color KBX_Color::WHITE(1.0f, 1.0f, 1.0f);
+// define different versions of the KBX_Color constructor depending on parameters
 KBX_Color::KBX_Color(){
     this->r = 0;
     this->g = 0;
     this->b = 0;
 }
-
 KBX_Color::KBX_Color(size_t id){
     this->r = float(id%255)/255;
     this->g = float((id/255)%255)/255;
     this->b = float((id/(255*255))%255)/255;
 }
-
-size_t KBX_Color::id(){
-    return this->r*255 + 255*255*this->g + 255*255*255*this->b;
-}
-
 KBX_Color::KBX_Color(unsigned char r, unsigned char g, unsigned char b){
     this->r = float(r)/255;
     this->g = float(g)/255;
     this->b = float(b)/255;
 }
-
 KBX_Color::KBX_Color(int r, int g, int b){
     this->r = float(r)/255;
     this->g = float(g)/255;
     this->b = float(b)/255;
 }
-
 KBX_Color::KBX_Color(float r, float g, float b){
     this->r = r;
     this->g = g;
     this->b = b;
+}
+size_t KBX_Color::id() const {
+    // TODO: think about this. this implementation leads to some pretty large ids
+    //       if the color is bright (e.g. white: 1.0*255 + 1.0*255^2 + 1.0*255^3 ).
+    //       is that necessary?
+    return this->r*255 + 255*255*this->g + 255*255*255*this->b;
 }
 
 /// constructor initializing nullvector
@@ -264,26 +273,24 @@ KBX_ObjectHandler KBX_Object::objectList;
 
 /// default constructor
 KBX_Object::KBX_Object() :
-    _angle(0),
-    _isVisible(true),
-    _pos( KBX_Vec(0,0,0) ),
+     _angle(0)
+    ,_isVisible(true)
+    ,_pos( KBX_Vec(0,0,0) )
+    ,highlighted(false)
     // we need to add the object to the object list
     // and retrieve our own unique id from there
-    id(KBX_Object::objectList.add(this)) 
-{
-    this->highlighted = false;
-}
+    ,id(KBX_Object::objectList.add(this)) 
+{}
 /// constructor setting the object's position
 KBX_Object::KBX_Object(KBX_Vec pos) :
-    _angle(0),
-    _isVisible(true),
-    _pos( pos ),
+     _angle(0)
+    ,_isVisible(true)
+    ,_pos( pos )
+    ,highlighted(false)
     // we need to add the object to the object list
     // and retrieve our own unique id from there
-    id(KBX_Object::objectList.add(this)) 
-{
-    this->highlighted = false;
-}
+    ,id(KBX_Object::objectList.add(this)) 
+{}
 
 /// set object rotation (accumulatively)
 /**
@@ -361,12 +368,16 @@ const size_t KBX_Die::BLACK = 2;
 /// the textures of the die surfaces are handled "globally" by this static member
 TextureHandler KBX_Die::textures = TextureHandler();
 /// inherit parent constructor and set color
-KBX_Die::KBX_Die(KBX_Vec pos, size_t color) :KBX_AnimObject(pos)
-                                            ,_color(color)
-                                            ,IS_KING(false) {}
-KBX_Die::KBX_Die(KBX_Vec pos, size_t color, bool IS_KING) :KBX_AnimObject(pos)
-                                                          ,_color(color)
-                                                          ,IS_KING(IS_KING) {}
+KBX_Die::KBX_Die(KBX_Vec pos, size_t color) :
+     KBX_AnimObject(pos)
+    ,_color(color)
+    ,IS_KING(false)
+{}
+KBX_Die::KBX_Die(KBX_Vec pos, size_t color, bool IS_KING) :
+     KBX_AnimObject(pos)
+    ,_color(color)
+    ,IS_KING(IS_KING)
+{}
 /// render the die
 void KBX_Die::_render(bool picking){
     // setting the color is neccessary in order to ensure that the texture is drawn 'as-is'
@@ -690,11 +701,15 @@ void initSDL(int width, int height, bool fullscreen){
 void initOpenGL(int width, int height){
     /* Our shading model--Gouraud (smooth). */
     glShadeModel( GL_SMOOTH );
-     // use grey background
-    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
-    // and tell the object list that our background color
+    // use grey background (20%)...
+    const KBX_Color& bgColor = KBX_Color::GREY20;
+    glClearColor(  bgColor.r
+                 , bgColor.g
+                 , bgColor.b
+                 , 0.0f);
+    // ...and tell the object list that our background color
     // does not correspond to any kind of object
-    KBX_Object::objectList.nullId = KBX_Color(0.2f, 0.2f, 0.2f).id();
+    KBX_Object::objectList.nullId = bgColor.id();
     setGLWindow(width, height);
     // use smooth shading model
     glShadeModel(GL_SMOOTH);
