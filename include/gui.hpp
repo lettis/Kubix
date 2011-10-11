@@ -22,6 +22,9 @@
 
 #include "SDL_opengl.h"
 
+// engine is needed for KBX_PlayColor definition
+#include "engine.hpp"
+
 void initOpenGL(int width, int height);
 void initSDL(int width, int height, bool fullscreen);
 void setSDLWindow(int width, int height, bool resizeable = true);
@@ -31,6 +34,8 @@ GLvoid glPrint(const char *text, GLuint base);
 GLvoid glKillFont( GLuint base );
 GLuint glBuildFont();
 
+// TODO: clean this. what is in tools, that needs these definitions?
+//       and why is it not in here?
 class KBX_Vec;
 class KBX_Color;
 class KBX_Camera;
@@ -172,7 +177,7 @@ public:
 ///  defines a die
 class KBX_Die : public KBX_AnimObject{
     void _render(bool picking = false);
-    size_t _color;
+    KBX_PlayColor _playColor;
 public:
     // texture container
     static TextureHandler textures;
@@ -192,13 +197,10 @@ public:
     static const size_t FACE_4_B;
     static const size_t FACE_5_B;
     static const size_t FACE_6_B;
-    // black/white tags
-    static const size_t WHITE;
-    static const size_t BLACK;
     
     const bool IS_KING;
-    KBX_Die(KBX_Vec pos, size_t color);
-    KBX_Die(KBX_Vec pos, size_t color, bool IS_KING);
+    KBX_Die(KBX_Vec pos, KBX_PlayColor color);
+    KBX_Die(KBX_Vec pos, KBX_PlayColor color, bool IS_KING);
 };
 
 /// KBX_Board Tile
@@ -208,18 +210,20 @@ class KBX_Tile: public KBX_Object{
     KBX_Color basicColor;
     KBX_Color activeColor;
 public:
+    KBX_Tile();
     KBX_Tile(KBX_Vec pos, KBX_Color color);
 };
 
 /// KBX_Board
 ///  defines game board
 class KBX_Board: public KBX_Object{
-    size_t nRows;
-    size_t nCols;
-    KBX_Tile** tiles;
+    size_t _nRows;
+    size_t _nCols;
+    std::vector< std::vector<KBX_Tile*> > _tiles;
     void _render(bool picking = false);
 public:
     KBX_Board(size_t rows, size_t cols);
+    ~KBX_Board();
 };
 
 /// Defines the whole scene.

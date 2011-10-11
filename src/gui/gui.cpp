@@ -28,6 +28,8 @@
 
 #include "gui.hpp"
 #include "tools.hpp"
+// engine is needed for KBX_PlayColor definition
+#include "engine.hpp"
 
 // define fixed color values
 const KBX_Color KBX_Color::BLACK(0.0f, 0.0f, 0.0f);
@@ -362,20 +364,17 @@ const size_t KBX_Die::FACE_3_B = 23;
 const size_t KBX_Die::FACE_4_B = 24;
 const size_t KBX_Die::FACE_5_B = 25;
 const size_t KBX_Die::FACE_6_B = 26;
-// tags for black/white
-const size_t KBX_Die::WHITE = 1;
-const size_t KBX_Die::BLACK = 2;
 /// the textures of the die surfaces are handled "globally" by this static member
 TextureHandler KBX_Die::textures = TextureHandler();
 /// inherit parent constructor and set color
-KBX_Die::KBX_Die(KBX_Vec pos, size_t color) :
+KBX_Die::KBX_Die(KBX_Vec pos, KBX_PlayColor color) :
      KBX_AnimObject(pos)
-    ,_color(color)
+    ,_playColor(color)
     ,IS_KING(false)
 {}
-KBX_Die::KBX_Die(KBX_Vec pos, size_t color, bool IS_KING) :
+KBX_Die::KBX_Die(KBX_Vec pos, KBX_PlayColor color, bool IS_KING) :
      KBX_AnimObject(pos)
-    ,_color(color)
+    ,_playColor(color)
     ,IS_KING(IS_KING)
 {}
 /// render the die
@@ -398,7 +397,7 @@ void KBX_Die::_render(bool picking){
     // prepare die face for king die if necessary
     GLuint kingFace;
     if (this->IS_KING){
-        if (this->_color == KBX_Die::WHITE){
+        if (this->_playColor == WHITE){
             kingFace = KBX_Die::textures.get( KBX_Die::FACE_K_W );
         } else {
             kingFace = KBX_Die::textures.get( KBX_Die::FACE_K_B );
@@ -408,7 +407,7 @@ void KBX_Die::_render(bool picking){
     if(!picking){
         if (this->IS_KING){
             glBindTexture( GL_TEXTURE_2D, kingFace );
-        } else if (this->_color == KBX_Die::WHITE){
+        } else if (this->_playColor == WHITE){
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_1_W ) );
         } else {
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_1_B ) );
@@ -424,7 +423,7 @@ void KBX_Die::_render(bool picking){
     if(!picking){
         if (this->IS_KING){
             glBindTexture( GL_TEXTURE_2D, kingFace );
-        } else if (this->_color == KBX_Die::WHITE){
+        } else if (this->_playColor == WHITE){
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_2_W ) );
         } else {
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_2_B ) );
@@ -440,7 +439,7 @@ void KBX_Die::_render(bool picking){
     if(!picking){
         if (this->IS_KING){
             glBindTexture( GL_TEXTURE_2D, kingFace );
-        } else if (this->_color == KBX_Die::WHITE){
+        } else if (this->_playColor == WHITE){
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_3_W ) );
         } else {
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_3_B ) );
@@ -456,7 +455,7 @@ void KBX_Die::_render(bool picking){
     if(!picking){
         if (this->IS_KING){
             glBindTexture( GL_TEXTURE_2D, kingFace );
-        } else if (this->_color == KBX_Die::WHITE){
+        } else if (this->_playColor == WHITE){
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_4_W ) );
         } else {
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_4_B ) );
@@ -472,7 +471,7 @@ void KBX_Die::_render(bool picking){
     if(!picking){
         if (this->IS_KING){
             glBindTexture( GL_TEXTURE_2D, kingFace );
-        } else if (this->_color == KBX_Die::WHITE){
+        } else if (this->_playColor == WHITE){
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_5_W ) );
         } else {
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_5_B ) );
@@ -488,7 +487,7 @@ void KBX_Die::_render(bool picking){
     if(!picking){
         if (this->IS_KING){
             glBindTexture( GL_TEXTURE_2D, kingFace );
-        } else if (this->_color == KBX_Die::WHITE){
+        } else if (this->_playColor == WHITE){
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_6_W ) );
         } else {
             glBindTexture( GL_TEXTURE_2D, KBX_Die::textures.get( KBX_Die::FACE_6_B ) );
@@ -504,40 +503,56 @@ void KBX_Die::_render(bool picking){
 }
 
 /// board constructor
-KBX_Board::KBX_Board(size_t rows, size_t cols){
-    this->nRows = rows;
-    this->nCols = cols;
+KBX_Board::KBX_Board(size_t rows, size_t cols) :
+     _nRows(rows)
+    ,_nCols(cols)
+    ,_tiles(_nRows, std::vector<KBX_Tile*>(_nCols))
+{
     // define tile colors
-    KBX_Color black = KBX_Color(0.0f, 0.0f, 0.0f);
-    KBX_Color white = KBX_Color(1.0f, 1.0f, 1.0f);
+    KBX_Color dark = KBX_Color::GREY40;
+    KBX_Color bright = KBX_Color::GREY60;
     KBX_Color tileColor;
     KBX_Vec tilePosition;
     // allocate memory for tiles
-    this->tiles = (KBX_Tile**) malloc( this->nCols*this->nRows * sizeof(KBX_Tile*) );     
+    //this->tiles = (KBX_Tile**) malloc( this->nCols*this->nRows * sizeof(KBX_Tile*) );     
+
     // setup tiles to form a checkered layout
-    for(size_t row=0; row<this->nRows; row++){
-        for(size_t col=0; col<this->nRows; col++){
-            tileColor = ( (row%2 + col%2)%2 == 0 ) ? black : white ;
-            tilePosition = KBX_Vec(   (float)row - (float)(this->nRows)/2
+    for(size_t row=0; row < this->_nRows; row++){
+        for(size_t col=0; col < this->_nCols; col++){
+            tileColor = ( (row%2 + col%2)%2 == 0 ) ? dark : bright ;
+            tilePosition = KBX_Vec(   (float)row - (float)(this->_nRows)/2
                                      ,-0.5
-                                     ,(float)col - (float)(this->nCols)/2
+                                     ,(float)col - (float)(this->_nCols)/2
                            );
-            this->tiles[row + this->nRows*col] = new KBX_Tile( tilePosition, tileColor );
+            this->_tiles[row][col] = new KBX_Tile( tilePosition, tileColor );
+        }
+    }
+}
+/// free memory of allocated tiles
+KBX_Board::~KBX_Board(){
+    std::vector<KBX_Tile*>::iterator it;
+    for (size_t r=0; r < this->_nRows; r++){
+        for (it=this->_tiles[r].begin(); it < this->_tiles[r].end(); it++){
+            delete *it;
         }
     }
 }
 /// display board by rendering every tile
 void KBX_Board::_render(bool picking){
-    for(size_t i=0; i<(this->nRows * this->nCols); i++){
-	glLoadName(i);
-        this->tiles[i]->display(picking);
+    for (size_t r=0; r < this->_nRows; r++){
+        for (size_t c=0; c < this->_nCols; c++){
+            glLoadName(r+c*this->_nCols);
+            this->_tiles[r][c]->display(picking);
+        }
     }
 }
 
 /// tile constructor
-KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color color) : KBX_Object(pos)
-                                                 , basicColor(color)
-                                                 , activeColor(color) {}
+KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color color) :
+     KBX_Object(pos)
+    ,basicColor(color)
+    ,activeColor(color)
+{}
 /// render the tile
 void KBX_Tile::_render(bool picking){
     if(picking){
@@ -611,7 +626,7 @@ void KBX_Scene::_render(bool picking){
     // call every object's display method to draw
     // the object to the scene
     for (size_t i=0; i<this->objList.size(); i++){
-	glLoadName(i);
+        glLoadName(i);
         this->objList[i]->display(picking);
     }
 
@@ -702,7 +717,7 @@ void initOpenGL(int width, int height){
     /* Our shading model--Gouraud (smooth). */
     glShadeModel( GL_SMOOTH );
     // use grey background (20%)...
-    const KBX_Color& bgColor = KBX_Color::GREY20;
+    const KBX_Color& bgColor = KBX_Color::GREY10;
     glClearColor(  bgColor.r
                  , bgColor.g
                  , bgColor.b

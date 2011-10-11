@@ -47,7 +47,7 @@ KBX_Controller::KBX_Controller(KBX_Scene* scene, KBX_Game* game) :
     KBX_Vec counterClockwise( 0.0,  1.0,  0.0);
 
     // setup dice with correct orientation
-    // per definition, the dice are set up in the same order, as the dice
+    // per definition, the dice are set up in the same order as the dice
     // are defined in the engine.
     // this way, the id of a single die in the _dice vector and in the engine
     // are the same. from this, the following order follows:
@@ -57,52 +57,52 @@ KBX_Controller::KBX_Controller(KBX_Scene* scene, KBX_Game* game) :
     //      9, 10, 11, 12, 13 (king), 14, 15, 16, 17.
 
     // white dice; w1 is in lower left corner, w8 in lower right
-    this->_dice.push_back( new KBX_Die( KBX_Vec(-4,0, 4), KBX_Die::WHITE ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec(-4,0, 4), WHITE ) );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new KBX_Die( KBX_Vec(-3,0, 4), KBX_Die::WHITE ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec(-3,0, 4), WHITE ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new KBX_Die( KBX_Vec(-2,0, 4), KBX_Die::WHITE ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec(-2,0, 4), WHITE ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new KBX_Die( KBX_Vec(-1,0, 4), KBX_Die::WHITE ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec(-1,0, 4), WHITE ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new KBX_Die( KBX_Vec( 0,0, 4), KBX_Die::WHITE, true ) );
-    this->_dice.push_back( new KBX_Die( KBX_Vec( 1,0, 4), KBX_Die::WHITE ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec( 0,0, 4), WHITE, true ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec( 1,0, 4), WHITE ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new KBX_Die( KBX_Vec( 2,0, 4), KBX_Die::WHITE ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec( 2,0, 4), WHITE ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new KBX_Die( KBX_Vec( 3,0, 4), KBX_Die::WHITE ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec( 3,0, 4), WHITE ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new KBX_Die( KBX_Vec( 4,0, 4), KBX_Die::WHITE ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec( 4,0, 4), WHITE ) );
     this->_dice.back()->rotate( counterClockwise, 90 );
     // black dice; b1 is in upper left corner, b8 in upper right
-    this->_dice.push_back( new KBX_Die( KBX_Vec(-4,0,-4), KBX_Die::BLACK ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec(-4,0,-4), BLACK ) );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new KBX_Die( KBX_Vec(-3,0,-4), KBX_Die::BLACK ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec(-3,0,-4), BLACK ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new KBX_Die( KBX_Vec(-2,0,-4), KBX_Die::BLACK ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec(-2,0,-4), BLACK ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new KBX_Die( KBX_Vec(-1,0,-4), KBX_Die::BLACK ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec(-1,0,-4), BLACK ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new KBX_Die( KBX_Vec( 0,0,-4), KBX_Die::BLACK, true ) );
-    this->_dice.push_back( new KBX_Die( KBX_Vec( 1,0,-4), KBX_Die::BLACK ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec( 0,0,-4), BLACK, true ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec( 1,0,-4), BLACK ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new KBX_Die( KBX_Vec( 2,0,-4), KBX_Die::BLACK ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec( 2,0,-4), BLACK ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new KBX_Die( KBX_Vec( 3,0,-4), KBX_Die::BLACK ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec( 3,0,-4), BLACK ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new KBX_Die( KBX_Vec( 4,0,-4), KBX_Die::BLACK ) );
+    this->_dice.push_back( new KBX_Die( KBX_Vec( 4,0,-4), BLACK ) );
     this->_dice.back()->rotate( clockwise, 90 );
     // add dice to scene
     for (size_t i=0; i < this->_dice.size(); i++){
