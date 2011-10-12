@@ -46,7 +46,7 @@ KBX_Controller::KBX_Controller(KBX_Scene* scene, KBX_Game* game) :
     KBX_Vec clockwise       ( 0.0, -1.0,  0.0);
     KBX_Vec counterClockwise( 0.0,  1.0,  0.0);
 
-    // setup dice with correct orientation
+    // setup dice with correct orientation.
     // per definition, the dice are set up in the same order as the dice
     // are defined in the engine.
     // this way, the id of a single die in the _dice vector and in the engine
@@ -115,6 +115,14 @@ KBX_Controller::KBX_Controller(KBX_Scene* scene, KBX_Game* game) :
     // initialize the board and add it to the scene
     this->_board = new KBX_Board(9, 9);
     scene->add( this->_board );
+    // add mapping from id of board-tile (gui representation) to
+    // its xy-coordinates
+    for (size_t i=0; i < 9; i++){
+        for (size_t j=0; j < 9; j++){
+            std::pair<size_t,size_t> xy(i,j);
+            this->_id2Field[ this->_board->getTileId(i,j) ] = xy;
+        }
+    }
 }
 /// handle events especially generated for the controller
 /**
@@ -132,3 +140,4 @@ int KBX_Controller::handle( SDL_Event* event ){
     //TODO: implement this
     return 0;
 }
+

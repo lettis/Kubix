@@ -31,9 +31,8 @@
 // engine is needed for KBX_PlayColor definition
 #include "engine.hpp"
 
-
 // define fixed color values
-const KBX_Color KBX_Color::BLACK(0.0f, 0.0f, 0.0f);
+const KBX_Color KBX_Color::BLACK (0.0f, 0.0f, 0.0f);
 const KBX_Color KBX_Color::GREY10(0.1f, 0.1f, 0.1f);
 const KBX_Color KBX_Color::GREY20(0.2f, 0.2f, 0.2f);
 const KBX_Color KBX_Color::GREY30(0.3f, 0.3f, 0.3f);
@@ -43,7 +42,10 @@ const KBX_Color KBX_Color::GREY60(0.6f, 0.6f, 0.6f);
 const KBX_Color KBX_Color::GREY70(0.7f, 0.7f, 0.7f);
 const KBX_Color KBX_Color::GREY80(0.8f, 0.8f, 0.8f);
 const KBX_Color KBX_Color::GREY90(0.9f, 0.9f, 0.9f);
-const KBX_Color KBX_Color::WHITE(1.0f, 1.0f, 1.0f);
+const KBX_Color KBX_Color::WHITE (1.0f, 1.0f, 1.0f);
+const KBX_Color KBX_Color::RED   (1.0f, 0.0f, 0.0f);
+const KBX_Color KBX_Color::GREEN (0.0f, 1.0f, 0.0f);
+const KBX_Color KBX_Color::BLUE  (0.0f, 0.0f, 1.0f);
 // define different versions of the KBX_Color constructor depending on parameters
 KBX_Color::KBX_Color(){
     this->r = 0;
@@ -75,6 +77,10 @@ size_t KBX_Color::id() const {
     //       if the color is bright (e.g. white: 1.0*255 + 1.0*255^2 + 1.0*255^3 ).
     //       is that necessary?
     return this->r*255 + 255*255*this->g + 255*255*255*this->b;
+}
+/// call glColor3f with internal values
+void KBX_Color::glColor() const {
+    glColor3f( this->r, this->g, this->b );
 }
 
 /// constructor initializing nullvector
@@ -130,9 +136,9 @@ KBX_Vec KBX_Vec::scale(float a){
     \param v the vector to be added
 */
 KBX_Vec KBX_Vec::add(KBX_Vec v){
-    return KBX_Vec(   this->x + v.x
-		            , this->y + v.y
-		            , this->z + v.z
+    return KBX_Vec( this->x + v.x
+		           ,this->y + v.y
+		           ,this->z + v.z
 		   );
 }
 /// subtract vector
@@ -323,7 +329,9 @@ void KBX_ObjectHandler::remove(KBX_Object* obj){
    \param id id of object to remove from the handler
  */
 void KBX_ObjectHandler::remove(size_t id){
-    if(id < objects.size()) objects[id] = NULL;
+    if(id < objects.size()){
+        objects[id] = NULL;
+    }
 }
 
 /// list of all objects to be handled (mouse events)
@@ -399,9 +407,13 @@ void KBX_Object::display(bool picking){
 }
 
 /// inherit parent constructor
-KBX_AnimObject::KBX_AnimObject() :KBX_Object() {}
+KBX_AnimObject::KBX_AnimObject() :
+    KBX_Object()
+{}
 /// inherit parent constructor
-KBX_AnimObject::KBX_AnimObject(KBX_Vec pos) :KBX_Object(pos) {}
+KBX_AnimObject::KBX_AnimObject(KBX_Vec pos) :
+    KBX_Object(pos)
+{}
 
 // this defines the keys for the die face textures
 const size_t KBX_Die::FACE_K_W = 10;
@@ -425,12 +437,23 @@ KBX_Die::KBX_Die(KBX_Vec pos, KBX_PlayColor color) :
      KBX_AnimObject(pos)
     ,_playColor(color)
     ,IS_KING(false)
-{}
+{
+    this->setColors();
+}
 KBX_Die::KBX_Die(KBX_Vec pos, KBX_PlayColor color, bool IS_KING) :
      KBX_AnimObject(pos)
     ,_playColor(color)
     ,IS_KING(IS_KING)
-{}
+{
+    this->setColors();
+}
+/// set colors for different activity states
+void KBX_Die::setColors(){
+    this->coloring[DEFAULT]     = KBX_Color::WHITE;
+    this->coloring[HIGHLIGHTED] = KBX_Color::GREEN;
+    this->coloring[MARKED]      = KBX_Color::BLUE;
+    this->coloring[SELECTED]    = KBX_Color::RED;
+}
 /// render the die
 void KBX_Die::_render(bool picking){
     // setting the color is neccessary in order to ensure that the texture is drawn 'as-is'
@@ -439,12 +462,12 @@ void KBX_Die::_render(bool picking){
     // of the current color before being drawn!
     if(picking){
         KBX_Color pickerColor = KBX_Color(this->id);
-        glColor3f(pickerColor.r, pickerColor.g, pickerColor.b);
+        pickerColor.glColor();
     } else {
         if (this->activityState == HIGHLIGHTED){
-            glColor3f(1.0f, 0.0f, 0.0f);
+            KBX_Color::RED.glColor();
         } else {
-            glColor3f(1.0, 1.0, 1.0);
+            KBX_Color::WHITE.glColor();
         }
         glEnable( GL_TEXTURE_2D );
     }
@@ -567,9 +590,6 @@ KBX_Board::KBX_Board(size_t rows, size_t cols) :
     KBX_Color bright = KBX_Color::GREY60;
     KBX_Color tileColor;
     KBX_Vec tilePosition;
-    // allocate memory for tiles
-    //this->tiles = (KBX_Tile**) malloc( this->nCols*this->nRows * sizeof(KBX_Tile*) );     
-
     // setup tiles to form a checkered layout
     for(size_t row=0; row < this->_nRows; row++){
         for(size_t col=0; col < this->_nCols; col++){
@@ -582,7 +602,7 @@ KBX_Board::KBX_Board(size_t rows, size_t cols) :
         }
     }
 }
-/// free memory of allocated tiles
+/// free memory of allocated tiles in destructor
 KBX_Board::~KBX_Board(){
     std::vector<KBX_Tile*>::iterator it;
     for (size_t r=0; r < this->_nRows; r++){
@@ -600,6 +620,10 @@ void KBX_Board::_render(bool picking){
         }
     }
 }
+/// return gui id of tile defined by its coordinates
+size_t KBX_Board::getTileId(size_t row, size_t col){
+    return this->_tiles[row][col]->id;
+}
 
 /// tile constructor
 KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color color) :
@@ -609,13 +633,13 @@ KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color color) :
 {}
 /// render the tile
 void KBX_Tile::_render(bool picking){
+    KBX_Logger log("KBX_Tile::_render");
     if(picking){
-	KBX_Color pickerColor = KBX_Color(this->id);
-        glColor3f(pickerColor.r, pickerColor.g, pickerColor.b);
+        KBX_Color(this->id).glColor();
     } else if (this->activityState == HIGHLIGHTED){
-        glColor3f(1.0f, 0.0f, 0.0f);
+        KBX_Color::RED.glColor();
     } else { 
-        glColor3f(this->activeColor.r, this->activeColor.g, this->activeColor.b);
+        activeColor.glColor();
     }
     glBegin( GL_QUADS );
      // upper face
@@ -693,9 +717,10 @@ void KBX_Scene::_render(bool picking){
         glPrint(this->text.c_str(), this->font);
         glPopMatrix();
     }
-
     // draw everything to screen
-    if(!picking) SDL_GL_SwapBuffers();
+    if(!picking){
+        SDL_GL_SwapBuffers();
+    }
 }
 /// add object to the scene
 /**
@@ -720,7 +745,7 @@ void KBX_Scene::rotate(float angle, size_t direction){
 
 /// obtain camera orientation relative to center of scene
 KBX_Vec KBX_Scene::getOrientation(){
-  return this->cam.getOrientation();
+    return this->cam.getOrientation();
 }
 
 /// zoom the scene in/out
@@ -786,11 +811,12 @@ void initOpenGL(int width, int height){
     glEnable(GL_DEPTH_TEST);
 }
 
-
 void setSDLWindow(int width, int height, bool resizable){
     int flags = 0;
     flags |= SDL_OPENGL;
-    if(resizable) flags |= SDL_RESIZABLE;
+    if(resizable){
+        flags |= SDL_RESIZABLE;
+    }
     SDL_Surface* screen = SDL_SetVideoMode(width, height, 0, flags);
     if(!screen){
       throw stringprintf("Unable to open SDL Window!").c_str();
@@ -819,10 +845,10 @@ GLuint glBuildFont(){
     dpy = XOpenDisplay(NULL); // default to DISPLAY env.   
     fontInfo = XLoadQueryFont(dpy, "-adobe-helvetica-medium-r-normal--18-*-*-*-p-*-iso8859-1");
     if (fontInfo == NULL) {
-	fontInfo = XLoadQueryFont(dpy, "fixed");
-	if (fontInfo == NULL) {
+        fontInfo = XLoadQueryFont(dpy, "fixed");
+        if (fontInfo == NULL) {
             throw "no X font available!";
-	}
+        }
     }
     // after loading this font info, this would probably be the time
     // to rotate, scale, or otherwise twink your fonts.  

@@ -32,6 +32,7 @@ class KBX_Controller{
     KBX_Board* _board;
     std::vector<KBX_Die*> _dice;
     std::map<size_t, size_t> _id2Die;
+    std::map<size_t, std::pair<size_t,size_t> > _id2Field;
 public:
     KBX_Controller(KBX_Scene* scene, KBX_Game* game);
     int handle(SDL_Event* event);

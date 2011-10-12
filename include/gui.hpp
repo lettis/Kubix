@@ -76,6 +76,9 @@ public:
     static const KBX_Color GREY70;
     static const KBX_Color GREY80;
     static const KBX_Color GREY90;
+    static const KBX_Color RED;
+    static const KBX_Color GREEN;
+    static const KBX_Color BLUE;
     float r;
     float g;
     float b;
@@ -85,6 +88,7 @@ public:
     KBX_Color(int r, int g, int b);
     KBX_Color(float r, float g, float b);
     size_t id() const;
+    void glColor() const;
 };
 
 /// defines a camera object for opengl
@@ -137,6 +141,8 @@ protected:
     // translate object to _pos
     void _translate();
 public:
+    // colors for different activities
+    std::map<KBX_Activity, KBX_Color> coloring;
     KBX_Activity activityState;
     // a unique id of this object
     const size_t id;
@@ -146,7 +152,7 @@ public:
     KBX_Object();
     KBX_Object(KBX_Vec pos);
     // virtual destructor
-    virtual ~KBX_Object() {
+    virtual ~KBX_Object(){
         // we need to remove the object from the objectList
         KBX_Object::objectList.remove(this);
     }
@@ -214,6 +220,8 @@ public:
     const bool IS_KING;
     KBX_Die(KBX_Vec pos, KBX_PlayColor color);
     KBX_Die(KBX_Vec pos, KBX_PlayColor color, bool IS_KING);
+    // set colors for different activities (hardcoded)
+    void setColors();
 };
 
 /// KBX_Board Tile
@@ -237,6 +245,7 @@ class KBX_Board: public KBX_Object{
 public:
     KBX_Board(size_t rows, size_t cols);
     ~KBX_Board();
+    size_t getTileId(size_t row, size_t col);
 };
 
 /// Defines the whole scene.
