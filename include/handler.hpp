@@ -37,7 +37,7 @@ public:
 /// handler for exit events
 class KBX_ExitEventHandler : public KBX_EventHandler{
 public:
-    KBX_ExitEventHandler(KBX_Scene* scene) :KBX_EventHandler(scene) {};
+    KBX_ExitEventHandler(KBX_Scene* scene);
     int handle(SDL_Event* event);
 };
 
@@ -55,19 +55,7 @@ class KBX_MotionEventHandler : public KBX_EventHandler{
     float clickPosX;
     float clickPosY;
 public:
-    KBX_MotionEventHandler(KBX_Scene* scene) :KBX_EventHandler(scene) { 
-        GLint viewport[4];
-        glGetIntegerv(GL_VIEWPORT, viewport);
-        this->resize = false;
-        this->keydown = false;
-        this->fullscreen = false;
-        this->zoom = 1;
-        this->rotateHorizontal = 0;
-        this->rotateVertical = 0;
-        this->width = viewport[2];
-        this->height = viewport[3];
-        this->cameraDrag = false; 
-    };
+    KBX_MotionEventHandler(KBX_Scene* scene);
     void proceed();
     int handle(SDL_Event* event);
 };
@@ -86,7 +74,7 @@ class KBX_ConsoleEventHandler : public KBX_EventHandler{
     std::stringstream input;
     bool active;
 public:
-    KBX_ConsoleEventHandler(KBX_Scene* scene) :KBX_EventHandler(scene) { this->active = false; };
+    KBX_ConsoleEventHandler(KBX_Scene* scene);
     int handle(SDL_Event* event);
 };
 #endif

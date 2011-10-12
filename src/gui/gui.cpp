@@ -283,13 +283,15 @@ KBX_Object* KBX_ObjectHandler::get(size_t id){
     //       for certain values, this must be changed.
     //       example: choose GREY10 as background color
     //                instead of GREY20
-    log.info( stringprintf( "null id:%d", this->nullId ) );
-    log.info( stringprintf( "clicked id:%d", id) );
+    log.info( stringprintf( "   null-id:\t%d", this->nullId ) );
+    log.info( stringprintf( "clicked id:\t%d", id) );
     if ( id == this->nullId ){
         return NULL;
     } else if(id > this->objects.size()){
         throw stringprintf("cannot access object %d: not in list", int(id)).c_str();
-    } else return this->objects.at(id);
+    } else {
+        return this->objects.at(id);
+    }
 }
 /// construct a new object handler
 KBX_ObjectHandler::KBX_ObjectHandler(){
@@ -331,7 +333,7 @@ KBX_Object::KBX_Object() :
      _angle(0)
     ,_isVisible(true)
     ,_pos( KBX_Vec(0,0,0) )
-    ,highlighted(false)
+    ,activityState(DEFAULT)
     // we need to add the object to the object list
     // and retrieve our own unique id from there
     ,id(KBX_Object::objectList.add(this)) 
@@ -341,7 +343,7 @@ KBX_Object::KBX_Object(KBX_Vec pos) :
      _angle(0)
     ,_isVisible(true)
     ,_pos( pos )
-    ,highlighted(false)
+    ,activityState(DEFAULT)
     // we need to add the object to the object list
     // and retrieve our own unique id from there
     ,id(KBX_Object::objectList.add(this)) 
@@ -439,7 +441,7 @@ void KBX_Die::_render(bool picking){
         KBX_Color pickerColor = KBX_Color(this->id);
         glColor3f(pickerColor.r, pickerColor.g, pickerColor.b);
     } else {
-        if (this->highlighted){
+        if (this->activityState == HIGHLIGHTED){
             glColor3f(1.0f, 0.0f, 0.0f);
         } else {
             glColor3f(1.0, 1.0, 1.0);
@@ -610,7 +612,7 @@ void KBX_Tile::_render(bool picking){
     if(picking){
 	KBX_Color pickerColor = KBX_Color(this->id);
         glColor3f(pickerColor.r, pickerColor.g, pickerColor.b);
-    } else if (this->highlighted){
+    } else if (this->activityState == HIGHLIGHTED){
         glColor3f(1.0f, 0.0f, 0.0f);
     } else { 
         glColor3f(this->activeColor.r, this->activeColor.g, this->activeColor.b);

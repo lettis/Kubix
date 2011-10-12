@@ -36,6 +36,14 @@ GLuint glBuildFont();
 
 #include "tools.hpp"
 
+/// define states for gui activity (illumination)
+enum KBX_Activity{
+     DEFAULT
+    ,HIGHLIGHTED
+    ,SELECTED
+    ,MARKED
+};
+
 /// defines a simple vector in 3d-cartesian coordinates
 class KBX_Vec{
 public:
@@ -129,7 +137,7 @@ protected:
     // translate object to _pos
     void _translate();
 public:
-    bool highlighted;
+    KBX_Activity activityState;
     // a unique id of this object
     const size_t id;
     // the object list handles all KBX_Objects ever constructed
@@ -139,8 +147,8 @@ public:
     KBX_Object(KBX_Vec pos);
     // virtual destructor
     virtual ~KBX_Object() {
-	// we need to remove the object from the objectList
-	KBX_Object::objectList.remove(this);
+        // we need to remove the object from the objectList
+        KBX_Object::objectList.remove(this);
     }
     // sets angle and axis to define a rotation
     void rotate(KBX_Vec axis, float angle);

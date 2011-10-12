@@ -15,12 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <iostream>
+
 #include "SDL.h"
 
 #include "handler.hpp"
 #include "gui.hpp"
-
-#include <iostream>
 
 /// constructor for event handling classes
 /**
@@ -30,7 +30,10 @@ KBX_EventHandler::KBX_EventHandler(KBX_Scene* scene){
     this->scene = scene;
 }
 
-
+/// constructor
+KBX_ExitEventHandler::KBX_ExitEventHandler(KBX_Scene* scene) :
+    KBX_EventHandler(scene)
+{}
 /// handle exit events
 /**
     \param event the given event
@@ -47,6 +50,22 @@ int KBX_ExitEventHandler::handle(SDL_Event* event){
     return 0;
 }
 
+/// constructor
+KBX_MotionEventHandler::KBX_MotionEventHandler(KBX_Scene* scene) :
+    KBX_EventHandler(scene)
+{ 
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    this->resize = false;
+    this->keydown = false;
+    this->fullscreen = false;
+    this->zoom = 1;
+    this->rotateHorizontal = 0;
+    this->rotateVertical = 0;
+    this->width = viewport[2];
+    this->height = viewport[3];
+    this->cameraDrag = false; 
+}
 /// handle motion events
 /**
     \param event the given event
@@ -155,7 +174,7 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
             || event->motion.y < border
             || event->motion.y > this->height-border-1){
             SDL_WM_GrabInput( SDL_GRAB_OFF );
-            //TODO: is this below still needed? if not: delete
+            //TODO: is this below still needed? it was commented out, anyway. if not needed: delete
             //            setSDLWindow(this->width, this->height, false);
         } 
         if(this->cameraDrag){
@@ -174,7 +193,6 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
     }
     return 0;
 }
-
 /// apply the changes
 /**
    this construction is necessary due to handling of KEYDOWN and KEYUP events.
@@ -212,13 +230,13 @@ int KBX_SelectionEventHandler::handle(SDL_Event* event){
             case SDL_BUTTON_LEFT: 
                 // mark former object de-selected
                 if(this->selectedObj){
-                    this->selectedObj->highlighted = false;
+                    this->selectedObj->activityState = DEFAULT;
                 }
                 // get new object
                 this->selectedObj = this->getObject(event->button.x, event->button.y);
                 // if new object has been hit, select it
                 if(this->selectedObj){
-                    this->selectedObj->highlighted = true;
+                    this->selectedObj->activityState = HIGHLIGHTED;
                     return 1;
                 } else {
                     return 0;
@@ -249,6 +267,12 @@ KBX_Object* KBX_SelectionEventHandler::getObject( size_t x, size_t y ){
     return KBX_Object::objectList.get(id);
 }
 
+/// constructor
+KBX_ConsoleEventHandler::KBX_ConsoleEventHandler(KBX_Scene* scene) :
+    KBX_EventHandler(scene)
+{
+    this->active = false;
+}
 /// handle console events
 /**
     \param event the given event
