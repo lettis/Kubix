@@ -26,7 +26,6 @@
 
 #include "gui.hpp"
 
-
 template<class NumType> int sgn(NumType n);
 int sgn(float f);
 int sgn(int i);
@@ -39,16 +38,23 @@ std::string stringprintf(std::string str, ...);
 /// represents a simple logger class, use it instead of cout/cerr-statements!
 class KBX_Logger{
     std::string  _name;
-    std::ostream& _out;
-    std::ostream& _err;
-    static bool  _loggingEnabled;
+    static std::ostream* _out;
+    static std::ostream* _err;
+    static bool  _infosEnabled;
+    static bool  _warningsEnabled;
+    static bool  _errorsEnabled;
     static std::string _getTime();
     void _sendMessage(std::string category, std::string msg);
 public:
     KBX_Logger(std::string name);
-    KBX_Logger(std::string name, std::ostream out, std::ostream err);
-    static void enableLogging();
-    static void disableLogging();
+    static void setOut(std::ostream* out);
+    static void setErr(std::ostream* err);
+    static void enableInfos();
+    static void disableInfos();
+    static void enableWarnings();
+    static void disableWarnings();
+    static void enableErrors();
+    static void disableErrors();
     void info(std::string msg);
     void warning(std::string msg);
     void error(std::string msg);

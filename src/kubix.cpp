@@ -31,7 +31,9 @@
 
 int main(){
     // enable logging
-    KBX_Logger::enableLogging();
+    KBX_Logger::enableInfos();
+    KBX_Logger::enableWarnings();
+    KBX_Logger::enableErrors();
     // build logger instance for main
     KBX_Logger mainLog("main");
     try{

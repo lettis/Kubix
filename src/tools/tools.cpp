@@ -44,6 +44,7 @@ int sgn(int i){
     return sgn<int> (i);
 }
 
+
 /// initialize logger and give it a name
 /**
     \param name logger will print this name in the logs
@@ -52,25 +53,44 @@ int sgn(int i){
 */
 KBX_Logger::KBX_Logger(std::string name) :
      _name(name)
-    ,_out(std::cout)
-    ,_err(std::cerr)
 {}
-/// initialize logger and give it a name
-/**
-    \param name logger will print this name in the logs
-    \param out  alternative outstream (maybe a file), infos and warnings go here
-    \param err  alternative error stream (maybe a file), errors go there
-*/
-KBX_Logger::KBX_Logger(std::string name, std::ostream out, std::ostream err) :
-     _name(name)
-    ,_out(out) 
-    ,_err(err) 
-{}
+// set out stream and error stream to stdout and stderr
+std::ostream* KBX_Logger::_out = &std::cout;
+std::ostream* KBX_Logger::_err = &std::cerr;
+void KBX_Logger::setOut(std::ostream* out){
+    KBX_Logger::_out = out;
+}
+void KBX_Logger::setErr(std::ostream* err){
+    KBX_Logger::_err = err;
+}
+
 // logging will be disabled per default
-bool KBX_Logger::_loggingEnabled = false;
-/// use this method to enable logging
-void KBX_Logger::enableLogging(){
-    KBX_Logger::_loggingEnabled = true;
+bool KBX_Logger::_infosEnabled      = false;
+bool KBX_Logger::_warningsEnabled   = false;
+bool KBX_Logger::_errorsEnabled     = false;
+/// use this method to enable info logging
+void KBX_Logger::enableInfos(){
+    KBX_Logger::_infosEnabled = true;
+}
+/// use this method to disable info logging
+void KBX_Logger::disableInfos(){
+    KBX_Logger::_infosEnabled = false;
+}
+/// use this method to enable warning logging
+void KBX_Logger::enableWarnings(){
+    KBX_Logger::_warningsEnabled = true;
+}
+/// use this method to disable warning logging
+void KBX_Logger::disableWarnings(){
+    KBX_Logger::_warningsEnabled = false;
+}
+/// use this method to enable error logging
+void KBX_Logger::enableErrors(){
+    KBX_Logger::_errorsEnabled = true;
+}
+/// use this method to disable error logging
+void KBX_Logger::disableErrors(){
+    KBX_Logger::_errorsEnabled = false;
 }
 /// return local time as string
 std::string KBX_Logger::_getTime(){
@@ -82,25 +102,27 @@ std::string KBX_Logger::_getTime(){
     timeInfo = localtime(&rawTime);
     return std::string( asctime(timeInfo) );
 }
-/// use this method to disable logging
-void KBX_Logger::disableLogging(){
-    KBX_Logger::_loggingEnabled = false;
-}
 /// write message to logfile / stdout
 void KBX_Logger::_sendMessage(std::string category, std::string msg){
-    this->_out << this->_getTime() << "\t" << this->_name << " | " << category << ": " << msg << std::endl;
+    (*this->_out) << this->_getTime() << "\t" << this->_name << " | " << category << ": " << msg << std::endl;
 }
 /// write info to logfile / stdout
 void KBX_Logger::info(std::string msg){
-    this->_sendMessage("INFO", msg);
+    if ( this->_infosEnabled ){
+        this->_sendMessage("INFO", msg);
+    }
 }
 /// write warning to logfile / stdout
 void KBX_Logger::warning(std::string msg){
-    this->_sendMessage("WARNING", msg);
+    if ( this->_warningsEnabled ){
+        this->_sendMessage("WARNING", msg);
+    }
 }
 /// write error to logfile / stdout
 void KBX_Logger::error(std::string msg){
-    this->_sendMessage("ERROR", msg);
+    if ( this->_errorsEnabled ){
+        this->_sendMessage("ERROR", msg);
+    }
 }
 
 
