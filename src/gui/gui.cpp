@@ -31,6 +31,7 @@
 // engine is needed for KBX_PlayColor definition
 #include "engine.hpp"
 
+
 // define fixed color values
 const KBX_Color KBX_Color::BLACK(0.0f, 0.0f, 0.0f);
 const KBX_Color KBX_Color::GREY10(0.1f, 0.1f, 0.1f);
@@ -271,8 +272,60 @@ void KBX_Camera::zoom(float factor){
     }
 }
 
-KBX_ObjectHandler KBX_Object::objectList;
+/// get object with given id
+/**
+   \param id id of the desired object
+   \return KBX_Object with given id
+*/
+KBX_Object* KBX_ObjectHandler::get(size_t id){
+    KBX_Logger log("KBX_ObjectHandler::get");
+    // TODO: calculation of ids seems to cause problems
+    //       for certain values, this must be changed.
+    //       example: choose GREY10 as background color
+    //                instead of GREY20
+    log.info( stringprintf( "null id:%d", this->nullId ) );
+    log.info( stringprintf( "clicked id:%d", id) );
+    if ( id == this->nullId ){
+        return NULL;
+    } else if(id > this->objects.size()){
+        throw stringprintf("cannot access object %d: not in list", int(id)).c_str();
+    } else return this->objects.at(id);
+}
+/// construct a new object handler
+KBX_ObjectHandler::KBX_ObjectHandler(){
+    this->nullId = 0;
+}
+/// add an object to the handler
+/**
+   \param obj object to add to the handler
+   \return number of object in list (object id)
+*/
+size_t KBX_ObjectHandler::add(KBX_Object* obj){
+    if(this->objects.size() == nullId){
+        this->objects.push_back(NULL);
+    }
+    this->objects.push_back(obj);
+    return this->objects.size()-1;
+}
+/// remove an object from the handler
+/**
+   \param obj object to remove from the handler
+ */
+void KBX_ObjectHandler::remove(KBX_Object* obj){
+    for(size_t i=0; i<this->objects.size(); i++){
+        if(objects[i] == obj) objects[i] = NULL;
+    }
+}
+/// remove an object from the handler
+/**
+   \param id id of object to remove from the handler
+ */
+void KBX_ObjectHandler::remove(size_t id){
+    if(id < objects.size()) objects[id] = NULL;
+}
 
+/// list of all objects to be handled (mouse events)
+KBX_ObjectHandler KBX_Object::objectList;
 /// default constructor
 KBX_Object::KBX_Object() :
      _angle(0)
@@ -293,7 +346,6 @@ KBX_Object::KBX_Object(KBX_Vec pos) :
     // and retrieve our own unique id from there
     ,id(KBX_Object::objectList.add(this)) 
 {}
-
 /// set object rotation (accumulatively)
 /**
     \param axis the axis around which the object will be rotated
@@ -716,8 +768,8 @@ void initSDL(int width, int height, bool fullscreen){
 void initOpenGL(int width, int height){
     /* Our shading model--Gouraud (smooth). */
     glShadeModel( GL_SMOOTH );
-    // use grey background (20%)...
-    const KBX_Color& bgColor = KBX_Color::GREY10;
+    // use grey background (10%)...
+    const KBX_Color& bgColor = KBX_Color::GREY20;
     glClearColor(  bgColor.r
                  , bgColor.g
                  , bgColor.b

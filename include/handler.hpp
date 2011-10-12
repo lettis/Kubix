@@ -41,7 +41,6 @@ public:
     int handle(SDL_Event* event);
 };
 
-
 /// handler for motion events
 class KBX_MotionEventHandler : public KBX_EventHandler{
     bool resize;
@@ -55,19 +54,18 @@ class KBX_MotionEventHandler : public KBX_EventHandler{
     bool cameraDrag;
     float clickPosX;
     float clickPosY;
-
 public:
     KBX_MotionEventHandler(KBX_Scene* scene) :KBX_EventHandler(scene) { 
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
-        this->fullscreen = false;
-        this->width = viewport[2];
-        this->height = viewport[3];
         this->resize = false;
         this->keydown = false;
+        this->fullscreen = false;
         this->zoom = 1;
         this->rotateHorizontal = 0;
         this->rotateVertical = 0;
+        this->width = viewport[2];
+        this->height = viewport[3];
         this->cameraDrag = false; 
     };
     void proceed();
@@ -77,8 +75,8 @@ public:
 /// handler for motion events
 class KBX_SelectionEventHandler : public KBX_EventHandler{
 public:
-    KBX_Object* selected;
-    KBX_SelectionEventHandler(KBX_Scene* scene) :KBX_EventHandler(scene) { this->selected = NULL; };
+    KBX_Object* selectedObj;
+    KBX_SelectionEventHandler(KBX_Scene* scene);
     int handle(SDL_Event* event);
     KBX_Object* getObject( size_t x, size_t y );
 };

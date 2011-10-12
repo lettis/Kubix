@@ -30,6 +30,7 @@ KBX_EventHandler::KBX_EventHandler(KBX_Scene* scene){
     this->scene = scene;
 }
 
+
 /// handle exit events
 /**
     \param event the given event
@@ -195,6 +196,11 @@ void KBX_MotionEventHandler::proceed(){
     }
 }
 
+/// initialize new selection event handler
+KBX_SelectionEventHandler::KBX_SelectionEventHandler(KBX_Scene* scene) :
+     KBX_EventHandler(scene)
+    ,selectedObj(NULL)
+{}
 /// handle selection events
 /**
     \param event the given event
@@ -205,14 +211,14 @@ int KBX_SelectionEventHandler::handle(SDL_Event* event){
         switch (event->button.button){
             case SDL_BUTTON_LEFT: 
                 // mark former object de-selected
-                if(this->selected){
-                    this->selected->highlighted = false;
+                if(this->selectedObj){
+                    this->selectedObj->highlighted = false;
                 }
                 // get new object
-                this->selected = this->getObject(event->button.x, event->button.y);
+                this->selectedObj = this->getObject(event->button.x, event->button.y);
                 // if new object has been hit, select it
-                if(this->selected){
-                    this->selected->highlighted = true;
+                if(this->selectedObj){
+                    this->selectedObj->highlighted = true;
                     return 1;
                 } else {
                     return 0;

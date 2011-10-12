@@ -34,18 +34,6 @@ GLvoid glPrint(const char *text, GLuint base);
 GLvoid glKillFont( GLuint base );
 GLuint glBuildFont();
 
-// TODO: clean this. what is in tools, that needs these definitions?
-//       and why is it not in here?
-class KBX_Vec;
-class KBX_Color;
-class KBX_Camera;
-class KBX_Object;
-class KBX_AnimObject;
-class KBX_Die;
-class KBX_Tile;
-class KBX_Board;
-class KBX_Scene;
-
 #include "tools.hpp"
 
 /// defines a simple vector in 3d-cartesian coordinates
@@ -107,6 +95,23 @@ public:
     void setPosition(KBX_Vec pos);
     void rotate(float angle, size_t direction);
     void zoom(float factor);
+};
+
+class KBX_Object;
+/// handle for an object's mouse events and identification
+class KBX_ObjectHandler{
+    std::vector<KBX_Object*> objects;
+public: 
+    // the nullId is the id that corresponds to the NULL pointer.
+    // it is, however, not neccessarily zero,
+    // as it is supposed to correspond to the color id 
+    // of the background color
+    size_t nullId;
+    KBX_ObjectHandler();
+    KBX_Object* get(size_t id);
+    size_t add(KBX_Object* obj);
+    void remove(KBX_Object* obj);
+    void remove(size_t id);
 };
 
 // KBX_Object

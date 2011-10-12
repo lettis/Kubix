@@ -27,9 +27,6 @@
 #include "gui.hpp"
 
 
-class TextureHandler;
-class KBX_ObjectHandler;
-
 template<class NumType> int sgn(NumType n);
 int sgn(float f);
 int sgn(int i);
@@ -66,21 +63,5 @@ class TextureHandler{
 public: 
     void load(std::map<size_t, std::string> files);
     GLuint get(size_t key);
-};
-
-/// handles all KBX_Objects (mainly for mouse selection) 
-class KBX_ObjectHandler{
-    std::vector<KBX_Object*> objects;
-public: 
-    // the nullId is the id that corresponds to the NULL pointer
-    // it is, however, not neccessarily zero
-    // as it is supposed to correspond to the color id 
-    // of the background color
-    size_t nullId;
-    KBX_ObjectHandler();
-    KBX_Object* get(size_t id);
-    size_t add(KBX_Object* obj);
-    void remove(KBX_Object* obj);
-    void remove(size_t id);
 };
 #endif
