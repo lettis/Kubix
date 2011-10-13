@@ -464,10 +464,22 @@ void KBX_Die::_render(bool picking){
         KBX_Color pickerColor = KBX_Color(this->id);
         pickerColor.glColor();
     } else {
-        if (this->activityState == HIGHLIGHTED){
-            KBX_Color::RED.glColor();
-        } else {
-            KBX_Color::WHITE.glColor();
+        switch(this->activityState) {
+            case DEFAULT:
+                this->coloring[DEFAULT].glColor();
+                break;
+            case HIGHLIGHTED:
+                this->coloring[HIGHLIGHTED].glColor();
+                break;
+            case SELECTED:
+                this->coloring[SELECTED].glColor();
+                break;
+            case MARKED:
+                this->coloring[MARKED].glColor();
+                break;
+            default:
+                this->coloring[DEFAULT].glColor();
+                break;
         }
         glEnable( GL_TEXTURE_2D );
     }
@@ -629,17 +641,39 @@ size_t KBX_Board::getTileId(size_t row, size_t col){
 KBX_Tile::KBX_Tile(KBX_Vec pos, KBX_Color color) :
      KBX_Object(pos)
     ,basicColor(color)
-    ,activeColor(color)
-{}
+{
+    this->setColors();
+}
+/// set colors for different activity states
+void KBX_Tile::setColors(){
+    this->coloring[DEFAULT]     = this->basicColor;
+    this->coloring[HIGHLIGHTED] = KBX_Color::GREEN;
+    this->coloring[MARKED]      = KBX_Color::BLUE;
+    this->coloring[SELECTED]    = KBX_Color::RED;
+}
 /// render the tile
 void KBX_Tile::_render(bool picking){
     KBX_Logger log("KBX_Tile::_render");
     if(picking){
         KBX_Color(this->id).glColor();
-    } else if (this->activityState == HIGHLIGHTED){
-        KBX_Color::RED.glColor();
-    } else { 
-        activeColor.glColor();
+    } else {
+        switch(this->activityState) {
+            case DEFAULT:
+                this->coloring[DEFAULT].glColor();
+                break;
+            case HIGHLIGHTED:
+                this->coloring[HIGHLIGHTED].glColor();
+                break;
+            case SELECTED:
+                this->coloring[SELECTED].glColor();
+                break;
+            case MARKED:
+                this->coloring[MARKED].glColor();
+                break;
+            default:
+                this->coloring[DEFAULT].glColor();
+                break;
+        }
     }
     glBegin( GL_QUADS );
      // upper face

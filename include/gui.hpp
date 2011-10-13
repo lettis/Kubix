@@ -220,7 +220,6 @@ public:
     const bool IS_KING;
     KBX_Die(KBX_Vec pos, KBX_PlayColor color);
     KBX_Die(KBX_Vec pos, KBX_PlayColor color, bool IS_KING);
-    // set colors for different activities (hardcoded)
     void setColors();
 };
 
@@ -229,10 +228,10 @@ public:
 class KBX_Tile: public KBX_Object{
     void _render(bool picking = false);
     KBX_Color basicColor;
-    KBX_Color activeColor;
 public:
     KBX_Tile();
     KBX_Tile(KBX_Vec pos, KBX_Color color);
+    void setColors();
 };
 
 /// KBX_Board
