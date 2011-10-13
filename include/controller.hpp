@@ -26,6 +26,13 @@
 #include "gui.hpp"
 #include "engine.hpp"
 
+/** 
+    the controller loads the game and the board
+    with all dice and sets these to the right fields with correct
+    orientation. additionally, the dice (i.e. their graphical models)
+    are connected to their model-counterparts (i.e. their abstract
+    representation in the engine).
+*/
 class KBX_Controller{
     KBX_Scene* _scene;
     KBX_Game*  _game;
@@ -37,4 +44,25 @@ public:
     KBX_Controller(KBX_Scene* scene, KBX_Game* game);
     int handle(SDL_Event* event);
 };
+
+// messaging
+enum KBX_MessageType {
+     MARK_X_POS     = 0
+    ,MARK_X_NEG     = 1
+    ,MARK_Y_POS     = 2
+    ,MARK_Y_NEG     = 3
+    ,SELECT         = 4
+};
+class KBX_ControllerMessage{
+protected:
+    void setupEmpty();
+    SDL_Event event;
+    SDL_UserEvent userEvent;
+public:
+    KBX_ControllerMessage();
+    KBX_ControllerMessage(KBX_MessageType msgType);
+    KBX_ControllerMessage(KBX_MessageType msgType, void* data);
+    void send();
+};
+
 #endif

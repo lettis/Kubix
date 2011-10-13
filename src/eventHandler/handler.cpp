@@ -182,6 +182,8 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
             this->scene->rotate(event->motion.xrel*this->rotateHorizontal, KBX_Camera::HORIZONTAL);
             this->scene->rotate(event->motion.yrel*this->rotateVertical, KBX_Camera::VERTICAL);
         }
+    //TODO: what are we doing with these if-statements below?
+    //TODO: if cout statements are needed, use logger instead
     } else if (event->type == SDL_VIDEOEXPOSE ){
         //std::cout << "videoexpose event" << std::endl;
     } else if (event->type == SDL_SYSWMEVENT ){
@@ -228,6 +230,12 @@ int KBX_SelectionEventHandler::handle(SDL_Event* event){
     if (event->type == SDL_MOUSEBUTTONDOWN){
         switch (event->button.button){
             case SDL_BUTTON_LEFT: 
+
+                //TODO: do not perform the highlighting here,
+                //      send message to controller instead
+                
+                //TODO: handle cursor keys for selection (msg to controller)
+
                 // mark former object de-selected
                 if(this->selectedObj){
                     this->selectedObj->activityState = DEFAULT;
@@ -281,7 +289,7 @@ KBX_ConsoleEventHandler::KBX_ConsoleEventHandler(KBX_Scene* scene) :
 int KBX_ConsoleEventHandler::handle(SDL_Event* event){
     if (event->type == SDL_KEYDOWN){
         if(!this->active && event->key.keysym.sym == SDLK_RETURN){
-            this->active = !this->active;
+            this->active = true;
             return 1;
         } else if(this->active){
             if(event->key.keysym.sym == SDLK_RETURN){

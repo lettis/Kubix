@@ -27,12 +27,6 @@
 /**
     \param scene pointer to the scene object (view)
     \param game pointer to the game object (model)
-
-    the controller constructor loads the game and the board
-    with all dice and sets these to the right fields with correct
-    orientation. additionally, the dice (i.e. their graphical models)
-    are connected to their model-counterparts (i.e. their abstract
-    representation in the engine).
 */
 KBX_Controller::KBX_Controller(KBX_Scene* scene, KBX_Game* game) :
      _scene(scene)
@@ -139,5 +133,36 @@ KBX_Controller::KBX_Controller(KBX_Scene* scene, KBX_Game* game) :
 int KBX_Controller::handle( SDL_Event* event ){
     //TODO: implement this
     return 0;
+}
+
+// messaging
+/// initialize sdl event with common data
+KBX_ControllerMessage::KBX_ControllerMessage(){
+    this->setupEmpty();
+}
+/// initialize sdl event with specified message type
+KBX_ControllerMessage::KBX_ControllerMessage(KBX_MessageType msgType){
+    this->setupEmpty();
+    this->userEvent.code = msgType;
+}
+/// initialize sdl event with specified message type and data
+KBX_ControllerMessage::KBX_ControllerMessage(KBX_MessageType msgType, void* data){
+    this->setupEmpty();
+    this->userEvent.code = msgType;
+    this->userEvent.data1 = data;
+}
+void KBX_ControllerMessage::setupEmpty(){
+    // prepare empty user event
+    this->userEvent.type = SDL_USEREVENT;
+    this->userEvent.code = -1;
+    this->userEvent.data1 = NULL;
+    this->userEvent.data2 = NULL;
+    // set event type to user event
+    this->event.type = SDL_USEREVENT;
+}
+/// send message to sdl queue
+void KBX_ControllerMessage::send(){
+    this->event.user = this->userEvent;
+    SDL_PushEvent( &this->event );
 }
 
