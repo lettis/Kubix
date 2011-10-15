@@ -21,6 +21,7 @@
 
 #include "handler.hpp"
 #include "gui.hpp"
+#include "controller.hpp"
 
 /// constructor for event handling classes
 /**
@@ -230,21 +231,11 @@ int KBX_SelectionEventHandler::handle(SDL_Event* event){
     if (event->type == SDL_MOUSEBUTTONDOWN){
         switch (event->button.button){
             case SDL_BUTTON_LEFT: 
-
-                //TODO: do not perform the highlighting here,
-                //      send message to controller instead
-                
-                //TODO: handle cursor keys for selection (msg to controller)
-
-                // mark former object de-selected
-                if(this->selectedObj){
-                    this->selectedObj->activityState = DEFAULT;
-                }
-                // get new object
+                // get new object reference
                 this->selectedObj = this->getObject(event->button.x, event->button.y);
-                // if new object has been hit, select it
                 if(this->selectedObj){
-                    this->selectedObj->activityState = HIGHLIGHTED;
+                    // if object has been hit, send appropriate message to controller
+                    KBX_SelectionMessage( this->selectedObj->id ).send();
                     return 1;
                 } else {
                     return 0;
@@ -253,6 +244,7 @@ int KBX_SelectionEventHandler::handle(SDL_Event* event){
                 return 0;
         }
     }
+    //TODO: handle cursor keys for selection (msg to controller)
     return 0;
 }
 /// get Object at given mouse coordinates

@@ -16,6 +16,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <sstream>
+#include <stdio.h>
+
 #include "SDL.h"
 #include "SDL_opengl.h"
 
@@ -132,6 +135,34 @@ KBX_Controller::KBX_Controller(KBX_Scene* scene, KBX_Game* game) :
 */
 int KBX_Controller::handle( SDL_Event* event ){
     //TODO: implement this
+    size_t objectId;
+    KBX_Logger log("controller handle");
+    if (event->type == SDL_USEREVENT){
+        switch( event->user.code ){
+            case MARK_X_POS:
+                log.info( "mark +x" );
+                break;
+            case MARK_X_NEG:
+                log.info( "mark -x" );
+                break;
+            case MARK_Y_POS:
+                log.info( "mark +y" );
+                break;
+            case MARK_Y_NEG:
+                log.info( "mark -y" );
+                break;
+            case SELECT:
+                log.info( "select" );
+                break;
+            case SELECT_GUI_OBJ:
+                objectId = KBX_SelectionMessage::nextId();
+                log.info( stringprintf("select gui obj: %d", objectId) );
+                break;
+            default:
+                // do nothing
+                break;
+        }
+    }
     return 0;
 }
 
@@ -166,3 +197,17 @@ void KBX_ControllerMessage::send(){
     SDL_PushEvent( &this->event );
 }
 
+/// initialize queue to temporarily store selected ids
+std::queue<size_t> KBX_SelectionMessage::_idQueue;
+/// initialize gui selection message
+KBX_SelectionMessage::KBX_SelectionMessage(size_t id) :
+     KBX_ControllerMessage( SELECT_GUI_OBJ )
+{
+    KBX_SelectionMessage::_idQueue.push( id );
+}
+/// get next id
+size_t KBX_SelectionMessage::nextId(){
+    size_t id = KBX_SelectionMessage::_idQueue.front();
+    KBX_SelectionMessage::_idQueue.pop();
+    return id;
+}

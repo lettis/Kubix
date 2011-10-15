@@ -18,7 +18,7 @@
 #ifndef CONTROLLER__HPP
 #define CONTROLLER__HPP
 
-#include <map>
+#include <queue>
 
 #include "SDL.h"
 #include "SDL_opengl.h"
@@ -46,13 +46,16 @@ public:
 };
 
 // messaging
+/// define different message types
 enum KBX_MessageType {
      MARK_X_POS     = 0
     ,MARK_X_NEG     = 1
     ,MARK_Y_POS     = 2
     ,MARK_Y_NEG     = 3
     ,SELECT         = 4
+    ,SELECT_GUI_OBJ = 5
 };
+/// more or less generic controller message
 class KBX_ControllerMessage{
 protected:
     void setupEmpty();
@@ -63,6 +66,14 @@ public:
     KBX_ControllerMessage(KBX_MessageType msgType);
     KBX_ControllerMessage(KBX_MessageType msgType, void* data);
     void send();
+};
+
+/// represent message for selection of gui element
+class KBX_SelectionMessage : public KBX_ControllerMessage{
+    static std::queue<size_t> _idQueue;
+public:
+    static size_t nextId();
+    KBX_SelectionMessage(size_t id);
 };
 
 #endif
