@@ -143,7 +143,6 @@ const std::vector< std::vector<KBX_Move> > KBX_DieState::initPossibleMoves(){
     }
     return possibleMoves;
 }
-
 /// initialize die states
 /**
     the idea behind this list is to define every possible orientation a die

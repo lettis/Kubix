@@ -16,8 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <sstream>
-#include <stdio.h>
+#include <queue>
 
 #include "SDL.h"
 #include "SDL_opengl.h"
@@ -34,6 +33,8 @@
 KBX_Controller::KBX_Controller(KBX_Scene* scene, KBX_Game* game) :
      _scene(scene)
     ,_game(game)
+    ,_nextTurn(WHITE)
+    ,_markedId(CLEAR)
 {
     // define rotation axes
     KBX_Vec toFront         (-1.0,  0.0,  0.0);
@@ -113,13 +114,59 @@ KBX_Controller::KBX_Controller(KBX_Scene* scene, KBX_Game* game) :
     this->_board = new KBX_Board(9, 9);
     scene->add( this->_board );
     // add mapping from id of board-tile (gui representation) to
-    // its xy-coordinates
+    // its xy-coordinates and vice versa
     for (size_t i=0; i < 9; i++){
         for (size_t j=0; j < 9; j++){
             std::pair<size_t,size_t> xy(i,j);
             this->_id2Field[ this->_board->getTileId(i,j) ] = xy;
         }
     }
+}
+/// mark next object on the board
+/**
+    \param dx relative coordinate in x direction depending on currently marked object
+    \param dy relative coordinate in y direction depending on currently marked object
+    
+    mark next object on relative coordinates depending on the currently marked object.
+    if there is no object marked, automatically mark the field in the middle.
+*/
+void KBX_Controller::_markNext(int dx, int dy){
+    int x,y;
+    if (this->_markedId == CLEAR){
+        // if no field marked, set centre field marked
+        x = 4;
+        y = 4;
+    } else {
+        if ( this->_id2Field.count( this->_markedId ) == 1 ){
+            std::pair<size_t,size_t> xy = this->_id2Field[ this->_markedId ];
+            x = xy.first;
+            y = xy.second;
+        } else {
+            // TODO: treat die
+        }
+        // check boundaries
+        if ( 0 <= x+dx && x+dx < 9 ){
+            x += dx;
+        }
+        if ( 0 <= y+dy && y+dy < 9 ){
+            y += dy;
+        }
+    }
+    // TODO: check, if die lies on these coordinates;
+    //       if yes: select die instead of field
+    size_t id = this->_board->getTileId( x, y );
+    // mark the object
+    this->_mark( id );
+}
+/// mark new object, unmark previous one
+void KBX_Controller::_mark(size_t objectId){
+    if (this->_markedId != CLEAR){
+        // unmark prev
+        KBX_Object::objectList.get( this->_markedId )->activityState = DEFAULT;
+    }
+    // mark new obj
+    KBX_Object::objectList.get( objectId )->activityState = MARKED;
+    this->_markedId = objectId;
 }
 /// handle events especially generated for the controller
 /**
@@ -134,22 +181,26 @@ KBX_Controller::KBX_Controller(KBX_Scene* scene, KBX_Game* game) :
     instead the gui events are filtered and preprocessed by the other event handlers.
 */
 int KBX_Controller::handle( SDL_Event* event ){
-    //TODO: implement this
+    //TODO: finish this
     size_t objectId;
-    KBX_Logger log("controller handle");
+    KBX_Logger log("KBX_Controller::handle");
     if (event->type == SDL_USEREVENT){
         switch( event->user.code ){
             case MARK_X_POS:
                 log.info( "mark +x" );
+                this->_markNext( 1, 0 );
                 break;
             case MARK_X_NEG:
                 log.info( "mark -x" );
+                this->_markNext( -1, 0 );
                 break;
             case MARK_Y_POS:
                 log.info( "mark +y" );
+                this->_markNext( 0, 1 );
                 break;
             case MARK_Y_NEG:
                 log.info( "mark -y" );
+                this->_markNext( 0, -1 );
                 break;
             case SELECT:
                 log.info( "select" );
@@ -157,6 +208,7 @@ int KBX_Controller::handle( SDL_Event* event ){
             case SELECT_GUI_OBJ:
                 objectId = KBX_SelectionMessage::nextId();
                 log.info( stringprintf("select gui obj: %d", objectId) );
+                this->_mark( objectId );
                 break;
             default:
                 // do nothing
@@ -205,7 +257,7 @@ KBX_SelectionMessage::KBX_SelectionMessage(size_t id) :
 {
     KBX_SelectionMessage::_idQueue.push( id );
 }
-/// get next id
+/// get next id (from static queue)
 size_t KBX_SelectionMessage::nextId(){
     size_t id = KBX_SelectionMessage::_idQueue.front();
     KBX_SelectionMessage::_idQueue.pop();

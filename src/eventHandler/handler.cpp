@@ -180,7 +180,7 @@ int KBX_MotionEventHandler::handle(SDL_Event* event){
         } 
         if(this->cameraDrag){
             // actually perform the rotation
-            this->scene->rotate(event->motion.xrel*this->rotateHorizontal, KBX_Camera::HORIZONTAL);
+            this->scene->rotate(-1 * event->motion.xrel*this->rotateHorizontal, KBX_Camera::HORIZONTAL);
             this->scene->rotate(event->motion.yrel*this->rotateVertical, KBX_Camera::VERTICAL);
         }
     //TODO: what are we doing with these if-statements below?
@@ -229,6 +229,7 @@ KBX_SelectionEventHandler::KBX_SelectionEventHandler(KBX_Scene* scene) :
 */
 int KBX_SelectionEventHandler::handle(SDL_Event* event){
     if (event->type == SDL_MOUSEBUTTONDOWN){
+        // handle selection per mouse
         switch (event->button.button){
             case SDL_BUTTON_LEFT: 
                 // get new object reference
@@ -243,8 +244,27 @@ int KBX_SelectionEventHandler::handle(SDL_Event* event){
             default:
                 return 0;
         }
+    } else if (event->type == SDL_KEYDOWN){
+        // handle selection per cursor keys
+        switch (event->key.keysym.sym){
+            // TODO: check orientation of board
+            case SDLK_UP:
+                KBX_ControllerMessage( MARK_Y_NEG ).send();
+                return 1;
+            case SDLK_DOWN:
+                KBX_ControllerMessage( MARK_Y_POS ).send();
+                return 1;
+            case SDLK_LEFT:
+                KBX_ControllerMessage( MARK_X_NEG ).send();
+                return 1;
+            case SDLK_RIGHT:
+                KBX_ControllerMessage( MARK_X_POS ).send();
+                return 1;
+            default:
+                // do nothing
+                break;
+        }
     }
-    //TODO: handle cursor keys for selection (msg to controller)
     return 0;
 }
 /// get Object at given mouse coordinates

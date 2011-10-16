@@ -18,6 +18,8 @@
 #ifndef CONTROLLER__HPP
 #define CONTROLLER__HPP
 
+#include <map>
+#include <vector>
 #include <queue>
 
 #include "SDL.h"
@@ -40,6 +42,11 @@ class KBX_Controller{
     std::vector<KBX_Die*> _dice;
     std::map<size_t, size_t> _id2Die;
     std::map<size_t, std::pair<size_t,size_t> > _id2Field;
+    KBX_PlayColor _nextTurn;
+    int _markedId;
+
+    void _mark(size_t objectId);
+    void _markNext(int dx, int dy);
 public:
     KBX_Controller(KBX_Scene* scene, KBX_Game* game);
     int handle(SDL_Event* event);
