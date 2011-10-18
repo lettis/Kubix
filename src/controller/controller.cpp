@@ -35,7 +35,10 @@ KBX_Controller::KBX_Controller(KBX_Scene* scene, KBX_Game* game) :
     ,_game(game)
     ,_nextTurn(WHITE)
     ,_markedId(CLEAR)
+    ,_selectedId(CLEAR)
 {
+    // TODO: x/y coordinates of gui and engine seem not to match
+
     // define rotation axes
     KBX_Vec toFront         (-1.0,  0.0,  0.0);
     KBX_Vec toBack          ( 1.0,  0.0,  0.0);
@@ -114,11 +117,11 @@ KBX_Controller::KBX_Controller(KBX_Scene* scene, KBX_Game* game) :
     this->_board = new KBX_Board(9, 9);
     scene->add( this->_board );
     // add mapping from id of board-tile (gui representation) to
-    // its xy-coordinates and vice versa
-    for (size_t i=0; i < 9; i++){
-        for (size_t j=0; j < 9; j++){
-            std::pair<size_t,size_t> xy(i,j);
-            this->_id2Field[ this->_board->getTileId(i,j) ] = xy;
+    // its xy-coordinates
+    for (size_t x=0; x < 9; x++){
+        for (size_t y=0; y < 9; y++){
+            std::pair<size_t,size_t> xy(x,y);
+            this->_id2Field[ this->_board->getTileId(x,y) ] = xy;
         }
     }
 }
@@ -134,15 +137,20 @@ void KBX_Controller::_markNext(int dx, int dy){
     int x,y;
     if (this->_markedId == CLEAR){
         // if no field marked, set centre field marked
-        x = 4;
-        y = 4;
+        x = 3;
+        y = 2;
     } else {
         if ( this->_id2Field.count( this->_markedId ) == 1 ){
+            // prev. marked obj. was a field
             std::pair<size_t,size_t> xy = this->_id2Field[ this->_markedId ];
             x = xy.first;
             y = xy.second;
         } else {
-            // TODO: treat die
+            // prev. marked obj. was a die
+            size_t dieId = this->_id2Die[ this->_markedId ];
+            KBX_DieState* die = this->_game->getDie( dieId );
+            x = die->x();
+            y = die->y();
         }
         // check boundaries
         if ( 0 <= x+dx && x+dx < 9 ){
@@ -152,21 +160,54 @@ void KBX_Controller::_markNext(int dx, int dy){
             y += dy;
         }
     }
-    // TODO: check, if die lies on these coordinates;
-    //       if yes: select die instead of field
     size_t id = this->_board->getTileId( x, y );
     // mark the object
     this->_mark( id );
 }
-/// mark new object, unmark previous one
-void KBX_Controller::_mark(size_t objectId){
-    if (this->_markedId != CLEAR){
-        // unmark prev
-        KBX_Object::objectList.get( this->_markedId )->activityState = DEFAULT;
+/// switch id
+/**
+    \param activity the activity (marked, selected, etc) for which the ids should be changed
+    \param oldId reference to the old id
+    \param newId the new id
+
+    switch the gui-object ids for a given activity (marked, selected, etc). this method checks,
+    if there has been an object that has been marked, selected, etc before, sets its state to default
+    and highlights the new object, identified by newId.
+*/
+void KBX_Controller::_switchId(KBX_Activity activity, int& oldId, int newId){
+    KBX_Logger log("KBX_Controller::_switchId");
+    // check, if die lies on coordinates of newId;
+    // if yes: select die instead of field
+    if (this->_id2Field.count( newId ) == 1){
+        log.info( "field selected" );
+        // selected object is a field
+        size_t x = this->_id2Field[ newId ].first;
+        size_t y = this->_id2Field[ newId ].second;
+        int dieId = this->_game->getDieId(x, y);
+        log.info( stringprintf("coords: %d,%d ; die-id: %d", x, y, dieId) );
+        if (dieId != CLEAR){
+            log.info( stringprintf( "there is a die on the field: %d", dieId ) );
+            // there is a die on the selected field
+            newId = this->_dice[ dieId ]->id;
+        }
     }
-    // mark new obj
-    KBX_Object::objectList.get( objectId )->activityState = MARKED;
-    this->_markedId = objectId;
+    if (oldId != CLEAR){
+        // unmark prev
+        KBX_Object::objectList.get( oldId )->activityState = DEFAULT;
+    }
+    if (newId != CLEAR){
+        // mark new obj
+        KBX_Object::objectList.get( newId )->activityState = activity;
+    }
+    oldId = newId;
+}
+/// mark new object, unmark previous one
+void KBX_Controller::_mark(int objectId){
+    this->_switchId( MARKED, this->_markedId, objectId );
+}
+/// select new object, deselect previous one
+void KBX_Controller::_select(int objectId){
+    this->_switchId( SELECTED, this->_selectedId, objectId );
 }
 /// handle events especially generated for the controller
 /**
@@ -204,11 +245,15 @@ int KBX_Controller::handle( SDL_Event* event ){
                 break;
             case SELECT:
                 log.info( "select" );
+                objectId = this->_markedId;
+                this->_mark( CLEAR );
+                this->_select( objectId );
                 break;
             case SELECT_GUI_OBJ:
                 objectId = KBX_SelectionMessage::nextId();
                 log.info( stringprintf("select gui obj: %d", objectId) );
-                this->_mark( objectId );
+                this->_mark( CLEAR );
+                this->_select( objectId );
                 break;
             default:
                 // do nothing

@@ -44,8 +44,11 @@ class KBX_Controller{
     std::map<size_t, std::pair<size_t,size_t> > _id2Field;
     KBX_PlayColor _nextTurn;
     int _markedId;
+    int _selectedId;
 
-    void _mark(size_t objectId);
+    void _switchId(KBX_Activity activity, int& oldId, int newId);
+    void _mark(int objectId);
+    void _select(int objectId);
     void _markNext(int dx, int dy);
 public:
     KBX_Controller(KBX_Scene* scene, KBX_Game* game);

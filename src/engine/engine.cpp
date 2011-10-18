@@ -286,16 +286,16 @@ KBX_Game::KBX_Game(KBX_Config config) :
     this->_dice[16] = KBX_DieState( 7, 8, BLACK,  3 );
     this->_dice[17] = KBX_DieState( 8, 8, BLACK, 17 );
     // initialize fields with ids of dice (or clear)
-    for (size_t j=0; j <= 8; j++){
-        this->_fields[0][j] = j;
+    for (size_t x=0; x <= 8; x++){
+        this->_fields[x][0] = x;
     }
-    for (size_t i=1; i <= 7; i++){
-        for (size_t j=0; j <= 8; j++){
-            this->_fields[i][j] = CLEAR;
+    for (size_t y=1; y <= 7; y++){
+        for (size_t x=0; x <= 8; x++){
+            this->_fields[x][y] = CLEAR;
         }
     }
-    for (size_t j=0; j <= 8; j++){
-        this->_fields[8][j] = j+9;
+    for (size_t x=0; x <= 8; x++){
+        this->_fields[x][8] = x+9;
     }
 }
 /// move die over board
@@ -421,6 +421,32 @@ KBX_PlayColor KBX_Game::getWinner(){
     if ( (kingB.x()==0) && (kingB.y()==4) ) return BLACK;
     // nobody has won yet
     return NONE_OF_BOTH;
+}
+/// get die state of die with given id
+KBX_DieState* KBX_Game::getDie(size_t id){
+    //TODO: error checking
+    if ( id < 18 ){
+        return &this->_dice[ id ];
+    } else {
+        throw "index error: given index does not define a valid die";
+    }
+}
+/// get die state of die with given coordinates
+int KBX_Game::getDieId(size_t x, size_t y){
+    if ( x < 9 && y < 9 ){
+        return this->_fields[x][y];
+    } else {
+        throw "index error: given coordinates do not define a valid field";
+    }
+}
+/// get die state of die with given coordinates
+KBX_DieState* KBX_Game::getDie(size_t x, size_t y){
+    if ( x < 9 && y < 9 ){
+        int id = this->_fields[x][y];
+        return &this->_dice[ id ];
+    } else {
+        throw "index error: given coordinates do not define a valid field";
+    }
 }
 /// rate the current game for a specified playcolor (black or white)
 /**

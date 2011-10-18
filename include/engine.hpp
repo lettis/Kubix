@@ -122,6 +122,9 @@ public:
     bool            moveIsValid(size_t dieIndex, KBX_Move& move);
     void            makeMove(size_t dieIndex, KBX_Move& move);
     KBX_PlayColor   getWinner();
+    KBX_DieState*   getDie(size_t id);
+    KBX_DieState*   getDie(size_t x, size_t y);
+    int             getDieId(size_t x, size_t y);
     float           rate(KBX_PlayColor color);
     KBX_Evaluation  evaluateMoves(int level, KBX_PlayColor color, float alpha, float beta, bool initialCall);
     // rating functions

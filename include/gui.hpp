@@ -237,14 +237,14 @@ public:
 /// KBX_Board
 ///  defines game board
 class KBX_Board: public KBX_Object{
-    size_t _nRows;
-    size_t _nCols;
+    size_t _nX;
+    size_t _nY;
     std::vector< std::vector<KBX_Tile*> > _tiles;
     void _render(bool picking = false);
 public:
     KBX_Board(size_t rows, size_t cols);
     ~KBX_Board();
-    size_t getTileId(size_t row, size_t col);
+    size_t getTileId(size_t x, size_t y);
 };
 
 /// Defines the whole scene.

@@ -34,6 +34,9 @@ int main(){
     KBX_Logger::enableInfos();
     KBX_Logger::enableWarnings();
     KBX_Logger::enableErrors();
+
+//    KBX_Logger::filter( "KBX_Controller::_switchId" );
+
     // build logger instance for main
     KBX_Logger mainLog("main");
     try{

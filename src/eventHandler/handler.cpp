@@ -238,27 +238,32 @@ int KBX_SelectionEventHandler::handle(SDL_Event* event){
                     // if object has been hit, send appropriate message to controller
                     KBX_SelectionMessage( this->selectedObj->id ).send();
                     return 1;
-                } else {
-                    return 0;
                 }
             default:
-                return 0;
+                // do nothing
+                break;
         }
+        // mouse event won't be handled here
+        return 0;
     } else if (event->type == SDL_KEYDOWN){
         // handle selection per cursor keys
         switch (event->key.keysym.sym){
             // TODO: check orientation of board
             case SDLK_UP:
-                KBX_ControllerMessage( MARK_Y_NEG ).send();
+                KBX_ControllerMessage( MARK_Y_POS ).send();
                 return 1;
             case SDLK_DOWN:
-                KBX_ControllerMessage( MARK_Y_POS ).send();
+                KBX_ControllerMessage( MARK_Y_NEG ).send();
                 return 1;
             case SDLK_LEFT:
                 KBX_ControllerMessage( MARK_X_NEG ).send();
                 return 1;
             case SDLK_RIGHT:
                 KBX_ControllerMessage( MARK_X_POS ).send();
+                return 1;
+            case SDLK_SPACE:
+                // select currently marked object
+                KBX_ControllerMessage( SELECT ).send();
                 return 1;
             default:
                 // do nothing

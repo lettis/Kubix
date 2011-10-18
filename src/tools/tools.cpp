@@ -102,9 +102,26 @@ std::string KBX_Logger::_getTime(){
     timeInfo = localtime(&rawTime);
     return std::string( asctime(timeInfo) );
 }
+std::vector<std::string>  KBX_Logger::_filters;
+/// show only messages with given name-tag(s)
+void KBX_Logger::filter(std::string name){
+    KBX_Logger::_filters.push_back( name );
+}
 /// write message to logfile / stdout
 void KBX_Logger::_sendMessage(std::string category, std::string msg){
-    (*this->_out) << this->_getTime() << "\t" << this->_name << " | " << category << ": " << msg << std::endl;
+    bool printIt = true;
+    if (!KBX_Logger::_filters.empty()){
+        printIt = false;
+        for (size_t i=0; i < KBX_Logger::_filters.size(); i++){
+            if (this->_name == KBX_Logger::_filters[i]){
+                printIt = true;
+                break;
+            }
+        }
+    }
+    if (printIt){
+        (*this->_out) << this->_getTime() << "\t" << this->_name << " | " << category << ": " << msg << std::endl;
+    }
 }
 /// write info to logfile / stdout
 void KBX_Logger::info(std::string msg){

@@ -592,10 +592,10 @@ void KBX_Die::_render(bool picking){
 }
 
 /// board constructor
-KBX_Board::KBX_Board(size_t rows, size_t cols) :
-     _nRows(rows)
-    ,_nCols(cols)
-    ,_tiles(_nRows, std::vector<KBX_Tile*>(_nCols))
+KBX_Board::KBX_Board(size_t nX, size_t nY) :
+     _nX(nX)
+    ,_nY(nY)
+    ,_tiles(_nX, std::vector<KBX_Tile*>(_nY))
 {
     // define tile colors
     KBX_Color dark = KBX_Color::GREY40;
@@ -603,38 +603,38 @@ KBX_Board::KBX_Board(size_t rows, size_t cols) :
     KBX_Color tileColor;
     KBX_Vec tilePosition;
     // setup tiles to form a checkered layout
-    for(size_t row=0; row < this->_nRows; row++){
-        for(size_t col=0; col < this->_nCols; col++){
-            tileColor = ( (row%2 + col%2)%2 == 0 ) ? dark : bright ;
-            tilePosition = KBX_Vec(   (float)row - (float)(this->_nRows)/2
+    for(size_t x=0; x < this->_nX; x++){
+        for(size_t y=0; y < this->_nY; y++){
+            tileColor = ( (x%2 + y%2)%2 == 0 ) ? dark : bright;
+            tilePosition = KBX_Vec(   (float)x - (float)(this->_nX)/2
                                      ,-0.5
-                                     ,(float)col - (float)(this->_nCols)/2
+                                     ,-(float)y + (float)(this->_nY)/2 -1
                            );
-            this->_tiles[row][col] = new KBX_Tile( tilePosition, tileColor );
+            this->_tiles[x][y] = new KBX_Tile( tilePosition, tileColor );
         }
     }
 }
 /// free memory of allocated tiles in destructor
 KBX_Board::~KBX_Board(){
-    std::vector<KBX_Tile*>::iterator it;
-    for (size_t r=0; r < this->_nRows; r++){
-        for (it=this->_tiles[r].begin(); it < this->_tiles[r].end(); it++){
-            delete *it;
+    std::vector<KBX_Tile*>::iterator ys;
+    for (size_t x=0; x < this->_nX; x++){
+        for (ys=this->_tiles[x].begin(); ys < this->_tiles[x].end(); ys++){
+            delete *ys;
         }
     }
 }
 /// display board by rendering every tile
 void KBX_Board::_render(bool picking){
-    for (size_t r=0; r < this->_nRows; r++){
-        for (size_t c=0; c < this->_nCols; c++){
-            glLoadName(r+c*this->_nCols);
-            this->_tiles[r][c]->display(picking);
+    for (size_t x=0; x < this->_nX; x++){
+        for (size_t y=0; y < this->_nY; y++){
+            glLoadName(x+y*this->_nY);
+            this->_tiles[x][y]->display(picking);
         }
     }
 }
 /// return gui id of tile defined by its coordinates
-size_t KBX_Board::getTileId(size_t row, size_t col){
-    return this->_tiles[row][col]->id;
+size_t KBX_Board::getTileId(size_t x, size_t y){
+    return this->_tiles[x][y]->id;
 }
 
 /// tile constructor

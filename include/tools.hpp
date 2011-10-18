@@ -40,6 +40,7 @@ class KBX_Logger{
     std::string  _name;
     static std::ostream* _out;
     static std::ostream* _err;
+    static std::vector<std::string> _filters;
     static bool  _infosEnabled;
     static bool  _warningsEnabled;
     static bool  _errorsEnabled;
@@ -55,6 +56,7 @@ public:
     static void disableWarnings();
     static void enableErrors();
     static void disableErrors();
+    static void filter(std::string name);
     void info(std::string msg);
     void warning(std::string msg);
     void error(std::string msg);
