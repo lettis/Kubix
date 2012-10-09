@@ -137,9 +137,9 @@ KBX_Vec KBX_Vec::scale(float a){
 */
 KBX_Vec KBX_Vec::add(KBX_Vec v){
     return KBX_Vec( this->x + v.x
-		           ,this->y + v.y
-		           ,this->z + v.z
-		   );
+                   ,this->y + v.y
+                   ,this->z + v.z
+    );
 }
 /// subtract vector
 /**
