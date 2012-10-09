@@ -1,10 +1,4 @@
 
-cmake_minimum_required (VERSION 2.6)
-
-project (Kubix)
-
-set (Kubix_VERSION_MAJOR 1)
-set (Kubix_VERSION_MINOR 0)
 
 include_directories("../include")
 
@@ -30,6 +24,6 @@ else(OPENGL_FOUND)
   message( FATAL_ERROR "OpenGL not found" )
 endif(OPENGL_FOUND)
 
-add_executable(Kubix kubix.cpp controller.cpp engine.cpp eventHandler.cpp gui.cpp tools.cpp)
-target_link_libraries(Kubix ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${OPENGL_LIBRARIES})
+add_executable(../Kubix kubix.cpp controller.cpp engine.cpp eventHandler.cpp gui.cpp tools.cpp)
+target_link_libraries(../Kubix ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${OPENGL_LIBRARIES})
 
