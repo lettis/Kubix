@@ -1,0 +1,17 @@
+build instructions:
+  - be sure to have the SDL installed on your system
+  - cd ~KubixRoot
+  - cmake .
+  - make
+
+run kubix via:
+  - cd ~KubixRoot
+  - ./Kubix
+  attention: kubix currently needs the folder './res' in `pwd`
+             in order to load the textures (for dice, etc).
+
+clean directory:
+  - cd ~KubixRoot
+  - make clean
+  - make distclean (to delete the temporary cmake files)
+
