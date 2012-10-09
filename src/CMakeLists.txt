@@ -30,12 +30,6 @@ else(OPENGL_FOUND)
   message( FATAL_ERROR "OpenGL not found" )
 endif(OPENGL_FOUND)
 
-add_library(controller controller/controller.cpp)
-add_library(engine engine/engine.cpp)
-add_library(eventHandler eventHandler/handler.cpp)
-add_library(gui gui/gui.cpp)
-add_library(tools tools/tools.cpp)
-
-add_executable(Kubix kubix.cpp)
-target_link_libraries(Kubix controller engine eventHandler gui tools ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${OPENGL_LIBRARIES})
+add_executable(Kubix kubix.cpp controller.cpp engine.cpp eventHandler.cpp gui.cpp tools.cpp)
+target_link_libraries(Kubix ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${OPENGL_LIBRARIES})
 
