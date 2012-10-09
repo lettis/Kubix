@@ -143,6 +143,7 @@ protected:
 public:
     // colors for different activities
     std::map<KBX_Activity, KBX_Color> coloring;
+//TODO: get rid of activityState and use setters for states (+internal flags) instead
     KBX_Activity activityState;
     // a unique id of this object
     const size_t id;
@@ -156,6 +157,16 @@ public:
         // we need to remove the object from the objectList
         KBX_Object::objectList.remove(this);
     }
+//TODO: implement setters for states
+    // set/unset object to marked state
+    void setMarked();
+    void setUnmarked();
+    // set/unset object to selected state
+    void setSelected();
+    void setUnselected();
+    // set/unset object to highlighted state
+    void setHighlighted();
+    void setUnhighlighted();
     // sets angle and axis to define a rotation
     void rotate(KBX_Vec axis, float angle);
     // sets vector to define a translation

@@ -346,18 +346,18 @@ bool KBX_Game::moveIsValid(size_t dieIndex, KBX_Move& move){
 	// check, if move is farer than die value allows
 	if (dieState.getValue() != fabs(move.dx) + fabs(move.dy)){
         return false;
-    }
+  }
 	// check, if move goes off the board
-    if (   dieState.x() + move.dx < 0
-        || dieState.x() + move.dx > 8
-        || dieState.y() + move.dy < 0
-        || dieState.y() + move.dy > 8 ){
-        return false;
-    }
+  if (   dieState.x() + move.dx < 0
+      || dieState.x() + move.dx > 8
+      || dieState.y() + move.dy < 0
+      || dieState.y() + move.dy > 8 ){
+      return false;
+  }
 	// check, if there are dice on the way, that cannot be crossed
 	if (move.FIRST_X){
 		// iterate over x-values (before y-iteration)
-        size_t end = fabs(move.dx);
+    size_t end = fabs(move.dx);
 		if ( move.dy == 0 ){
             end--;
         }
