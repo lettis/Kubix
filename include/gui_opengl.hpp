@@ -15,11 +15,36 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef GUI__HPP
-#define GUI__HPP
+#ifndef GUI_OPENGL__HPP
+#define GUI_OPENGL__HPP
 
+#include <QtOpenGL/QGLWidget>
+#include <QPoint>
+#include <QWheelEvent>
 
+#include "models.hpp"
 
+namespace KBX {
+  class GLWidget : public QGLWidget {
+      Q_OBJECT // must include this if you use Qt signals/slots
+  private:
+      Scene* scene;
+      QPoint mousePos;
 
+      Object* pickObject(QPoint p);
+  public:
+      GLWidget(QWidget *parent = NULL);
+  
+  protected:
+      void initializeGL();
+      void resizeGL(int w, int h);
+      void paintGL();
+      void mousePressEvent(QMouseEvent *event);
+      void mouseMoveEvent(QMouseEvent *event);
+      void mouseWheelEvent(QWheelEvent *event);
+      void keyPressEvent(QKeyEvent *event);
+  };
+
+} // end namespace KBX
 
 #endif

@@ -21,60 +21,62 @@
 #include <sstream>
 #include <string>
 
-#include "SDL.h"
+#include <QEvent>
 
-#include "gui.hpp"
+#include "models.hpp"
 
-/// general event handling class
-class KBX_EventHandler{
-protected:
-    KBX_Scene* scene;
-public:
-    KBX_EventHandler(KBX_Scene* scene);
-    virtual int handle(SDL_Event* event)=0;
-};
-
-/// handler for exit events
-class KBX_ExitEventHandler : public KBX_EventHandler{
-public:
-    KBX_ExitEventHandler(KBX_Scene* scene);
-    int handle(SDL_Event* event);
-};
-
-/// handler for motion events
-class KBX_MotionEventHandler : public KBX_EventHandler{
-    bool resize;
-    bool keydown;
-    bool fullscreen;
-    float zoom;
-    float rotateHorizontal;
-    float rotateVertical;
-    float width;
-    float height;
-    bool cameraDrag;
-    float clickPosX;
-    float clickPosY;
-public:
-    KBX_MotionEventHandler(KBX_Scene* scene);
-    void proceed();
-    int handle(SDL_Event* event);
-};
-
-/// handler for motion events
-class KBX_SelectionEventHandler : public KBX_EventHandler{
-public:
-    KBX_Object* selectedObj;
-    KBX_SelectionEventHandler(KBX_Scene* scene);
-    int handle(SDL_Event* event);
-    KBX_Object* getObject( size_t x, size_t y );
-};
-
-/// handler for text/console events
-class KBX_ConsoleEventHandler : public KBX_EventHandler{
-    std::stringstream input;
-    bool active;
-public:
-    KBX_ConsoleEventHandler(KBX_Scene* scene);
-    int handle(SDL_Event* event);
-};
+namespace KBX {
+  /// general event handling class
+  class EventHandler{
+  protected:
+      Scene* scene;
+  public:
+      EventHandler(Scene* scene);
+      virtual int handle(QEvent* event)=0;
+  };
+  
+  /// handler for exit events
+  class ExitEventHandler : public EventHandler{
+  public:
+      ExitEventHandler(Scene* scene);
+      int handle(QEvent* event);
+  };
+  
+  /// handler for motion events
+  class MotionEventHandler : public EventHandler{
+      bool resize;
+      bool keydown;
+      bool fullscreen;
+      float zoom;
+      float rotateHorizontal;
+      float rotateVertical;
+      float width;
+      float height;
+      bool cameraDrag;
+      float clickPosX;
+      float clickPosY;
+  public:
+      MotionEventHandler(Scene* scene);
+      void proceed();
+      int handle(QEvent* event);
+  };
+  
+  /// handler for motion events
+  class SelectionEventHandler : public EventHandler{
+  public:
+      Object* selectedObj;
+      SelectionEventHandler(Scene* scene);
+      int handle(QEvent* event);
+      Object* getObject( size_t x, size_t y );
+  };
+  
+  /// handler for text/console events
+  class ConsoleEventHandler : public EventHandler{
+      std::stringstream input;
+      bool active;
+  public:
+      ConsoleEventHandler(Scene* scene);
+      int handle(QEvent* event);
+  };
+} // end namespace KBX
 #endif

@@ -1,29 +1,25 @@
 
+INCLUDE_DIRECTORIES("../include")
 
-include_directories("../include")
+FIND_PACKAGE( Qt4 REQUIRED )
+INCLUDE(${QT_USE_FILE})
+ADD_DEFINITIONS(${QT_DEFINITIONS})
+SET(QT_USE_QTOPENGL TRUE)
 
-INCLUDE(FindSDL)
-INCLUDE(FindSDL_image)
-INCLUDE(FindOpenGL) 
+FIND_PACKAGE( OpenGL REQUIRED )
+INCLUDE_DIRECTORIES( ${OPENGL_INCLUDE_DIR} )
 
-if(SDL_FOUND)
-  include_directories( ${SDL_INCLUDE_DIR} )
-else(SDL_FOUND)
-  message( FATAL_ERROR "SDL not found" )
-endif(SDL_FOUND)
+ADD_EXECUTABLE(../Kubix
+  kubix.cpp
+  engine.cpp
+  models.cpp
+  gui.cpp
+  gui_opengl.cpp
+  tools.cpp
+)
 
-if(SDLIMAGE_FOUND)
-  include_directories( ${SDLIMAGE_INCLUDE_DIR} )
-else(SDLIMAGE_FOUND)
-  message( FATAL_ERROR "SDL_image not found" )
-endif(SDLIMAGE_FOUND)
-
-if(OPENGL_FOUND)
-  include_directories( ${OPENGL_INCLUDE_DIR} )
-else(OPENGL_FOUND)
-  message( FATAL_ERROR "OpenGL not found" )
-endif(OPENGL_FOUND)
-
-add_executable(../Kubix kubix.cpp controller.cpp engine.cpp eventHandler.cpp gui.cpp tools.cpp)
-target_link_libraries(../Kubix ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${OPENGL_LIBRARIES})
+TARGET_LINK_LIBRARIES(../Kubix
+  ${QT_LIBRARIES}
+  ${OPENGL_LIBRARIES}
+)
 

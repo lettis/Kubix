@@ -18,6 +18,10 @@
 #ifndef ENGINE__HPP
 #define ENGINE__HPP
 
+#include <stddef.h>
+
+//TODO: enums!
+
 // directions for die states
 #define VALUE 0
 #define NORTH 1
@@ -32,102 +36,105 @@
 #define KING_WHITE   4
 #define KING_BLACK  13
 
-enum KBX_PlayMode{
-      HUMAN_HUMAN
-    , HUMAN_AI
-    , AI_HUMAN
-};
+namespace KBX {
+  enum PlayMode{
+        HUMAN_HUMAN
+      , HUMAN_AI
+      , AI_HUMAN
+  };
+  
+  enum PlayColor{
+        BLACK = -1
+      , WHITE =  1
+      , NONE_OF_BOTH = 0
+  };
+  
+  /* helper functions */
+  int sign(int x);
+  int isNumber( char* str );
+  void swap(int& a, int& b);
+  PlayColor inverse(PlayColor color);
+  /*                  */
+  
+  /// defines playing strategy of cpu
+  class Strategy{
+  public:
+      const int coeffDiceRatio;
+      Strategy( float coeffDiceRatio );
+  };
+  
+  /// configuration settings
+  class Config{
+  public:
+  	const PlayMode mode;
+  	const size_t cpuLevel;
+  	const Strategy strategy;
+      Config(PlayMode mode, size_t cpuLevel, Strategy strategy);
+  };
+  
+  class Move{
+  public:
+      int dx;
+      int dy;
+      bool FIRST_X;
+      Move();
+      Move(int dx, int dy, bool FIRST_X);
+      Move invert();
+  };
+  
+  /// defines the current state of a die (i.e. position, orientation, value, color, etc.)
+  class DieState{
+      static const size_t _state[26][5];
+  	int _x;
+  	int _y;
+  	PlayColor _color;
+      size_t _formerState;
+  	size_t _curState;
+  public:
+      static const size_t nPossibleMoves[7];
+      // list of possible (relative) moves for a die
+      static const std::vector< std::vector<Move> > possibleMoves;
+      static const std::vector< std::vector<Move> > initPossibleMoves();
+  
+      DieState();
+      DieState(int x, int y, PlayColor color, size_t state);
+  
+      void move(size_t direction);
+      void kill();
+      void revive();
+      bool gotKilled();
+      size_t getValue();
+      size_t getColor();
+      int x();
+      int y();
+  };
+  
+  class Evaluation{
+  public:
+      float rating;
+      int dieIndex;
+      Move move;
+      Evaluation(float rating);
+      Evaluation(float rating, int dieIndex, Move move);
+  };
+  
+  class Game{
+  	int          _fields[9][9];
+  	DieState _dice[18];
+      Config   _config;
+  public:
+      Game(Config config);
+      bool            moveIsValid(size_t dieIndex, Move& move);
+      void            makeMove(size_t dieIndex, Move& move);
+      PlayColor   getWinner();
+      DieState*   getDie(size_t id);
+      DieState*   getDie(size_t x, size_t y);
+      int             getDieId(size_t x, size_t y);
+      float           rate(PlayColor color);
+      Evaluation  evaluateMoves(int level, PlayColor color, float alpha, float beta, bool initialCall);
+      // rating functions
+      float           rateDiceRatio(PlayColor color);
+  };
 
-enum KBX_PlayColor{
-      BLACK = -1
-    , WHITE =  1
-    , NONE_OF_BOTH = 0
-};
-
-/* helper functions */
-int sign(int x);
-int isNumber( char* str );
-void swap(int& a, int& b);
-KBX_PlayColor inverse(KBX_PlayColor color);
-/*                  */
-
-/// defines playing strategy of cpu
-class KBX_Strategy{
-public:
-    const int coeffDiceRatio;
-    KBX_Strategy( float coeffDiceRatio );
-};
-
-/// configuration settings
-class KBX_Config{
-public:
-	const KBX_PlayMode mode;
-	const size_t cpuLevel;
-	const KBX_Strategy strategy;
-    KBX_Config(KBX_PlayMode mode, size_t cpuLevel, KBX_Strategy strategy);
-};
-
-class KBX_Move{
-public:
-    int dx;
-    int dy;
-    bool FIRST_X;
-    KBX_Move();
-    KBX_Move(int dx, int dy, bool FIRST_X);
-    KBX_Move invert();
-};
-
-/// defines the current state of a die (i.e. position, orientation, value, color, etc.)
-class KBX_DieState{
-    static const size_t _state[26][5];
-	int _x;
-	int _y;
-	KBX_PlayColor _color;
-    size_t _formerState;
-	size_t _curState;
-public:
-    static const size_t nPossibleMoves[7];
-    // list of possible (relative) moves for a die
-    static const std::vector< std::vector<KBX_Move> > possibleMoves;
-    static const std::vector< std::vector<KBX_Move> > initPossibleMoves();
-
-    KBX_DieState();
-    KBX_DieState(int x, int y, KBX_PlayColor color, size_t state);
-
-    void move(size_t direction);
-    void kill();
-    void revive();
-    bool gotKilled();
-    size_t getValue();
-    size_t getColor();
-    int x();
-    int y();
-};
-
-class KBX_Evaluation{
-public:
-    float rating;
-    int dieIndex;
-    KBX_Move move;
-    KBX_Evaluation(float rating);
-    KBX_Evaluation(float rating, int dieIndex, KBX_Move move);
-};
-
-class KBX_Game{
-	int          _fields[9][9];
-	KBX_DieState _dice[18];
-    KBX_Config   _config;
-public:
-    KBX_Game(KBX_Config config);
-    bool            moveIsValid(size_t dieIndex, KBX_Move& move);
-    void            makeMove(size_t dieIndex, KBX_Move& move);
-    KBX_PlayColor   getWinner();
-    KBX_DieState*   getDie(size_t id);
-    KBX_DieState*   getDie(size_t x, size_t y);
-    int             getDieId(size_t x, size_t y);
-    float           rate(KBX_PlayColor color);
-    KBX_Evaluation  evaluateMoves(int level, KBX_PlayColor color, float alpha, float beta, bool initialCall);
-    // rating functions
-    float           rateDiceRatio(KBX_PlayColor color);
-};
+} // end namespace KBX
 #endif
