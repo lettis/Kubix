@@ -27,13 +27,22 @@
 namespace KBX {
   class GLWidget : public QGLWidget {
       Q_OBJECT // must include this if you use Qt signals/slots
+  public:
+      struct Textures {
+        GLuint dieTexturesBlack[6];
+        GLuint dieTexturesWhite[6];
+        GLuint kingTextureBlack[1];
+        GLuint kingTextureWhite[1];
+      };
+      Textures* textures;
+
   private:
+      void loadTextures();
+
       Scene* scene;
       QPoint mousePos;
 
       Object* pickObject(QPoint p);
-  public:
-      GLWidget(QWidget *parent = NULL);
   
   protected:
       void initializeGL();
@@ -43,6 +52,9 @@ namespace KBX {
       void mouseMoveEvent(QMouseEvent *event);
       void mouseWheelEvent(QWheelEvent *event);
       void keyPressEvent(QKeyEvent *event);
+  public:
+      GLWidget(QWidget *parent = NULL);
+      ~GLWidget() {}
   };
 
 } // end namespace KBX

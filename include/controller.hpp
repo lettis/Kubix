@@ -36,15 +36,10 @@ namespace KBX {
       representation in the engine).
   */
   class Controller{
-      Scene* _scene;
-      Game*  _game;
-      Board* _board;
-      std::vector<Die*> _dice;
-      std::map<size_t, size_t> _id2Die;
-      std::map<size_t, std::pair<size_t,size_t> > _id2Field;
+
+
+
       PlayColor _nextTurn;
-      int _markedId;
-      int _selectedId;
   
       void _switchId(Activity activity, int& oldId, int newId);
       void _mark(int objectId);

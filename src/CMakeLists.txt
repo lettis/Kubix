@@ -9,17 +9,22 @@ SET(QT_USE_QTOPENGL TRUE)
 FIND_PACKAGE( OpenGL REQUIRED )
 INCLUDE_DIRECTORIES( ${OPENGL_INCLUDE_DIR} )
 
+set(KBX_MOC_HDRS ../include/gui_opengl.hpp)
+QT4_WRAP_CPP(KBX_MOC_OUTFILES ${KBX_MOC_HDRS})
+
 ADD_EXECUTABLE(../Kubix
   kubix.cpp
   engine.cpp
+  gui_opengl.cpp
   models.cpp
   gui.cpp
-  gui_opengl.cpp
   tools.cpp
+  ${KBX_MOC_OUTFILES}
 )
 
 TARGET_LINK_LIBRARIES(../Kubix
   ${QT_LIBRARIES}
+  ${QT_QTOPENGL_LIBRARIES}
   ${OPENGL_LIBRARIES}
 )
 

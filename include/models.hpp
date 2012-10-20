@@ -20,6 +20,9 @@
 
 #include <vector>
 
+// forward declaration for KBX::Scene
+namespace KBX { class GLWidget; }
+
 // engine is needed for PlayColor definition
 #include "engine.hpp"
 #include "tools.hpp"
@@ -195,31 +198,33 @@ namespace KBX {
   /// Die
   ///  defines a die
   class Die : public AnimObject{
+      GLuint* textures;
+
       void _render(bool picking = false);
       PlayColor _playColor;
   public:
-      // texture container
-      //static TextureHandler textures;
-      // faces of white dice
-      static const size_t FACE_K_W;
-      static const size_t FACE_K_B;
-      static const size_t FACE_1_W;
-      static const size_t FACE_2_W;
-      static const size_t FACE_3_W;
-      static const size_t FACE_4_W;
-      static const size_t FACE_5_W;
-      static const size_t FACE_6_W;
-      // faces of black dice
-      static const size_t FACE_1_B;
-      static const size_t FACE_2_B;
-      static const size_t FACE_3_B;
-      static const size_t FACE_4_B;
-      static const size_t FACE_5_B;
-      static const size_t FACE_6_B;
+//      // texture container
+//      static TextureHandler textures;
+//      // faces of white dice
+//      static const size_t FACE_K_W;
+//      static const size_t FACE_K_B;
+//      static const size_t FACE_1_W;
+//      static const size_t FACE_2_W;
+//      static const size_t FACE_3_W;
+//      static const size_t FACE_4_W;
+//      static const size_t FACE_5_W;
+//      static const size_t FACE_6_W;
+//      // faces of black dice
+//      static const size_t FACE_1_B;
+//      static const size_t FACE_2_B;
+//      static const size_t FACE_3_B;
+//      static const size_t FACE_4_B;
+//      static const size_t FACE_5_B;
+//      static const size_t FACE_6_B;
       
       const bool IS_KING;
-      Die(Vec pos, PlayColor color);
-      Die(Vec pos, PlayColor color, bool IS_KING);
+      Die(Vec pos, PlayColor color, GLuint* textures);
+      Die(Vec pos, PlayColor color, GLuint* textures, bool IS_KING);
       void setColors();
   };
   
@@ -254,13 +259,21 @@ namespace KBX {
       when the scene is rendered.
   */
   class Scene : public Object{
+      GLWidget* act;
+
       std::vector<Object*> objList;
+
+      Game*  _game;
+      Board* _board;
+      std::map<size_t, size_t> _id2Die;
+      std::map<size_t, std::pair<size_t,size_t> > _id2Field;
+
       Camera cam;
       void _render(bool picking = false);
 
       std::vector<Die*> _dice;
   public:
-      Scene();
+      Scene(GLWidget* act);
       ~Scene();
       Vec getOrientation();
       void add(Object* obj);

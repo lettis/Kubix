@@ -20,9 +20,10 @@
 #include <iostream>
 
 #include <GL/glu.h>
-#include <GL/glx.h>
+//#include <GL/glx.h>
 
 #include "models.hpp"
+#include "gui_opengl.hpp"
 #include "tools.hpp"
 // engine is needed for PlayColor definition
 #include "engine.hpp"
@@ -413,33 +414,39 @@ namespace KBX {
       Object(pos)
   {}
   
+  //TODO: weg
   // this defines the keys for the die face textures
-  const size_t Die::FACE_K_W = 10;
-  const size_t Die::FACE_K_B = 20;
-  const size_t Die::FACE_1_W = 11;
-  const size_t Die::FACE_2_W = 12;
-  const size_t Die::FACE_3_W = 13;
-  const size_t Die::FACE_4_W = 14;
-  const size_t Die::FACE_5_W = 15;
-  const size_t Die::FACE_6_W = 16;
-  const size_t Die::FACE_1_B = 21;
-  const size_t Die::FACE_2_B = 22;
-  const size_t Die::FACE_3_B = 23;
-  const size_t Die::FACE_4_B = 24;
-  const size_t Die::FACE_5_B = 25;
-  const size_t Die::FACE_6_B = 26;
+  //const size_t Die::FACE_K_W = 10;
+  //const size_t Die::FACE_K_B = 20;
+  //const size_t Die::FACE_1_W = 11;
+  //const size_t Die::FACE_2_W = 12;
+  //const size_t Die::FACE_3_W = 13;
+  //const size_t Die::FACE_4_W = 14;
+  //const size_t Die::FACE_5_W = 15;
+  //const size_t Die::FACE_6_W = 16;
+  //const size_t Die::FACE_1_B = 21;
+  //const size_t Die::FACE_2_B = 22;
+  //const size_t Die::FACE_3_B = 23;
+  //const size_t Die::FACE_4_B = 24;
+  //const size_t Die::FACE_5_B = 25;
+  //const size_t Die::FACE_6_B = 26;
+
+  //TODO: weg
   /// the textures of the die surfaces are handled "globally" by this static member
-  TextureHandler Die::textures = TextureHandler();
+  //TextureHandler Die::textures = TextureHandler();
+
   /// inherit parent constructor and set color
-  Die::Die(Vec pos, PlayColor color) :
+  Die::Die(Vec pos, PlayColor color, GLuint* textures) :
        AnimObject(pos)
+      ,textures(textures)
       ,_playColor(color)
       ,IS_KING(false)
   {
       this->setColors();
   }
-  Die::Die(Vec pos, PlayColor color, bool IS_KING) :
+  Die::Die(Vec pos, PlayColor color, GLuint* textures, bool IS_KING) :
        AnimObject(pos)
+      ,textures(textures)
       ,_playColor(color)
       ,IS_KING(IS_KING)
   {
@@ -481,24 +488,9 @@ namespace KBX {
           }
           glEnable( GL_TEXTURE_2D );
       }
-      // prepare die face for king die if necessary
-      GLuint kingFace;
-      if (this->IS_KING){
-          if (this->_playColor == WHITE){
-              kingFace = Die::textures.get( Die::FACE_K_W );
-          } else {
-              kingFace = Die::textures.get( Die::FACE_K_B );
-          }
-      }
       // face 1
       if(!picking){
-          if (this->IS_KING){
-              glBindTexture( GL_TEXTURE_2D, kingFace );
-          } else if (this->_playColor == WHITE){
-              glBindTexture( GL_TEXTURE_2D, Die::textures.get( Die::FACE_1_W ) );
-          } else {
-              glBindTexture( GL_TEXTURE_2D, Die::textures.get( Die::FACE_1_B ) );
-          }
+        glBindTexture( GL_TEXTURE_2D, this->textures[0] );
       }
       glBegin( GL_QUADS );
        glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
@@ -508,13 +500,9 @@ namespace KBX {
       glEnd();
       // face 2
       if(!picking){
-          if (this->IS_KING){
-              glBindTexture( GL_TEXTURE_2D, kingFace );
-          } else if (this->_playColor == WHITE){
-              glBindTexture( GL_TEXTURE_2D, Die::textures.get( Die::FACE_2_W ) );
-          } else {
-              glBindTexture( GL_TEXTURE_2D, Die::textures.get( Die::FACE_2_B ) );
-          }
+        if ( ! this->IS_KING){
+          glBindTexture( GL_TEXTURE_2D, this->textures[1] );
+        }
       }
       glBegin( GL_QUADS );
        glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
@@ -524,13 +512,9 @@ namespace KBX {
       glEnd();
       // face 3
       if(!picking){
-          if (this->IS_KING){
-              glBindTexture( GL_TEXTURE_2D, kingFace );
-          } else if (this->_playColor == WHITE){
-              glBindTexture( GL_TEXTURE_2D, Die::textures.get( Die::FACE_3_W ) );
-          } else {
-              glBindTexture( GL_TEXTURE_2D, Die::textures.get( Die::FACE_3_B ) );
-          }
+        if ( ! this->IS_KING){
+          glBindTexture( GL_TEXTURE_2D, this->textures[2] );
+        }
       }
       glBegin( GL_QUADS );
        glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
@@ -540,13 +524,9 @@ namespace KBX {
       glEnd();
       // face 4
       if(!picking){
-          if (this->IS_KING){
-              glBindTexture( GL_TEXTURE_2D, kingFace );
-          } else if (this->_playColor == WHITE){
-              glBindTexture( GL_TEXTURE_2D, Die::textures.get( Die::FACE_4_W ) );
-          } else {
-              glBindTexture( GL_TEXTURE_2D, Die::textures.get( Die::FACE_4_B ) );
-          }
+        if ( ! this->IS_KING){
+          glBindTexture( GL_TEXTURE_2D, this->textures[3] );
+        }
       }
       glBegin( GL_QUADS );
        glTexCoord2f(0.0,1.0); glVertex3f(+0.5,-0.5,-0.5);
@@ -556,13 +536,9 @@ namespace KBX {
       glEnd();
       // face 5
       if(!picking){
-          if (this->IS_KING){
-              glBindTexture( GL_TEXTURE_2D, kingFace );
-          } else if (this->_playColor == WHITE){
-              glBindTexture( GL_TEXTURE_2D, Die::textures.get( Die::FACE_5_W ) );
-          } else {
-              glBindTexture( GL_TEXTURE_2D, Die::textures.get( Die::FACE_5_B ) );
-          }
+        if ( ! this->IS_KING){
+          glBindTexture( GL_TEXTURE_2D, this->textures[4] );
+        }
       }
       glBegin( GL_QUADS );
        glTexCoord2f(0.0,1.0); glVertex3f(-0.5,+0.5,-0.5);
@@ -572,13 +548,9 @@ namespace KBX {
       glEnd();
       // face 6
       if(!picking){
-          if (this->IS_KING){
-              glBindTexture( GL_TEXTURE_2D, kingFace );
-          } else if (this->_playColor == WHITE){
-              glBindTexture( GL_TEXTURE_2D, Die::textures.get( Die::FACE_6_W ) );
-          } else {
-              glBindTexture( GL_TEXTURE_2D, Die::textures.get( Die::FACE_6_B ) );
-          }
+        if ( ! this->IS_KING){
+          glBindTexture( GL_TEXTURE_2D, this->textures[5] );
+        }
       }
       glBegin( GL_QUADS );
        glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,+0.5);
@@ -708,8 +680,9 @@ namespace KBX {
   }
   
   /// scene constructor
-  Scene::Scene()
-    :cam( Vec(0,0,100), Vec(0,0,0) )
+  Scene::Scene(GLWidget* act)
+    :act(act),
+     cam(Vec(0,0,100),Vec(0,0,0))
   {
     // define rotation axes
     // TODO: x/y coordinates of gui and engine seem not to match
@@ -731,64 +704,64 @@ namespace KBX {
     //      9, 10, 11, 12, 13 (king), 14, 15, 16, 17.
   
     // white dice; w1 is in lower left corner, w8 in lower right
-    this->_dice.push_back( new Die( Vec(-4,0, 4), WHITE ) );
+    this->_dice.push_back( new Die( Vec(-4,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-3,0, 4), WHITE ) );
+    this->_dice.push_back( new Die( Vec(-3,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-2,0, 4), WHITE ) );
+    this->_dice.push_back( new Die( Vec(-2,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-1,0, 4), WHITE ) );
+    this->_dice.push_back( new Die( Vec(-1,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 0,0, 4), WHITE, true ) );
-    this->_dice.push_back( new Die( Vec( 1,0, 4), WHITE ) );
+    this->_dice.push_back( new Die( Vec( 0,0, 4), WHITE, this->act->textures->kingTextureWhite, true ) );
+    this->_dice.push_back( new Die( Vec( 1,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 2,0, 4), WHITE ) );
+    this->_dice.push_back( new Die( Vec( 2,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 3,0, 4), WHITE ) );
+    this->_dice.push_back( new Die( Vec( 3,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 4,0, 4), WHITE ) );
+    this->_dice.push_back( new Die( Vec( 4,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( counterClockwise, 90 );
     // black dice; b1 is in upper left corner, b8 in upper right
-    this->_dice.push_back( new Die( Vec(-4,0,-4), BLACK ) );
+    this->_dice.push_back( new Die( Vec(-4,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-3,0,-4), BLACK ) );
+    this->_dice.push_back( new Die( Vec(-3,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-2,0,-4), BLACK ) );
+    this->_dice.push_back( new Die( Vec(-2,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-1,0,-4), BLACK ) );
+    this->_dice.push_back( new Die( Vec(-1,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 0,0,-4), BLACK, true ) );
-    this->_dice.push_back( new Die( Vec( 1,0,-4), BLACK ) );
+    this->_dice.push_back( new Die( Vec( 0,0,-4), BLACK, this->act->textures->kingTextureBlack, true ) );
+    this->_dice.push_back( new Die( Vec( 1,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 2,0,-4), BLACK ) );
+    this->_dice.push_back( new Die( Vec( 2,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 3,0,-4), BLACK ) );
+    this->_dice.push_back( new Die( Vec( 3,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 4,0,-4), BLACK ) );
+    this->_dice.push_back( new Die( Vec( 4,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( clockwise, 90 );
     // add dice to scene
     for (size_t i=0; i < this->_dice.size(); i++){
         // add dice to scene
-        scene->add( this->_dice[i] );
+        this->add( this->_dice[i] );
         // add mapping from id of gui-die to
         // internal id (here: i) of abstract representation
         this->_id2Die[ this->_dice[i]->id ] = i;
     }
     // initialize the board and add it to the scene
     this->_board = new Board(9, 9);
-    scene->add( this->_board );
+    this->add( this->_board );
     // add mapping from id of board-tile (gui representation) to
     // its xy-coordinates
     for (size_t x=0; x < 9; x++){
@@ -867,36 +840,36 @@ namespace KBX {
       if there is no object marked, automatically mark the field in the middle.
   */
   void Scene::markNext(int dx, int dy){
-    int x,y;
-    if (this->_markedId == CLEAR){
-      // if no field marked, set centre field marked
-      x = 3;
-      y = 2;
-    } else {
-      if ( this->_id2Field.count( this->_markedId ) == 1 ){
-        // prev. marked obj. was a field
-        std::pair<size_t,size_t> xy = this->_id2Field[ this->_markedId ];
-        x = xy.first;
-        y = xy.second;
-      } else {
-        // prev. marked obj. was a die
-        size_t dieId = this->_id2Die[ this->_markedId ];
-        DieState* die = this->_game->getDie( dieId );
-        x = die->x();
-        y = die->y();
-      }
-      // check boundaries
-      if ( 0 <= x+dx && x+dx < 9 ){
-        x += dx;
-      }
-      if ( 0 <= y+dy && y+dy < 9 ){
-        y += dy;
-      }
-    }
-    size_t id = this->_board->getTileId( x, y );
-    // mark the object
-    //TODO: bullshit
-    //this->_mark( id );
+//    int x,y;
+//    if (this->_markedId == CLEAR){
+//      // if no field marked, set centre field marked
+//      x = 3;
+//      y = 2;
+//    } else {
+//      if ( this->_id2Field.count( this->_markedId ) == 1 ){
+//        // prev. marked obj. was a field
+//        std::pair<size_t,size_t> xy = this->_id2Field[ this->_markedId ];
+//        x = xy.first;
+//        y = xy.second;
+//      } else {
+//        // prev. marked obj. was a die
+//        size_t dieId = this->_id2Die[ this->_markedId ];
+//        DieState* die = this->_game->getDie( dieId );
+//        x = die->x();
+//        y = die->y();
+//      }
+//      // check boundaries
+//      if ( 0 <= x+dx && x+dx < 9 ){
+//        x += dx;
+//      }
+//      if ( 0 <= y+dy && y+dy < 9 ){
+//        y += dy;
+//      }
+//    }
+//    size_t id = this->_board->getTileId( x, y );
+//    // mark the object
+//    //TODO: bullshit
+//    //this->_mark( id );
   }
 
 

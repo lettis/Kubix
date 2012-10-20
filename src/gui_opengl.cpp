@@ -1,9 +1,41 @@
 #include "gui_opengl.hpp"
 
+#include <GL/glu.h>
+
 namespace KBX {
   GLWidget::GLWidget(QWidget *parent)
-    :QGLWidget(parent) {
+    : QGLWidget(parent),
+      textures( new Textures() )
+  {
+    // load textures for models
+    this->loadTextures();
+    this->scene = new Scene(this);
     setMouseTracking(false);
+  }
+
+  /**
+    load textures for models
+  */
+  void GLWidget::loadTextures(){
+    for ( size_t i=1; i<7; i++ ){
+      this->textures->dieTexturesWhite[i-1] = bindTexture(
+        QPixmap( QString("./res/side%1.png").arg(i) ),
+        GL_TEXTURE_2D
+      );
+      this->textures->dieTexturesBlack[i-1] = bindTexture(
+        QPixmap( QString("./res/side%1b.png").arg(i) ),
+        GL_TEXTURE_2D
+      );
+    }
+
+    this->textures->kingTextureBlack[0] = bindTexture(
+        QPixmap( QString("./res/sidekb.png") ),
+        GL_TEXTURE_2D
+    );
+    this->textures->kingTextureWhite[0] = bindTexture(
+        QPixmap( QString("./res/sidek.png") ),
+        GL_TEXTURE_2D
+    );
   }
 
   /// pick Object at given mouse coordinates
@@ -52,14 +84,13 @@ namespace KBX {
     this->scene->display();
   }
 
-  void GLWidget::mousePressEvent(QMouseEvent *event){
+  void GLWidget::mousePressEvent(QMouseEvent *event) {
     Object* obj;
-    obj = this->pickObject( event->pos() );
-    //TODO: select
-  }
-  
-  void GLWidget::mouseDownEvent(QMouseEvent *event) {
-    if (event->button() == Qt::RightButton){
+    if (event->button() == Qt::LeftButton){
+      // pick object
+      obj = this->pickObject( event->pos() );
+    } else if (event->button() == Qt::RightButton){
+      // save mouse position for scene rotation
       this->mousePos = event->pos();
     } else {
       event->ignore();
@@ -88,7 +119,7 @@ namespace KBX {
     this->scene->zoom( 1 + 0.05 * event->delta() );
   }
   
-  void GLWidget::keyDownEvent(QKeyEvent* event) {
+  void GLWidget::keyPressEvent(QKeyEvent* event) {
     float angle = 5.0;
     float zoom  = 0.05;
 
@@ -129,7 +160,7 @@ namespace KBX {
         this->scene->markNext( 1,  0 );
         break;
       case Qt::Key_Space:
-        this->scene->select();
+        //this->scene->select();
 
       default:
         event->ignore();
