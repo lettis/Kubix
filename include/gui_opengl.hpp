@@ -43,6 +43,8 @@ namespace KBX {
       QPoint mousePos;
 
       Object* pickObject(QPoint p);
+
+      Logger log;
   
   protected:
       void initializeGL();

@@ -1,12 +1,14 @@
 #include "gui_opengl.hpp"
 #include "tools.hpp"
+#include <QImage>
 #include <QTimer>
 #include <GL/glu.h>
 
 namespace KBX {
   GLWidget::GLWidget(QWidget *parent)
     : QGLWidget(parent),
-      textures( new Textures() )
+      textures( new Textures() ),
+      log("act")
   {
     // load textures for models
     this->loadTextures();
@@ -24,23 +26,26 @@ namespace KBX {
   void GLWidget::loadTextures(){
     for ( size_t i=1; i<7; i++ ){
       this->textures->dieTexturesWhite[i-1] = bindTexture(
-        QPixmap( QString("./res/side%1.png").arg(i) ),
+        QPixmap( QString("res/side%1.png").arg(i) ),
         GL_TEXTURE_2D
       );
       this->textures->dieTexturesBlack[i-1] = bindTexture(
-        QPixmap( QString("./res/side%1b.png").arg(i) ),
+        QPixmap( QString("res/side%1b.png").arg(i) ),
         GL_TEXTURE_2D
       );
     }
 
-    this->textures->kingTextureBlack[0] = bindTexture(
-        QPixmap( QString("./res/sidekb.png") ),
-        GL_TEXTURE_2D
-    );
-    this->textures->kingTextureWhite[0] = bindTexture(
-        QPixmap( QString("./res/sidek.png") ),
-        GL_TEXTURE_2D
-    );
+//    this->textures->kingTextureBlack[0] = bindTexture(
+//        QPixmap( QString("res/sidekb.png") ),
+//        GL_TEXTURE_2D
+//    );
+    QImage img;
+    if ( !img.load(QString("res/sidekb.png")) ){
+      this->log.info( QString( "cannot load image"  ).toStdString() );
+    }
+
+    this->textures->kingTextureBlack[0] = bindTexture(img);
+    this->textures->kingTextureWhite[0] = bindTexture( QImage(QString("res/sidek.png")) );
   }
 
   /// pick Object at given mouse coordinates
@@ -63,6 +68,7 @@ namespace KBX {
 
   void GLWidget::initializeGL() {
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
     const Color& bgColor = Color::GREY20;
     glClearColor(  bgColor.r
                  , bgColor.g

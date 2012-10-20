@@ -486,8 +486,8 @@ namespace KBX {
                   this->coloring[DEFAULT].glColor();
                   break;
           }
-          glEnable( GL_TEXTURE_2D );
       }
+      glEnable( GL_TEXTURE_2D );
       // face 1
       if(!picking){
         glBindTexture( GL_TEXTURE_2D, this->textures[0] );
