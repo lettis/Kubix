@@ -1,5 +1,6 @@
 #include "gui_opengl.hpp"
-
+#include "tools.hpp"
+#include <QTimer>
 #include <GL/glu.h>
 
 namespace KBX {
@@ -11,6 +12,10 @@ namespace KBX {
     this->loadTextures();
     this->scene = new Scene(this);
     setMouseTracking(false);
+
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+    timer->start(30);
   }
 
   /**
@@ -122,7 +127,6 @@ namespace KBX {
   void GLWidget::keyPressEvent(QKeyEvent* event) {
     float angle = 5.0;
     float zoom  = 0.05;
-
     switch(event->key()) {
       case Qt::Key_Escape:
         close();
