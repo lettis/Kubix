@@ -822,6 +822,7 @@ void initSDL(int width, int height, bool fullscreen){
     SDL_WM_SetCaption("kubix", NULL);
     SDL_Surface* icon = IMG_Load("./res/kubix.png");
     SDL_WM_SetIcon(icon, NULL);
+
     atexit(SDL_Quit);
 }
 
