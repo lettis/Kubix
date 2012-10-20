@@ -50,7 +50,7 @@ namespace KBX {
       void paintGL();
       void mousePressEvent(QMouseEvent *event);
       void mouseMoveEvent(QMouseEvent *event);
-      void mouseWheelEvent(QWheelEvent *event);
+      void wheelEvent(QWheelEvent *event);
       void keyPressEvent(QKeyEvent *event);
   public:
       GLWidget(QWidget *parent = NULL);
