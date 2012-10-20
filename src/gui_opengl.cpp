@@ -110,7 +110,7 @@ namespace KBX {
 
   void GLWidget::mouseMoveEvent(QMouseEvent *event) {
     float rotAngle = 0.2;
-    if (event->button() == Qt::RightButton){
+    if (event->buttons() & Qt::RightButton){
       QPoint delta = event->pos() - this->mousePos;
       this->mousePos = event->pos();
       this->scene->rotate(
@@ -126,8 +126,9 @@ namespace KBX {
     }
   }
 
-  void GLWidget::mouseWheelEvent(QWheelEvent *event) {
-    this->scene->zoom( 1 + 0.05 * event->delta() );
+  void GLWidget::wheelEvent(QWheelEvent *event) {
+    Logger l("wheel");
+    this->scene->zoom( 1 - 0.0005 * event->delta() );
   }
   
   void GLWidget::keyPressEvent(QKeyEvent* event) {
