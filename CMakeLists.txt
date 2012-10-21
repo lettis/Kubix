@@ -2,8 +2,8 @@ cmake_minimum_required (VERSION 2.8)
 
 project (Kubix)
 
-set (Kubix_VERSION_MAJOR 1)
-set (Kubix_VERSION_MINOR 0)
+set (Kubix_VERSION_MAJOR 0)
+set (Kubix_VERSION_MINOR 1)
 
 add_subdirectory(src)
 
