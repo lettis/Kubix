@@ -101,7 +101,7 @@ KBX_Vec::KBX_Vec(float x, float y, float z){
     this->z = z;
 }
 /// calculate the euclidian norm
-float KBX_Vec::norm(){
+float KBX_Vec::norm2(){
     float norm = 0;
     norm += this->x * this->x;
     norm += this->y * this->y;
@@ -113,7 +113,7 @@ float KBX_Vec::norm(){
     \returns the normalized vector
 */
 KBX_Vec KBX_Vec::normalize(){
-    float norm = this->norm();
+    float norm = this->norm2();
     if (norm != 0){
         return KBX_Vec(   this->x/norm
 		                , this->y/norm
