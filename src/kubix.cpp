@@ -22,6 +22,7 @@
 #include <map>
 
 #include <QApplication>
+#include <QLabel> //TODO: test
 
 #include "tools.hpp"
 #include "gui.hpp"
@@ -47,6 +48,7 @@ int main(int argc, char** argv){
     KBX::GLWidget window;
     window.resize(800,600);
     window.show();
+
     return app.exec();
 
   }catch(const char* errMsg){

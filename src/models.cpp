@@ -20,7 +20,6 @@
 #include <iostream>
 
 #include <GL/glu.h>
-//#include <GL/glx.h>
 
 #include "models.hpp"
 #include "gui_opengl.hpp"
@@ -72,16 +71,22 @@ namespace KBX {
       this->b = b;
   }
   size_t Color::id() const {
-      // TODO: think about this. this implementation leads to some pretty large ids
-      //       if the color is bright (e.g. white: 1.0*255 + 1.0*255^2 + 1.0*255^3 ).
-      //       is that necessary?
+      // this implementation of a (distinct) color id can
+      // lead to pretty large numbers. it is used for the
+      // picking mechanism. every object gets an own color
+      // to distinguish it from the others when a click happens.
+      // therefore, the size of the id-value depends highly
+      // on the number of objects.
+      // additionally, the picking-mechanism starts by 
+      // assigning all shades of red before going over to the
+      // other numbers. we therefore dont expect much trouble here...
       return this->r*255 + 255*255*this->g + 255*255*255*this->b;
   }
   /// call glColor3f with internal values
   void Color::glColor() const {
       glColor3f( this->r, this->g, this->b );
   }
-  
+
   /// constructor initializing nullvector
   Vec::Vec(){
       this->x = 0;

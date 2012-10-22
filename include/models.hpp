@@ -135,7 +135,7 @@ namespace KBX {
   public:
       // colors for different activities
       std::map<Activity, Color> coloring;
-  //TODO: get rid of activityState and use setters for states (+internal flags) instead
+//TODO: get rid of activityState and use setters for states (+internal flags) instead
       Activity activityState;
       // a unique id of this object
       const size_t id;
