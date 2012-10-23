@@ -282,52 +282,6 @@ namespace KBX {
       }
   }
   
-  /// construct a new object handler
-  /*
-  ObjectHandler::ObjectHandler()
-    :log("ObjectList")
-    ,nullId(0)
-    {  }*/
-  /// add an object to the handler
-  /**
-     \param obj object to add to the handler
-     \return number of object in list (object id)
-  *//*
-  size_t ObjectHandler::add(Object* obj){
-      if(this->objects.size() == nullId){
-          this->objects.push_back(NULL);
-      }
-      this->objects.push_back(obj);
-      return this->objects.size()-1;
-      }*/
-  /// remove an object from the handler
-  /**
-     \param obj object to remove from the handler
-  *//*
-  void ObjectHandler::remove(Object* obj){
-      for(size_t i=0; i<this->objects.size(); i++){
-          if(objects[i] == obj) objects[i] = NULL;
-      }
-  }*/
-  /// remove an object from the handler
-  /**
-     \param id id gf object to remove from the handler
-  *//*
-  void Scene::remove(size_t id){
-      if(id < objects.size()){
-          objects[id] = NULL;
-      }
-      }*/
-  /// clear the selection
-  /**
-     set all objects isSelected state to false
-  *//*
-  void Scene::clearSelection(){
-    for(size_t id = 0; id < objects.size(); id++){
-      objects[id]->setSelectedState(false);
-    }
-    }*/
-
   /// clear all object states
   /**
      set all objects isSelected, isMarked and isHighlighted state to false
@@ -338,9 +292,9 @@ namespace KBX {
     }
   }
 
-  /// clear all object states
+  /// clear all tile states
   /**
-     set all objects isSelected, isMarked and isHighlighted state to false
+     set all tiles isSelected, isMarked and isHighlighted state to false
   */
   void Board::clearStates(){
     for (size_t x=0; x < this->_nX; x++){
@@ -350,14 +304,16 @@ namespace KBX {
     }
   }
 
+  /// clear all states
+  /*
+    set isSelected, isMarked and isHighlighted to false
+  */
   void Object::clearStates(){
     this->setSelectedState(false);
     this->setMarkedState(false);
     this->setHighlightedState(false);
   }
   
-  /// list of all objects to be handled (needed for mouse events)
-  // ObjectHandler Object::objectList;
   // standard colors for marked, selected and highlighted states
   Color Object::cSelected = Color(0,0,255);
   Color Object::cMarked = Color(255,0,0);
@@ -385,9 +341,6 @@ namespace KBX {
     ,isMarked(false)
     ,isSelected(false)
     ,scene(scene)
-    // we need to add the object to the object list
-    // and retrieve our own unique id from there
-    //    ,id(Object::objectList.add(this)) 
   {}
   /// set object rotation (accumulatively)
   /**
@@ -507,42 +460,19 @@ namespace KBX {
     Object(scene, pos)
   {}
   
-  //TODO: weg
-  // this defines the keys for the die face textures
-  //const size_t Die::FACE_K_W = 10;
-  //const size_t Die::FACE_K_B = 20;
-  //const size_t Die::FACE_1_W = 11;
-  //const size_t Die::FACE_2_W = 12;
-  //const size_t Die::FACE_3_W = 13;
-  //const size_t Die::FACE_4_W = 14;
-  //const size_t Die::FACE_5_W = 15;
-  //const size_t Die::FACE_6_W = 16;
-  //const size_t Die::FACE_1_B = 21;
-  //const size_t Die::FACE_2_B = 22;
-  //const size_t Die::FACE_3_B = 23;
-  //const size_t Die::FACE_4_B = 24;
-  //const size_t Die::FACE_5_B = 25;
-  //const size_t Die::FACE_6_B = 26;
-
-  //TODO: weg
-  /// the textures of the die surfaces are handled "globally" by this static member
-  //TextureHandler Die::textures = TextureHandler();
-
   /// inherit parent constructor and set color
   Die::Die(Scene* scene, Vec pos, PlayColor color, GLuint* textures) :
     AnimObject(scene, pos)
     ,textures(textures)
     ,_playColor(color)
     ,IS_KING(false)
-  {
-  }
+  {}
   Die::Die(Scene* scene, Vec pos, PlayColor color, GLuint* textures, bool IS_KING) :
     AnimObject(scene, pos)
     ,textures(textures)
     ,_playColor(color)
     ,IS_KING(IS_KING)
-  {
-  }
+  {}
   /// render the die
   void Die::_render(){
     // setting the color is neccessary in order to ensure that the texture is drawn 'as-is'
@@ -666,6 +596,7 @@ namespace KBX {
       }
   }
   /// return gui id of tile defined by its coordinates
+  // TODO: this piece of code is deprecated and should be replaced by something else
   //size_t Board::getTileId(size_t x, size_t y){
   //    return this->_tiles[x][y]->id;
   //}
@@ -801,6 +732,7 @@ namespace KBX {
     // add mapping from id of board-tile (gui representation) to
     // its xy-coordinates
     /*
+      TODO: this piece of code is deprecated and should be replaced by something else
     for (size_t x=0; x < 9; x++){
         for (size_t y=0; y < 9; y++){
             std::pair<size_t,size_t> xy(x,y);
@@ -918,6 +850,7 @@ namespace KBX {
       if there is no object marked, automatically mark the field in the middle.
   */
   void Scene::markNext(int dx, int dy){
+    // TODO: This piece of code is deprecated and should be replaced with something else
 //    int x,y;
 //    if (this->_markedId == CLEAR){
 //      // if no field marked, set centre field marked
@@ -949,48 +882,5 @@ namespace KBX {
 //    //TODO: bullshit
 //    //this->_mark( id );
   }
-
-
-
-
-
-
-
-//TODO: deprecated
-/*
-  /// initialize opengl
-  void initOpenGL(int width, int height){
-      // Our shading model--Gouraud (smooth).
-      glShadeModel( GL_SMOOTH );
-      // use grey background (10%)...
-      const Color& bgColor = Color::GREY20;
-      glClearColor(  bgColor.r
-                   , bgColor.g
-                   , bgColor.b
-                   , 0.0f);
-      // ...and tell the object list that our background color
-      // does not correspond to any kind of object
-      Object::objectList.nullId = bgColor.id();
-      setGLWindow(width, height);
-      // use smooth shading model
-      glShadeModel(GL_SMOOTH);
-      // draw objects respecting depth
-      glEnable(GL_DEPTH_TEST);
-  }
-*/
-  
-//TODO: deprecated
-/*
-  void setGLWindow(int width, int height){
-      GLfloat aspectRatio = (GLfloat)width / (GLfloat)height;
-      glViewport(0, 0, width, height);
-      glMatrixMode(GL_PROJECTION);
-      glLoadIdentity();
-      gluPerspective(10.0,        // the camera distance
-                     aspectRatio, // the width-to-height ratio
-                     1.0,         // the near z clipping coordinate
-                     1024.0);     // the far z clipping coordinate
-  }  
-*/
   
 } // end namespace KBX

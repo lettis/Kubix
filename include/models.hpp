@@ -96,24 +96,6 @@ namespace KBX {
   };
   
   class Scene;
-  /// handle for an object's mouse events and identification
-  /*  class ObjectHandler{
-    Logger log;
-    std::vector<Object*> objects;
-  public: 
-    // the nullId is the id that corresponds to the NULL pointer.
-    // it is, however, not neccessarily zero,
-    // as it is supposed to correspond to the color id 
-    // of the background color
-    size_t nullId;
-    ObjectHandler();
-    Object* get(size_t id);
-    size_t add(Object* obj);
-    void remove(Object* obj);
-    void remove(size_t id);
-    void clearSelection();
-    };*/
-  
   // Object
   //  abstract class defining opengl object
   class Object{
@@ -135,10 +117,6 @@ namespace KBX {
     virtual void _setColor();
     virtual void setColor();
   public:
-    // a unique id of this object
-    //const size_t id;
-    // the object list handles all Objects ever constructed
-    //    static ObjectHandler objectList;
     static Color cSelected;
     static Color cHighlighted;
     static Color cMarked;
@@ -147,14 +125,6 @@ namespace KBX {
     Object(Scene* scene, Vec pos);
     virtual Object* clicked(size_t id);
     virtual void clearStates();
-    // virtual destructor
-/*
-    virtual ~Object(){
-      // we need to remove the object from the objectList
-      Object::objectList.remove(this);
-    }*/
-    //TODO: implement setters for states
-    // set/unset object to marked state
     void setMarkedState(bool marked);
     void setSelectedState(bool selected);
     void setHighlightedState(bool highlighted);
@@ -202,25 +172,6 @@ namespace KBX {
     void _render();
     PlayColor _playColor;
   public:
-//      // texture container
-//      static TextureHandler textures;
-//      // faces of white dice
-//      static const size_t FACE_K_W;
-//      static const size_t FACE_K_B;
-//      static const size_t FACE_1_W;
-//      static const size_t FACE_2_W;
-//      static const size_t FACE_3_W;
-//      static const size_t FACE_4_W;
-//      static const size_t FACE_5_W;
-//      static const size_t FACE_6_W;
-//      // faces of black dice
-//      static const size_t FACE_1_B;
-//      static const size_t FACE_2_B;
-//      static const size_t FACE_3_B;
-//      static const size_t FACE_4_B;
-//      static const size_t FACE_5_B;
-//      static const size_t FACE_6_B;
-      
       const bool IS_KING;
       Die(Scene* scene, Vec pos, PlayColor color, GLuint* textures);
       Die(Scene* scene, Vec pos, PlayColor color, GLuint* textures, bool IS_KING);
@@ -250,6 +201,7 @@ namespace KBX {
     ~Board();
     Object* clicked(size_t id);
     void clearStates();
+    // TODO: check if getTileId is needed and reimplement if neccessary
     size_t getTileId(size_t x, size_t y);
   };
   
