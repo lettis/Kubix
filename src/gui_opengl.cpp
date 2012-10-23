@@ -1,19 +1,24 @@
 #include "gui_opengl.hpp"
 #include "tools.hpp"
+#include "models.hpp"
 #include <QImage>
 #include <QTimer>
 #include <GL/glu.h>
 
+
 namespace KBX {
+
   GLWidget::GLWidget(QWidget *parent)
     : QGLWidget(parent),
       textures( new Textures() ),
       log("act")
   {
-    // load textures for models
+    this->initializeGL();
     this->loadTextures();
+    // load textures for models
     this->scene = new Scene(this);
     setMouseTracking(false);
+
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
@@ -99,13 +104,16 @@ namespace KBX {
     Object* obj;
     if (event->button() == Qt::LeftButton){
       // pick object
+      Object::objectList.clearStates();
       obj = this->pickObject( event->pos() );
+      if(obj){
+	obj->setSelectedState(true);
+      }
     } else if (event->button() == Qt::RightButton){
       // save mouse position for scene rotation
       this->mousePos = event->pos();
-    } else {
-      event->ignore();
-    }
+    } 
+    event->ignore();
   }
 
   void GLWidget::mouseMoveEvent(QMouseEvent *event) {

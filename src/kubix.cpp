@@ -28,7 +28,6 @@
 #include "gui_opengl.hpp"
 #include "handler.hpp"
 #include "engine.hpp"
-#include "controller.hpp"
 
 int main(int argc, char** argv){
   // enable logging

@@ -299,9 +299,10 @@ namespace KBX {
       }
   }
   /// construct a new object handler
-  ObjectHandler::ObjectHandler(){
-      this->nullId = 0;
-  }
+  ObjectHandler::ObjectHandler()
+    :log("ObjectList")
+    ,nullId(0)
+  {  }
   /// add an object to the handler
   /**
      \param obj object to add to the handler
@@ -332,28 +333,60 @@ namespace KBX {
           objects[id] = NULL;
       }
   }
+  /// clear the selection
+  /**
+     set all objects isSelected state to false
+  */
+  void ObjectHandler::clearSelection(){
+    for(size_t id = 0; id < objects.size(); id++){
+      objects[id]->setSelectedState(false);
+    }
+  }
+
+  /// clear all object states
+  /**
+     set all objects isSelected, isMarked and isHighlighted state to false
+  */
+  void ObjectHandler::clearStates(){
+    for(size_t id = 0; id < objects.size(); id++){
+      if(id ==this->nullId) continue;
+      else if(!objects[id]){
+	log.warning(stringprintf("objects[%d]==NULL, but nullId==%d",(int)id,(int)nullId));
+	continue;
+      }
+      objects[id]->setSelectedState(false);
+      objects[id]->setMarkedState(false);
+      objects[id]->setHighlightedState(false);
+    }
+  }
   
-  /// list of all objects to be handled (mouse events)
+  /// list of all objects to be handled (needed for mouse events)
   ObjectHandler Object::objectList;
+  // standard colors for marked, selected and highlighted states
+  Color Object::cSelected = Color(0,0,255);
+  Color Object::cMarked = Color(255,0,0);
+  Color Object::cHighlighted = Color(0,255,255);
+
   /// default constructor
   Object::Object() :
        _angle(0)
       ,_isVisible(true)
       ,_pos( Vec(0,0,0) )
-      ,activityState(DEFAULT)
       // we need to add the object to the object list
       // and retrieve our own unique id from there
       ,id(Object::objectList.add(this)) 
   {}
   /// constructor setting the object's position
   Object::Object(Vec pos) :
-       _angle(0)
-      ,_isVisible(true)
-      ,_pos( pos )
-      ,activityState(DEFAULT)
-      // we need to add the object to the object list
-      // and retrieve our own unique id from there
-      ,id(Object::objectList.add(this)) 
+    _angle(0)
+    ,_isVisible(true)
+    ,_pos( pos )
+    ,isHighlighted(false)
+    ,isMarked(false)
+    ,isSelected(false)
+    // we need to add the object to the object list
+    // and retrieve our own unique id from there
+    ,id(Object::objectList.add(this)) 
   {}
   /// set object rotation (accumulatively)
   /**
@@ -380,6 +413,15 @@ namespace KBX {
       }
       this->_rotAxis.push_back( axis );
   }
+  void Object::setSelectedState(bool selected){
+    this->isSelected = selected;
+  }
+  void Object::setMarkedState(bool marked){
+    this->isMarked = marked;
+  }
+  void Object::setHighlightedState(bool highlighted){
+    this->isHighlighted = highlighted;
+  }
   /// set object translation
   void Object::translate(Vec direction){
       this->_pos = direction;
@@ -403,6 +445,46 @@ namespace KBX {
       this->_render(picking);
       // reload transformations done before
       glPopMatrix();
+  }
+  /// set the object color before rendering
+  void Object::setColor(bool picking){
+      if(picking){
+          Color(this->id).glColor();
+	  return;
+      } 
+      if(this->isSelected){
+	this->cSelected.glColor();
+	return;
+      }
+      if(this->isHighlighted){
+	this->cHighlighted.glColor();
+	return;
+      }
+      if(this->isMarked){
+	this->cMarked.glColor();
+	return;
+      }
+      Color::WHITE.glColor();
+  }
+
+  void Tile::setColor(bool picking){
+      if(picking){
+          Color(this->id).glColor();
+	  return;
+      } 
+      if(this->isSelected){
+	this->cSelected.glColor();
+	return;
+      }
+      if(this->isHighlighted){
+	this->cHighlighted.glColor();
+	return;
+      }
+      if(this->isMarked){
+	this->cMarked.glColor();
+	return;
+      }
+      this->basicColor.glColor();
   }
   
   /// inherit parent constructor
@@ -442,7 +524,6 @@ namespace KBX {
       ,_playColor(color)
       ,IS_KING(false)
   {
-      this->setColors();
   }
   Die::Die(Vec pos, PlayColor color, GLuint* textures, bool IS_KING) :
        AnimObject(pos)
@@ -450,115 +531,86 @@ namespace KBX {
       ,_playColor(color)
       ,IS_KING(IS_KING)
   {
-      this->setColors();
-  }
-  /// set colors for different activity states
-  void Die::setColors(){
-      this->coloring[DEFAULT]     = Color::WHITE;
-      this->coloring[HIGHLIGHTED] = Color::GREEN;
-      this->coloring[MARKED]      = Color::BLUE;
-      this->coloring[SELECTED]    = Color::RED;
   }
   /// render the die
   void Die::_render(bool picking){
-      // setting the color is neccessary in order to ensure that the texture is drawn 'as-is'
-      // leaving this out might cause the texture to be drawn with 'shaded' colors
-      // because all texture-pixel rgb values are multiplied with the corresponding values 
-      // of the current color before being drawn!
-      if(picking){
-          Color pickerColor = Color(this->id);
-          pickerColor.glColor();
-      } else {
-          switch(this->activityState) {
-              case DEFAULT:
-                  this->coloring[DEFAULT].glColor();
-                  break;
-              case HIGHLIGHTED:
-                  this->coloring[HIGHLIGHTED].glColor();
-                  break;
-              case SELECTED:
-                  this->coloring[SELECTED].glColor();
-                  break;
-              case MARKED:
-                  this->coloring[MARKED].glColor();
-                  break;
-              default:
-                  this->coloring[DEFAULT].glColor();
-                  break;
-          }
+    // setting the color is neccessary in order to ensure that the texture is drawn 'as-is'
+    // leaving this out might cause the texture to be drawn with 'shaded' colors
+    // because all texture-pixel rgb values are multiplied with the corresponding values 
+    // of the current color before being drawn!
+    this->setColor(picking);
+    glEnable( GL_TEXTURE_2D );
+    // face 1
+    if(!picking){
+      glBindTexture( GL_TEXTURE_2D, this->textures[0] );
+    }
+    glBegin( GL_QUADS );
+    glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
+    glTexCoord2f(1.0,1.0); glVertex3f(+0.5,-0.5,-0.5);
+    glTexCoord2f(1.0,0.0); glVertex3f(+0.5,+0.5,-0.5);
+    glTexCoord2f(0.0,0.0); glVertex3f(-0.5,+0.5,-0.5);
+    glEnd();
+    // face 2
+    if(!picking){
+      if ( ! this->IS_KING){
+	glBindTexture( GL_TEXTURE_2D, this->textures[1] );
       }
-      glEnable( GL_TEXTURE_2D );
-      // face 1
-      if(!picking){
-        glBindTexture( GL_TEXTURE_2D, this->textures[0] );
+    }
+    glBegin( GL_QUADS );
+    glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
+    glTexCoord2f(1.0,1.0); glVertex3f(+0.5,-0.5,-0.5);
+    glTexCoord2f(1.0,0.0); glVertex3f(+0.5,-0.5,+0.5);
+    glTexCoord2f(0.0,0.0); glVertex3f(-0.5,-0.5,+0.5);
+    glEnd();
+    // face 3
+    if(!picking){
+      if ( ! this->IS_KING){
+	glBindTexture( GL_TEXTURE_2D, this->textures[2] );
       }
-      glBegin( GL_QUADS );
-       glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
-       glTexCoord2f(1.0,1.0); glVertex3f(+0.5,-0.5,-0.5);
-       glTexCoord2f(1.0,0.0); glVertex3f(+0.5,+0.5,-0.5);
-       glTexCoord2f(0.0,0.0); glVertex3f(-0.5,+0.5,-0.5);
-      glEnd();
-      // face 2
-      if(!picking){
-        if ( ! this->IS_KING){
-          glBindTexture( GL_TEXTURE_2D, this->textures[1] );
-        }
+    }
+    glBegin( GL_QUADS );
+    glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
+    glTexCoord2f(1.0,1.0); glVertex3f(-0.5,+0.5,-0.5);
+    glTexCoord2f(1.0,0.0); glVertex3f(-0.5,+0.5,+0.5);
+    glTexCoord2f(0.0,0.0); glVertex3f(-0.5,-0.5,+0.5);
+    glEnd();
+    // face 4
+    if(!picking){
+      if ( ! this->IS_KING){
+	glBindTexture( GL_TEXTURE_2D, this->textures[3] );
       }
-      glBegin( GL_QUADS );
-       glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
-       glTexCoord2f(1.0,1.0); glVertex3f(+0.5,-0.5,-0.5);
-       glTexCoord2f(1.0,0.0); glVertex3f(+0.5,-0.5,+0.5);
-       glTexCoord2f(0.0,0.0); glVertex3f(-0.5,-0.5,+0.5);
-      glEnd();
-      // face 3
-      if(!picking){
-        if ( ! this->IS_KING){
-          glBindTexture( GL_TEXTURE_2D, this->textures[2] );
-        }
+    }
+    glBegin( GL_QUADS );
+    glTexCoord2f(0.0,1.0); glVertex3f(+0.5,-0.5,-0.5);
+    glTexCoord2f(1.0,1.0); glVertex3f(+0.5,+0.5,-0.5);
+    glTexCoord2f(1.0,0.0); glVertex3f(+0.5,+0.5,+0.5);
+    glTexCoord2f(0.0,0.0); glVertex3f(+0.5,-0.5,+0.5);
+    glEnd();
+    // face 5
+    if(!picking){
+      if ( ! this->IS_KING){
+	glBindTexture( GL_TEXTURE_2D, this->textures[4] );
       }
-      glBegin( GL_QUADS );
-       glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
-       glTexCoord2f(1.0,1.0); glVertex3f(-0.5,+0.5,-0.5);
-       glTexCoord2f(1.0,0.0); glVertex3f(-0.5,+0.5,+0.5);
-       glTexCoord2f(0.0,0.0); glVertex3f(-0.5,-0.5,+0.5);
-      glEnd();
-      // face 4
-      if(!picking){
-        if ( ! this->IS_KING){
-          glBindTexture( GL_TEXTURE_2D, this->textures[3] );
-        }
+    }
+    glBegin( GL_QUADS );
+    glTexCoord2f(0.0,1.0); glVertex3f(-0.5,+0.5,-0.5);
+    glTexCoord2f(1.0,1.0); glVertex3f(+0.5,+0.5,-0.5);
+    glTexCoord2f(1.0,0.0); glVertex3f(+0.5,+0.5,+0.5);
+    glTexCoord2f(0.0,0.0); glVertex3f(-0.5,+0.5,+0.5);
+    glEnd();
+    // face 6
+    if(!picking){
+      if ( ! this->IS_KING){
+	glBindTexture( GL_TEXTURE_2D, this->textures[5] );
       }
-      glBegin( GL_QUADS );
-       glTexCoord2f(0.0,1.0); glVertex3f(+0.5,-0.5,-0.5);
-       glTexCoord2f(1.0,1.0); glVertex3f(+0.5,+0.5,-0.5);
-       glTexCoord2f(1.0,0.0); glVertex3f(+0.5,+0.5,+0.5);
-       glTexCoord2f(0.0,0.0); glVertex3f(+0.5,-0.5,+0.5);
-      glEnd();
-      // face 5
-      if(!picking){
-        if ( ! this->IS_KING){
-          glBindTexture( GL_TEXTURE_2D, this->textures[4] );
-        }
-      }
-      glBegin( GL_QUADS );
-       glTexCoord2f(0.0,1.0); glVertex3f(-0.5,+0.5,-0.5);
-       glTexCoord2f(1.0,1.0); glVertex3f(+0.5,+0.5,-0.5);
-       glTexCoord2f(1.0,0.0); glVertex3f(+0.5,+0.5,+0.5);
-       glTexCoord2f(0.0,0.0); glVertex3f(-0.5,+0.5,+0.5);
-      glEnd();
-      // face 6
-      if(!picking){
-        if ( ! this->IS_KING){
-          glBindTexture( GL_TEXTURE_2D, this->textures[5] );
-        }
-      }
-      glBegin( GL_QUADS );
-       glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,+0.5);
-       glTexCoord2f(1.0,1.0); glVertex3f(+0.5,-0.5,+0.5);
-       glTexCoord2f(1.0,0.0); glVertex3f(+0.5,+0.5,+0.5);
-       glTexCoord2f(0.0,0.0); glVertex3f(-0.5,+0.5,+0.5);
-      glEnd();
-      glDisable( GL_TEXTURE_2D );
+    }
+    glBegin( GL_QUADS );
+    glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,+0.5);
+    glTexCoord2f(1.0,1.0); glVertex3f(+0.5,-0.5,+0.5);
+    glTexCoord2f(1.0,0.0); glVertex3f(+0.5,+0.5,+0.5);
+    glTexCoord2f(0.0,0.0); glVertex3f(-0.5,+0.5,+0.5);
+    glEnd();
+    glDisable( GL_TEXTURE_2D );
   }
   
   /// board constructor
@@ -612,39 +664,11 @@ namespace KBX {
        Object(pos)
       ,basicColor(color)
   {
-      this->setColors();
-  }
-  /// set colors for different activity states
-  void Tile::setColors(){
-      this->coloring[DEFAULT]     = this->basicColor;
-      this->coloring[HIGHLIGHTED] = Color::GREEN;
-      this->coloring[MARKED]      = Color::BLUE;
-      this->coloring[SELECTED]    = Color::RED;
   }
   /// render the tile
   void Tile::_render(bool picking){
       Logger log("Tile::_render");
-      if(picking){
-          Color(this->id).glColor();
-      } else {
-          switch(this->activityState) {
-              case DEFAULT:
-                  this->coloring[DEFAULT].glColor();
-                  break;
-              case HIGHLIGHTED:
-                  this->coloring[HIGHLIGHTED].glColor();
-                  break;
-              case SELECTED:
-                  this->coloring[SELECTED].glColor();
-                  break;
-              case MARKED:
-                  this->coloring[MARKED].glColor();
-                  break;
-              default:
-                  this->coloring[DEFAULT].glColor();
-                  break;
-          }
-      }
+      this->setColor(picking);
       glBegin( GL_QUADS );
        // upper face
        glVertex3f(0.0, 0.0, 0.0);

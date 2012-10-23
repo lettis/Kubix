@@ -29,12 +29,6 @@ namespace KBX { class GLWidget; }
 
 namespace KBX {
   /// define states for gui activity (illumination)
-  enum Activity{
-       DEFAULT
-      ,HIGHLIGHTED
-      ,SELECTED
-      ,MARKED
-  };
   
   /// defines a simple vector in 3d-cartesian coordinates
   class Vec{
@@ -104,67 +98,68 @@ namespace KBX {
   class Object;
   /// handle for an object's mouse events and identification
   class ObjectHandler{
-      std::vector<Object*> objects;
+    Logger log;
+    std::vector<Object*> objects;
   public: 
-      // the nullId is the id that corresponds to the NULL pointer.
-      // it is, however, not neccessarily zero,
-      // as it is supposed to correspond to the color id 
-      // of the background color
-      size_t nullId;
-      ObjectHandler();
-      Object* get(size_t id);
-      size_t add(Object* obj);
-      void remove(Object* obj);
-      void remove(size_t id);
+    // the nullId is the id that corresponds to the NULL pointer.
+    // it is, however, not neccessarily zero,
+    // as it is supposed to correspond to the color id 
+    // of the background color
+    size_t nullId;
+    ObjectHandler();
+    Object* get(size_t id);
+    size_t add(Object* obj);
+    void remove(Object* obj);
+    void remove(size_t id);
+    void clearSelection();
+    void clearStates();
   };
   
   // Object
   //  abstract class defining opengl object
   class Object{
   protected:
-      std::vector<float>   _angle;
-      std::vector<Vec> _rotAxis;
-      bool    _isVisible;
-      Vec _pos;
-      // define opengl for this object
-      virtual void _render(bool picking = false) = 0;
-      // rotate object around _rotAxis by _angle
-      void _rotate();
-      // translate object to _pos
-      void _translate();
+    std::vector<float>   _angle;
+    std::vector<Vec> _rotAxis;
+    bool    _isVisible;
+    bool isSelected;
+    bool isHighlighted;
+    bool isMarked;
+    Vec _pos;
+    // define opengl for this object
+    virtual void _render(bool picking = false) = 0;
+    // rotate object around _rotAxis by _angle
+    void _rotate();
+    // translate object to _pos
+    void _translate();
+    virtual void setColor(bool picking=false);
   public:
-      // colors for different activities
-      std::map<Activity, Color> coloring;
-  //TODO: get rid of activityState and use setters for states (+internal flags) instead
-      Activity activityState;
-      // a unique id of this object
-      const size_t id;
-      // the object list handles all Objects ever constructed
-      static ObjectHandler objectList;
-      // constructor
-      Object();
-      Object(Vec pos);
-      // virtual destructor
-      virtual ~Object(){
-          // we need to remove the object from the objectList
-          Object::objectList.remove(this);
-      }
-  //TODO: implement setters for states
-      // set/unset object to marked state
-      void setMarked();
-      void setUnmarked();
-      // set/unset object to selected state
-      void setSelected();
-      void setUnselected();
-      // set/unset object to highlighted state
-      void setHighlighted();
-      void setUnhighlighted();
-      // sets angle and axis to define a rotation
-      void rotate(Vec axis, float angle);
-      // sets vector to define a translation
-      void translate(Vec direction);
-      // render the object and perform translation / rotation
-      void display(bool picking = false);
+    // a unique id of this object
+    const size_t id;
+    // the object list handles all Objects ever constructed
+    static ObjectHandler objectList;
+    static Color cSelected;
+    static Color cHighlighted;
+    static Color cMarked;
+    // constructor
+    Object();
+    Object(Vec pos);
+    // virtual destructor
+    virtual ~Object(){
+      // we need to remove the object from the objectList
+      Object::objectList.remove(this);
+    }
+    //TODO: implement setters for states
+    // set/unset object to marked state
+    void setMarkedState(bool marked);
+    void setSelectedState(bool selected);
+    void setHighlightedState(bool highlighted);
+    // sets angle and axis to define a rotation
+    void rotate(Vec axis, float angle);
+    // sets vector to define a translation
+    void translate(Vec direction);
+    // render the object and perform translation / rotation
+    void display(bool picking = false);
   };
   
   
@@ -225,18 +220,17 @@ namespace KBX {
       const bool IS_KING;
       Die(Vec pos, PlayColor color, GLuint* textures);
       Die(Vec pos, PlayColor color, GLuint* textures, bool IS_KING);
-      void setColors();
   };
   
   /// Board Tile
   ///  defines game board tile
   class Tile: public Object{
-      void _render(bool picking = false);
-      Color basicColor;
+    void _render(bool picking = false);
+    Color basicColor;
+    void setColor(bool picking=false);
   public:
-      Tile();
-      Tile(Vec pos, Color color);
-      void setColors();
+    Tile();
+    Tile(Vec pos, Color color);
   };
   
   /// Board
