@@ -52,7 +52,7 @@ public:
     float z;
     KBX_Vec();
     KBX_Vec(float x, float y, float z);
-    float norm();
+    float norm2();
     KBX_Vec normalize();
     KBX_Vec scale(float a);
     KBX_Vec add(KBX_Vec v);

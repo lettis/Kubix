@@ -207,15 +207,19 @@ void TextureHandler::loadTexture(const char* filename, GLuint textureId ){
         // contains an alpha channel
         if (nColors == 4){
             if (surface->format->Rmask == 0x000000ff){
+              std::cerr << "RGBA" << std::endl;
                 textureFormat = GL_RGBA;
             } else {
+              std::cerr << "BGRA" << std::endl;
                 textureFormat = GL_BGRA;
             }
         } else if (nColors == 3){
             // no alpha channel
             if (surface->format->Rmask == 0x000000ff){
+              std::cerr << "RGB" << std::endl;
                 textureFormat = GL_RGB;
             } else {
+              std::cerr << "BGR" << std::endl;
                 textureFormat = GL_BGR;
             }
         } else {

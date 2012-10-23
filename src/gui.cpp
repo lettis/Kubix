@@ -273,7 +273,7 @@ void KBX_Camera::zoom(float factor){
     }
     KBX_Vec diff = this->position.sub( this->target );
     diff = diff.scale( factor );
-    if(diff.norm() < 900 && diff.norm() > 15){
+    if(diff.norm2() < 900 && diff.norm2() > 15){
         this->position = this->target.add( diff );
     }
 }
