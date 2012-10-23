@@ -2,7 +2,9 @@
 #include "tools.hpp"
 #include "models.hpp"
 #include <QImage>
+#include <QLabel> //TODO test, remove afterwards
 #include <QTimer>
+
 #include <GL/glu.h>
 
 
@@ -26,31 +28,42 @@ namespace KBX {
   }
 
   /**
+    load single texture from file
+  */
+  void GLWidget::loadTexture(QString filename, GLuint* textureIds, size_t nTexture){
+    QPixmap pixmap = QPixmap( filename );
+    QImage img = pixmap.toImage(); 
+    int numOfColors = img.format(); 
+    glBindTexture(GL_TEXTURE_2D, textureIds[nTexture]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(
+      GL_TEXTURE_2D,
+      0,
+      numOfColors,
+      img.width(),
+      img.height(),
+      0,
+      GL_BGRA,
+      GL_UNSIGNED_BYTE,
+      img.bits()
+    );
+  }
+
+  /**
     load textures for models
   */
   void GLWidget::loadTextures(){
+    glGenTextures( 6, this->textures->dieTexturesWhite);
+    glGenTextures( 6, this->textures->dieTexturesBlack);
+    glGenTextures( 1, this->textures->kingTextureWhite);
+    glGenTextures( 1, this->textures->kingTextureBlack);
     for ( size_t i=1; i<7; i++ ){
-      this->textures->dieTexturesWhite[i-1] = bindTexture(
-        QPixmap( QString("res/side%1.png").arg(i) ),
-        GL_TEXTURE_2D
-      );
-      this->textures->dieTexturesBlack[i-1] = bindTexture(
-        QPixmap( QString("res/side%1b.png").arg(i) ),
-        GL_TEXTURE_2D
-      );
+      this->loadTexture( QString("res/side%1.png").arg(i), this->textures->dieTexturesWhite, i-1 );
+      this->loadTexture( QString("res/side%1b.png").arg(i), this->textures->dieTexturesBlack, i-1 );
     }
-
-//    this->textures->kingTextureBlack[0] = bindTexture(
-//        QPixmap( QString("res/sidekb.png") ),
-//        GL_TEXTURE_2D
-//    );
-    QImage img;
-    if ( !img.load(QString("res/sidekb.png")) ){
-      this->log.info( QString( "cannot load image"  ).toStdString() );
-    }
-
-    this->textures->kingTextureBlack[0] = bindTexture(img);
-    this->textures->kingTextureWhite[0] = bindTexture( QImage(QString("res/sidek.png")) );
+    this->loadTexture( QString("res/sidek.png"), this->textures->kingTextureWhite, 0 );
+    this->loadTexture( QString("res/sidekb.png"), this->textures->kingTextureBlack, 0 );
   }
 
   /// pick Object at given mouse coordinates
@@ -73,7 +86,7 @@ namespace KBX {
 
   void GLWidget::initializeGL() {
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_TEXTURE_2D);
+//    glEnable(GL_TEXTURE_2D);
     const Color& bgColor = Color::GREY20;
     glClearColor(  bgColor.r
                  , bgColor.g

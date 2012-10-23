@@ -37,6 +37,7 @@ namespace KBX {
       Textures* textures;
 
   private:
+      void loadTexture(QString filename, GLuint* textureIds, size_t nTexture);
       void loadTextures();
 
       Scene* scene;
