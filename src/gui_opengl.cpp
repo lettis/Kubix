@@ -66,28 +66,10 @@ namespace KBX {
     this->loadTexture( QString("res/sidekb.png"), this->textures->kingTextureBlack, 0 );
   }
 
-  /// pick Object at given mouse coordinates
-  /**
-      \param p mouse coordinates
-      \returns Object* to object under mouse cursor
-  */
-  Object* GLWidget::pickObject(QPoint p){
-    // get resolution from settings
-    GLint viewport[4];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-    // get color information from frame buffer
-    unsigned char pixel[3];
-    this->scene->display(true);
-    // Important: gl (0,0) is bottom left but window coords (0,0) are top left -> have to subtract y from height
-    glReadPixels(p.x(), viewport[3] - p.y(), 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
-    size_t id = Color(pixel[0], pixel[1], pixel[2]).id();
-    return Object::objectList.get(id);
-  }
-
   void GLWidget::initializeGL() {
     glEnable(GL_DEPTH_TEST);
 //    glEnable(GL_TEXTURE_2D);
-    const Color& bgColor = Color::GREY20;
+    this->bgColor = Color::GREY20;
     glClearColor(  bgColor.r
                  , bgColor.g
                  , bgColor.b
@@ -95,7 +77,7 @@ namespace KBX {
     );
     // ...and tell the object list that our background color
     // does not correspond to any kind of object
-    Object::objectList.nullId = bgColor.id();
+    // Object::objectList.nullId = bgColor.id();
   }
   
   void GLWidget::resizeGL(int w, int h) {
@@ -117,8 +99,8 @@ namespace KBX {
     Object* obj;
     if (event->button() == Qt::LeftButton){
       // pick object
-      Object::objectList.clearStates();
-      obj = this->pickObject( event->pos() );
+      scene->clearStates();
+      obj = this->scene->pickObject( event->pos() );
       if(obj){
 	obj->setSelectedState(true);
       }

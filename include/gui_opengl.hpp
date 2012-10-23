@@ -28,13 +28,15 @@ namespace KBX {
   class GLWidget : public QGLWidget {
       Q_OBJECT // must include this if you use Qt signals/slots
   public:
-      struct Textures {
-        GLuint dieTexturesBlack[6];
-        GLuint dieTexturesWhite[6];
-        GLuint kingTextureBlack[1];
-        GLuint kingTextureWhite[1];
-      };
-      Textures* textures;
+    
+    struct Textures {
+      GLuint dieTexturesBlack[6];
+      GLuint dieTexturesWhite[6];
+      GLuint kingTextureBlack[1];
+      GLuint kingTextureWhite[1];
+    };
+    Textures* textures;
+    Color bgColor;
 
   private:
       void loadTexture(QString filename, GLuint* textureIds, size_t nTexture);

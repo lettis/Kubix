@@ -282,69 +282,59 @@ namespace KBX {
       }
   }
   
-  /// get object with given id
-  /**
-     \param id id of the desired object
-     \return Object with given id
-  */
-  Object* ObjectHandler::get(size_t id){
-      Logger log("ObjectHandler::get");
-      // TODO: calculation of ids seems to cause problems
-      //       for certain values, this must be changed.
-      //       example: choose GREY10 as background color
-      //                instead of GREY20
-      log.info( stringprintf( "   null-id:\t%d", this->nullId ) );
-      log.info( stringprintf( "clicked id:\t%d", id) );
-      if ( id == this->nullId ){
-          return NULL;
-      } else if(id > this->objects.size()){
-          throw stringprintf("cannot access object %d: not in list", int(id)).c_str();
-      } else {
-          return this->objects.at(id);
-      }
-  }
   /// construct a new object handler
+  /*
   ObjectHandler::ObjectHandler()
     :log("ObjectList")
     ,nullId(0)
-  {  }
+    {  }*/
   /// add an object to the handler
   /**
      \param obj object to add to the handler
      \return number of object in list (object id)
-  */
+  *//*
   size_t ObjectHandler::add(Object* obj){
       if(this->objects.size() == nullId){
           this->objects.push_back(NULL);
       }
       this->objects.push_back(obj);
       return this->objects.size()-1;
-  }
+      }*/
   /// remove an object from the handler
   /**
      \param obj object to remove from the handler
-   */
+  *//*
   void ObjectHandler::remove(Object* obj){
       for(size_t i=0; i<this->objects.size(); i++){
           if(objects[i] == obj) objects[i] = NULL;
       }
-  }
+  }*/
   /// remove an object from the handler
   /**
-     \param id id of object to remove from the handler
-   */
-  void ObjectHandler::remove(size_t id){
+     \param id id gf object to remove from the handler
+  *//*
+  void Scene::remove(size_t id){
       if(id < objects.size()){
           objects[id] = NULL;
       }
-  }
+      }*/
   /// clear the selection
   /**
      set all objects isSelected state to false
-  */
-  void ObjectHandler::clearSelection(){
+  *//*
+  void Scene::clearSelection(){
     for(size_t id = 0; id < objects.size(); id++){
       objects[id]->setSelectedState(false);
+    }
+    }*/
+
+  /// clear all object states
+  /**
+     set all objects isSelected, isMarked and isHighlighted state to false
+  */
+  void Scene::clearStates(){
+    for(size_t id = 0; id < objList.size(); id++){
+      objList[id]->clearStates();
     }
   }
 
@@ -352,46 +342,52 @@ namespace KBX {
   /**
      set all objects isSelected, isMarked and isHighlighted state to false
   */
-  void ObjectHandler::clearStates(){
-    for(size_t id = 0; id < objects.size(); id++){
-      if(id ==this->nullId) continue;
-      else if(!objects[id]){
-	log.warning(stringprintf("objects[%d]==NULL, but nullId==%d",(int)id,(int)nullId));
-	continue;
+  void Board::clearStates(){
+    for (size_t x=0; x < this->_nX; x++){
+      for (size_t y=0; y < this->_nY; y++){
+	this->_tiles[x][y]->clearStates();
       }
-      objects[id]->setSelectedState(false);
-      objects[id]->setMarkedState(false);
-      objects[id]->setHighlightedState(false);
     }
+  }
+
+  void Object::clearStates(){
+    this->setSelectedState(false);
+    this->setMarkedState(false);
+    this->setHighlightedState(false);
   }
   
   /// list of all objects to be handled (needed for mouse events)
-  ObjectHandler Object::objectList;
+  // ObjectHandler Object::objectList;
   // standard colors for marked, selected and highlighted states
   Color Object::cSelected = Color(0,0,255);
   Color Object::cMarked = Color(255,0,0);
   Color Object::cHighlighted = Color(0,255,255);
 
   /// default constructor
-  Object::Object() :
-       _angle(0)
-      ,_isVisible(true)
-      ,_pos( Vec(0,0,0) )
+  Object::Object(Scene* scene) :
+    _angle(0)
+    ,_isVisible(true)
+    ,_pos( Vec(0,0,0) )
+    ,isHighlighted(false)
+    ,isMarked(false)
+    ,isSelected(false)
+    ,scene(scene)
       // we need to add the object to the object list
       // and retrieve our own unique id from there
-      ,id(Object::objectList.add(this)) 
+       //      ,id(Object::objectList.add(this)) 
   {}
   /// constructor setting the object's position
-  Object::Object(Vec pos) :
+  Object::Object(Scene* scene, Vec pos) :
     _angle(0)
     ,_isVisible(true)
     ,_pos( pos )
     ,isHighlighted(false)
     ,isMarked(false)
     ,isSelected(false)
+    ,scene(scene)
     // we need to add the object to the object list
     // and retrieve our own unique id from there
-    ,id(Object::objectList.add(this)) 
+    //    ,id(Object::objectList.add(this)) 
   {}
   /// set object rotation (accumulatively)
   /**
@@ -427,6 +423,12 @@ namespace KBX {
   void Object::setHighlightedState(bool highlighted){
     this->isHighlighted = highlighted;
   }
+  Object* Object::clicked(size_t id){
+    if(this->scene->idcount == id) return this;
+    this->scene->idcount++;
+    return NULL;
+  }
+
   /// set object translation
   void Object::translate(Vec direction){
       this->_pos = direction;
@@ -442,21 +444,29 @@ namespace KBX {
       glTranslatef( this->_pos.x, this->_pos.y, this->_pos.z );
   }
   /// display the object
-  void Object::display(bool picking){
+  void Object::display(){
       // save transformations done before
       glPushMatrix();
+      this->_setColor();
       this->_translate();
       this->_rotate();
-      this->_render(picking);
+      this->_render();
       // reload transformations done before
       glPopMatrix();
   }
+  void Object::_setColor(){
+    if(!this->scene)
+      throw "Cannot display object not belonging to any scene!";
+    if(this->scene->picking){
+      Color(this->scene->idcount).glColor();
+      this->scene->idcount++;
+    } else {
+      this->setColor();
+    }
+  }
+  
   /// set the object color before rendering
-  void Object::setColor(bool picking){
-      if(picking){
-          Color(this->id).glColor();
-	  return;
-      } 
+  void Object::setColor(){
       if(this->isSelected){
 	this->cSelected.glColor();
 	return;
@@ -472,11 +482,7 @@ namespace KBX {
       Color::WHITE.glColor();
   }
 
-  void Tile::setColor(bool picking){
-      if(picking){
-          Color(this->id).glColor();
-	  return;
-      } 
+  void Tile::setColor(){
       if(this->isSelected){
 	this->cSelected.glColor();
 	return;
@@ -493,12 +499,12 @@ namespace KBX {
   }
   
   /// inherit parent constructor
-  AnimObject::AnimObject() :
-      Object()
+  AnimObject::AnimObject(Scene* scene) :
+    Object(scene)
   {}
   /// inherit parent constructor
-  AnimObject::AnimObject(Vec pos) :
-      Object(pos)
+  AnimObject::AnimObject(Scene* scene, Vec pos) :
+    Object(scene, pos)
   {}
   
   //TODO: weg
@@ -523,30 +529,29 @@ namespace KBX {
   //TextureHandler Die::textures = TextureHandler();
 
   /// inherit parent constructor and set color
-  Die::Die(Vec pos, PlayColor color, GLuint* textures) :
-       AnimObject(pos)
-      ,textures(textures)
-      ,_playColor(color)
-      ,IS_KING(false)
+  Die::Die(Scene* scene, Vec pos, PlayColor color, GLuint* textures) :
+    AnimObject(scene, pos)
+    ,textures(textures)
+    ,_playColor(color)
+    ,IS_KING(false)
   {
   }
-  Die::Die(Vec pos, PlayColor color, GLuint* textures, bool IS_KING) :
-       AnimObject(pos)
-      ,textures(textures)
-      ,_playColor(color)
-      ,IS_KING(IS_KING)
+  Die::Die(Scene* scene, Vec pos, PlayColor color, GLuint* textures, bool IS_KING) :
+    AnimObject(scene, pos)
+    ,textures(textures)
+    ,_playColor(color)
+    ,IS_KING(IS_KING)
   {
   }
   /// render the die
-  void Die::_render(bool picking){
+  void Die::_render(){
     // setting the color is neccessary in order to ensure that the texture is drawn 'as-is'
     // leaving this out might cause the texture to be drawn with 'shaded' colors
     // because all texture-pixel rgb values are multiplied with the corresponding values 
     // of the current color before being drawn!
-    this->setColor(picking);
     glEnable( GL_TEXTURE_2D );
     // face 1
-    if(!picking){
+    if(this->scene->picking){
       glBindTexture( GL_TEXTURE_2D, this->textures[0] );
     }
     glBegin( GL_QUADS );
@@ -556,7 +561,7 @@ namespace KBX {
     glTexCoord2f(0.0,0.0); glVertex3f(-0.5,+0.5,-0.5);
     glEnd();
     // face 2
-    if(!picking){
+    if(this->scene->picking){
       if ( ! this->IS_KING){
 	glBindTexture( GL_TEXTURE_2D, this->textures[1] );
       }
@@ -568,7 +573,7 @@ namespace KBX {
     glTexCoord2f(0.0,0.0); glVertex3f(-0.5,-0.5,+0.5);
     glEnd();
     // face 3
-    if(!picking){
+    if(this->scene->picking){
       if ( ! this->IS_KING){
 	glBindTexture( GL_TEXTURE_2D, this->textures[2] );
       }
@@ -580,7 +585,7 @@ namespace KBX {
     glTexCoord2f(0.0,0.0); glVertex3f(-0.5,-0.5,+0.5);
     glEnd();
     // face 4
-    if(!picking){
+    if(this->scene->picking){
       if ( ! this->IS_KING){
 	glBindTexture( GL_TEXTURE_2D, this->textures[3] );
       }
@@ -592,7 +597,7 @@ namespace KBX {
     glTexCoord2f(0.0,0.0); glVertex3f(+0.5,-0.5,+0.5);
     glEnd();
     // face 5
-    if(!picking){
+    if(this->scene->picking){
       if ( ! this->IS_KING){
 	glBindTexture( GL_TEXTURE_2D, this->textures[4] );
       }
@@ -604,7 +609,7 @@ namespace KBX {
     glTexCoord2f(0.0,0.0); glVertex3f(-0.5,+0.5,+0.5);
     glEnd();
     // face 6
-    if(!picking){
+    if(this->scene->picking){
       if ( ! this->IS_KING){
 	glBindTexture( GL_TEXTURE_2D, this->textures[5] );
       }
@@ -619,27 +624,28 @@ namespace KBX {
   }
   
   /// board constructor
-  Board::Board(size_t nX, size_t nY) :
-       _nX(nX)
-      ,_nY(nY)
-      ,_tiles(_nX, std::vector<Tile*>(_nY))
+  Board::Board(Scene* scene, size_t nX, size_t nY) :
+    Object(scene)
+    ,_nX(nX)
+    ,_nY(nY)
+    ,_tiles(_nX, std::vector<Tile*>(_nY))
   {
-      // define tile colors
-      Color dark = Color::GREY40;
-      Color bright = Color::GREY60;
-      Color tileColor;
-      Vec tilePosition;
-      // setup tiles to form a checkered layout
-      for(size_t x=0; x < this->_nX; x++){
-          for(size_t y=0; y < this->_nY; y++){
-              tileColor = ( (x%2 + y%2)%2 == 0 ) ? dark : bright;
-              tilePosition = Vec(   (float)x - (float)(this->_nX)/2
-                                       ,-0.5
-                                       ,-(float)y + (float)(this->_nY)/2 -1
-                             );
-              this->_tiles[x][y] = new Tile( tilePosition, tileColor );
-          }
+    // define tile colors
+    Color dark = Color::GREY40;
+    Color bright = Color::GREY60;
+    Color tileColor;
+    Vec tilePosition;
+    // setup tiles to form a checkered layout
+    for(size_t x=0; x < this->_nX; x++){
+      for(size_t y=0; y < this->_nY; y++){
+	tileColor = ( (x%2 + y%2)%2 == 0 ) ? dark : bright;
+	tilePosition = Vec(   (float)x - (float)(this->_nX)/2
+			      ,-0.5
+			      ,-(float)y + (float)(this->_nY)/2 -1
+			      );
+	this->_tiles[x][y] = new Tile(this->scene, tilePosition, tileColor );
       }
+    }
   }
   /// free memory of allocated tiles in destructor
   Board::~Board(){
@@ -651,29 +657,28 @@ namespace KBX {
       }
   }
   /// display board by rendering every tile
-  void Board::_render(bool picking){
+  void Board::_render(){
       for (size_t x=0; x < this->_nX; x++){
           for (size_t y=0; y < this->_nY; y++){
               glLoadName(x+y*this->_nY);
-              this->_tiles[x][y]->display(picking);
+              this->_tiles[x][y]->display();
           }
       }
   }
   /// return gui id of tile defined by its coordinates
-  size_t Board::getTileId(size_t x, size_t y){
-      return this->_tiles[x][y]->id;
-  }
+  //size_t Board::getTileId(size_t x, size_t y){
+  //    return this->_tiles[x][y]->id;
+  //}
   
   /// tile constructor
-  Tile::Tile(Vec pos, Color color) :
-       Object(pos)
-      ,basicColor(color)
+  Tile::Tile(Scene* scene, Vec pos, Color color) :
+    Object(scene, pos)
+    ,basicColor(color)
   {
   }
   /// render the tile
-  void Tile::_render(bool picking){
+  void Tile::_render(){
       Logger log("Tile::_render");
-      this->setColor(picking);
       glBegin( GL_QUADS );
        // upper face
        glVertex3f(0.0, 0.0, 0.0);
@@ -710,8 +715,10 @@ namespace KBX {
   
   /// scene constructor
   Scene::Scene(GLWidget* act)
-    :act(act),
-     cam(Vec(0,0,100),Vec(0,0,0))
+    :Object(this)
+    ,picking(false)
+    ,act(act)
+    ,cam(Vec(0,0,100),Vec(0,0,0))
   {
     // define rotation axes
     // TODO: x/y coordinates of gui and engine seem not to match
@@ -733,52 +740,52 @@ namespace KBX {
     //      9, 10, 11, 12, 13 (king), 14, 15, 16, 17.
   
     // white dice; w1 is in lower left corner, w8 in lower right
-    this->_dice.push_back( new Die( Vec(-4,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die(this, Vec(-4,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-3,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die(this, Vec(-3,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-2,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die(this, Vec(-2,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-1,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die(this, Vec(-1,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 0,0, 4), WHITE, this->act->textures->kingTextureWhite, true ) );
-    this->_dice.push_back( new Die( Vec( 1,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die(this, Vec( 0,0, 4), WHITE, this->act->textures->kingTextureWhite, true ) );
+    this->_dice.push_back( new Die(this, Vec( 1,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 2,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die(this, Vec( 2,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 3,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die(this, Vec( 3,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 4,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die(this, Vec( 4,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
     this->_dice.back()->rotate( counterClockwise, 90 );
     // black dice; b1 is in upper left corner, b8 in upper right
-    this->_dice.push_back( new Die( Vec(-4,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die(this, Vec(-4,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-3,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die(this, Vec(-3,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-2,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die(this, Vec(-2,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-1,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die(this, Vec(-1,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 0,0,-4), BLACK, this->act->textures->kingTextureBlack, true ) );
-    this->_dice.push_back( new Die( Vec( 1,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die(this, Vec( 0,0,-4), BLACK, this->act->textures->kingTextureBlack, true ) );
+    this->_dice.push_back( new Die(this, Vec( 1,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 2,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die(this, Vec( 2,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 3,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die(this, Vec( 3,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 4,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die(this, Vec( 4,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
     this->_dice.back()->rotate( clockwise, 90 );
     // add dice to scene
     for (size_t i=0; i < this->_dice.size(); i++){
@@ -786,44 +793,42 @@ namespace KBX {
         this->add( this->_dice[i] );
         // add mapping from id of gui-die to
         // internal id (here: i) of abstract representation
-        this->_id2Die[ this->_dice[i]->id ] = i;
+	//        this->_id2Die[ this->_dice[i]->id ] = i;
     }
     // initialize the board and add it to the scene
-    this->_board = new Board(9, 9);
+    this->_board = new Board(this, 9, 9);
     this->add( this->_board );
     // add mapping from id of board-tile (gui representation) to
     // its xy-coordinates
+    /*
     for (size_t x=0; x < 9; x++){
         for (size_t y=0; y < 9; y++){
             std::pair<size_t,size_t> xy(x,y);
-            this->_id2Field[ this->_board->getTileId(x,y) ] = xy;
+	    //            this->_id2Field[ this->_board->getTileId(x,y) ] = xy;
         }
-    }
+    }*/
   }
   
   // scene destructor
   Scene::~Scene() {}
-  
+   
   /// render the scene
-  void Scene::_render(bool picking){
-      // clear the graphics buffer
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      // switch to the drawing perspective
-      glMatrixMode(GL_MODELVIEW); 
-      // reset the drawing perspective
-      glLoadIdentity();
-      // set correct camera position/view
-      this->cam.updateView();
-      // call every object's display method to draw
+  void Scene::_render(){
+    // clear the graphics buffer
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // switch to the drawing perspective
+    glMatrixMode(GL_MODELVIEW); 
+    // reset the drawing perspective
+    glLoadIdentity();
+    // set correct camera position/view
+    this->cam.updateView();
+    // call every object's display method to draw
       // the object to the scene
-      for (size_t i=0; i<this->objList.size(); i++){
-          glLoadName(i);
-          this->objList[i]->display(picking);
-      }
-      // draw everything to screen
-      if(!picking){
-          //TODO: SwapBuffers
-      }
+    for (size_t i=0; i<this->objList.size(); i++){
+      // TODO: test if the following line can (maybe?) be deleted
+      glLoadName(i);
+      this->objList[i]->display();
+    }
   }
   /// add object to the scene
   /**
@@ -860,6 +865,50 @@ namespace KBX {
   }
 
 
+/// pick Object at given mouse coordinates
+  /**
+      \param p mouse coordinates
+      \returns Object* to object under mouse cursor
+  */
+  Object* Scene::pickObject(QPoint p){
+    // get resolution from settings
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    // get color information from frame buffer
+    unsigned char pixel[3];
+    this->idcount = 0;
+    this->picking = true;
+    glClearColor(1.0f,1.0f,1.0f,0.0f);
+    this->display();
+    // Important: gl (0,0) is bottom left but window coords (0,0) are top left -> have to subtract y from height
+    glReadPixels(p.x(), viewport[3] - p.y(), 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
+    size_t id = Color(pixel[0], pixel[1], pixel[2]).id();
+    this->idcount = 0;
+    picking = false;
+    glClearColor(  this->act->bgColor.r, this->act->bgColor.g, this->act->bgColor.b, 0.0f);
+    Logger l("Scene::pickObject");
+    l.info(stringprintf("clicked object id: %d",(int)id));
+    Object* obj = this->clicked(id);
+    if(obj) return obj;
+    l.warning(stringprintf("sorry, could not find object matching id %d",(int)id));
+    return NULL;
+  }
+  Object* Scene::clicked(size_t id){
+    for(size_t i=0; i<this->objList.size(); i++){
+      Object* obj = this->objList[i]->clicked(id);
+      if(obj) return obj;
+    }
+  }
+  Object* Board::clicked(size_t id){
+    Object* obj;
+    for (size_t x=0; x < this->_nX; x++){
+      for (size_t y=0; y < this->_nY; y++){
+	obj = this->_tiles[x][y]->clicked(id);
+	if(obj) return obj;
+      }
+    }
+    return NULL;
+  }
   /// mark next object on the board
   /**
       \param dx relative coordinate in x direction depending on currently marked object
