@@ -15,23 +15,17 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <stdlib.h>
-#include <math.h>
-#include <iostream>
 #include <string>
-#include <map>
 
 #include <QApplication>
-#include <QLabel> //TODO: test
 
 #include "tools.hpp"
-#include "gui.hpp"
 #include "gui_opengl.hpp"
-#include "handler.hpp"
-#include "engine.hpp"
-#include "controller.hpp"
 
 int main(int argc, char** argv){
+  // load Qt-Resources
+  Q_INIT_RESOURCE(res);
+
   // enable logging
   KBX::Logger::enableInfos();
   KBX::Logger::enableWarnings();

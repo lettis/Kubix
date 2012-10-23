@@ -340,6 +340,31 @@ namespace KBX {
   
   /// list of all objects to be handled (mouse events)
   ObjectHandler Object::objectList;
+
+
+  /**
+    load single texture from file
+  */
+  void Object::loadTexture(QString filename, GLuint* textures, size_t nTexture){
+    QImage tex, img = QImage(filename);
+    tex = QGLWidget::convertToGLFormat( img );
+    glBindTexture(GL_TEXTURE_2D, textures[nTexture]);
+    glTexImage2D(
+      GL_TEXTURE_2D,
+      0,
+      GL_RGBA,
+      tex.width(),
+      tex.height(),
+      0,
+      GL_RGBA,
+      GL_UNSIGNED_BYTE,
+      tex.bits()
+    );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  }
+
+
   /// default constructor
   Object::Object() :
        _angle(0)
@@ -439,24 +464,47 @@ namespace KBX {
   //TODO: weg
   /// the textures of the die surfaces are handled "globally" by this static member
   //TextureHandler Die::textures = TextureHandler();
+  
+
+
+  // set texture loading flag to false initially
+  bool Die::texturesLoaded=false;
+  GLuint Die::textures[14];
 
   /// inherit parent constructor and set color
-  Die::Die(Vec pos, PlayColor color, GLuint* textures) :
-       AnimObject(pos)
-      ,textures(textures)
-      ,_playColor(color)
-      ,IS_KING(false)
+  Die::Die(Vec pos, PlayColor color) :
+     AnimObject(pos)
+    ,_playColor(color)
+    ,IS_KING(false)
   {
-      this->setColors();
+    Die::loadTextures();
+    this->setColors();
   }
-  Die::Die(Vec pos, PlayColor color, GLuint* textures, bool IS_KING) :
-       AnimObject(pos)
-      ,textures(textures)
-      ,_playColor(color)
-      ,IS_KING(IS_KING)
+  Die::Die(Vec pos, PlayColor color, bool IS_KING) :
+     AnimObject(pos)
+    ,_playColor(color)
+    ,IS_KING(IS_KING)
   {
-      this->setColors();
+    Die::loadTextures();
+    this->setColors();
   }
+
+  /**
+    load textures for models
+  */
+  void Die::loadTextures(){
+    if ( ! Die::texturesLoaded ){
+      glGenTextures(14, Die::textures);
+      for ( size_t i=1; i<7; i++ ){
+        Die::loadTexture( QString(":res/side%1.png" ).arg(i), Die::textures, 2*(i-1)   );
+        Die::loadTexture( QString(":res/side%1b.png").arg(i), Die::textures, 2*(i-1)+1 );
+      }
+      Die::loadTexture( QString(":res/sidek.png" ), Die::textures, 12 );
+      Die::loadTexture( QString(":res/sidekb.png"), Die::textures, 13 );
+      Die::texturesLoaded = true;
+    }
+  }
+
   /// set colors for different activity states
   void Die::setColors(){
       this->coloring[DEFAULT]     = Color::WHITE;
@@ -492,10 +540,18 @@ namespace KBX {
                   break;
           }
       }
-      glEnable( GL_TEXTURE_2D );
+      int b=0;
+      if (this->_playColor == BLACK){
+        b=1;
+      }
+      glEnable(GL_TEXTURE_2D);
       // face 1
       if(!picking){
-        glBindTexture( GL_TEXTURE_2D, this->textures[0] );
+        if ( this->IS_KING ){
+          glBindTexture( GL_TEXTURE_2D, Die::textures[12+b] );
+        } else {
+          glBindTexture( GL_TEXTURE_2D, Die::textures[0+b] );
+        }
       }
       glBegin( GL_QUADS );
        glTexCoord2f(0.0,1.0); glVertex3f(-0.5,-0.5,-0.5);
@@ -506,7 +562,7 @@ namespace KBX {
       // face 2
       if(!picking){
         if ( ! this->IS_KING){
-          glBindTexture( GL_TEXTURE_2D, this->textures[1] );
+          glBindTexture( GL_TEXTURE_2D, Die::textures[2+b] );
         }
       }
       glBegin( GL_QUADS );
@@ -518,7 +574,7 @@ namespace KBX {
       // face 3
       if(!picking){
         if ( ! this->IS_KING){
-          glBindTexture( GL_TEXTURE_2D, this->textures[2] );
+          glBindTexture( GL_TEXTURE_2D, Die::textures[4+b] );
         }
       }
       glBegin( GL_QUADS );
@@ -530,7 +586,7 @@ namespace KBX {
       // face 4
       if(!picking){
         if ( ! this->IS_KING){
-          glBindTexture( GL_TEXTURE_2D, this->textures[3] );
+          glBindTexture( GL_TEXTURE_2D, Die::textures[6+b] );
         }
       }
       glBegin( GL_QUADS );
@@ -542,7 +598,7 @@ namespace KBX {
       // face 5
       if(!picking){
         if ( ! this->IS_KING){
-          glBindTexture( GL_TEXTURE_2D, this->textures[4] );
+          glBindTexture( GL_TEXTURE_2D, Die::textures[8+b] );
         }
       }
       glBegin( GL_QUADS );
@@ -554,7 +610,7 @@ namespace KBX {
       // face 6
       if(!picking){
         if ( ! this->IS_KING){
-          glBindTexture( GL_TEXTURE_2D, this->textures[5] );
+          glBindTexture( GL_TEXTURE_2D, Die::textures[10+b] );
         }
       }
       glBegin( GL_QUADS );
@@ -563,7 +619,7 @@ namespace KBX {
        glTexCoord2f(1.0,0.0); glVertex3f(+0.5,+0.5,+0.5);
        glTexCoord2f(0.0,0.0); glVertex3f(-0.5,+0.5,+0.5);
       glEnd();
-      glDisable( GL_TEXTURE_2D );
+      glDisable(GL_TEXTURE_2D);
   }
   
   /// board constructor
@@ -709,52 +765,52 @@ namespace KBX {
     //      9, 10, 11, 12, 13 (king), 14, 15, 16, 17.
   
     // white dice; w1 is in lower left corner, w8 in lower right
-    this->_dice.push_back( new Die( Vec(-4,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die( Vec(-4,0, 4), WHITE ) );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-3,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die( Vec(-3,0, 4), WHITE ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-2,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die( Vec(-2,0, 4), WHITE ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-1,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die( Vec(-1,0, 4), WHITE ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 0,0, 4), WHITE, this->act->textures->kingTextureWhite, true ) );
-    this->_dice.push_back( new Die( Vec( 1,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die( Vec( 0,0, 4), WHITE, true ) );
+    this->_dice.push_back( new Die( Vec( 1,0, 4), WHITE ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 2,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die( Vec( 2,0, 4), WHITE ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 3,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die( Vec( 3,0, 4), WHITE ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 4,0, 4), WHITE, this->act->textures->dieTexturesWhite ) );
+    this->_dice.push_back( new Die( Vec( 4,0, 4), WHITE ) );
     this->_dice.back()->rotate( counterClockwise, 90 );
     // black dice; b1 is in upper left corner, b8 in upper right
-    this->_dice.push_back( new Die( Vec(-4,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die( Vec(-4,0,-4), BLACK ) );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-3,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die( Vec(-3,0,-4), BLACK ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-2,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die( Vec(-2,0,-4), BLACK ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec(-1,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die( Vec(-1,0,-4), BLACK ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 0,0,-4), BLACK, this->act->textures->kingTextureBlack, true ) );
-    this->_dice.push_back( new Die( Vec( 1,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die( Vec( 0,0,-4), BLACK, true ) );
+    this->_dice.push_back( new Die( Vec( 1,0,-4), BLACK ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 2,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die( Vec( 2,0,-4), BLACK ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 3,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die( Vec( 3,0,-4), BLACK ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
-    this->_dice.push_back( new Die( Vec( 4,0,-4), BLACK, this->act->textures->dieTexturesBlack ) );
+    this->_dice.push_back( new Die( Vec( 4,0,-4), BLACK ) );
     this->_dice.back()->rotate( clockwise, 90 );
     // add dice to scene
     for (size_t i=0; i < this->_dice.size(); i++){

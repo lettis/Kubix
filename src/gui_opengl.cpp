@@ -1,6 +1,8 @@
 #include "gui_opengl.hpp"
 #include "tools.hpp"
 
+#include <iostream> //TODO
+
 #include <QImage>
 #include <QLabel> //TODO test, remove afterwards
 #include <QTimer>
@@ -10,12 +12,8 @@
 namespace KBX {
   GLWidget::GLWidget(QWidget *parent)
     : QGLWidget(parent),
-      textures( new Textures() ),
       log("act")
   {
-    // load textures for models
-    this->loadTextures();
-    this->scene = new Scene(this);
     setMouseTracking(false);
 
     QTimer *timer = new QTimer(this);
@@ -23,44 +21,6 @@ namespace KBX {
     timer->start(30);
   }
 
-  /**
-    load single texture from file
-  */
-  void GLWidget::loadTexture(QString filename, GLuint* textureIds, size_t nTexture){
-    QPixmap pixmap = QPixmap( filename );
-    QImage img = pixmap.toImage(); 
-    int numOfColors = img.format(); 
-    glBindTexture(GL_TEXTURE_2D, textureIds[nTexture]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(
-      GL_TEXTURE_2D,
-      0,
-      numOfColors,
-      img.width(),
-      img.height(),
-      0,
-      GL_BGRA,
-      GL_UNSIGNED_BYTE,
-      img.bits()
-    );
-  }
-
-  /**
-    load textures for models
-  */
-  void GLWidget::loadTextures(){
-    glGenTextures( 6, this->textures->dieTexturesWhite);
-    glGenTextures( 6, this->textures->dieTexturesBlack);
-    glGenTextures( 1, this->textures->kingTextureWhite);
-    glGenTextures( 1, this->textures->kingTextureBlack);
-    for ( size_t i=1; i<7; i++ ){
-      this->loadTexture( QString("res/side%1.png").arg(i), this->textures->dieTexturesWhite, i-1 );
-      this->loadTexture( QString("res/side%1b.png").arg(i), this->textures->dieTexturesBlack, i-1 );
-    }
-    this->loadTexture( QString("res/sidek.png"), this->textures->kingTextureWhite, 0 );
-    this->loadTexture( QString("res/sidekb.png"), this->textures->kingTextureBlack, 0 );
-  }
 
   /// pick Object at given mouse coordinates
   /**
@@ -82,7 +42,6 @@ namespace KBX {
 
   void GLWidget::initializeGL() {
     glEnable(GL_DEPTH_TEST);
-//    glEnable(GL_TEXTURE_2D);
     const Color& bgColor = Color::GREY20;
     glClearColor(  bgColor.r
                  , bgColor.g
@@ -92,6 +51,9 @@ namespace KBX {
     // ...and tell the object list that our background color
     // does not correspond to any kind of object
     Object::objectList.nullId = bgColor.id();
+
+    // after initializing OpenGL add the scene:
+    this->scene = new Scene(this);
   }
   
   void GLWidget::resizeGL(int w, int h) {

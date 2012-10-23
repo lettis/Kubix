@@ -133,6 +133,8 @@ namespace KBX {
       // translate object to _pos
       void _translate();
   public:
+      static void loadTexture(QString filename, GLuint* textureIds, size_t nId);
+
       // colors for different activities
       std::map<Activity, Color> coloring;
 //TODO: get rid of activityState and use setters for states (+internal flags) instead
@@ -198,7 +200,9 @@ namespace KBX {
   /// Die
   ///  defines a die
   class Die : public AnimObject{
-      GLuint* textures;
+      static GLuint textures[];
+      static bool texturesLoaded;
+      static void loadTextures();
 
       void _render(bool picking = false);
       PlayColor _playColor;
@@ -223,8 +227,8 @@ namespace KBX {
 //      static const size_t FACE_6_B;
       
       const bool IS_KING;
-      Die(Vec pos, PlayColor color, GLuint* textures);
-      Die(Vec pos, PlayColor color, GLuint* textures, bool IS_KING);
+      Die(Vec pos, PlayColor color);
+      Die(Vec pos, PlayColor color, bool IS_KING);
       void setColors();
   };
   

@@ -17,8 +17,6 @@ It is a chess variant played with dice instead of chess figures.
   * widgets drag&droppable (plugin)
 * picking cleanup (global / static ref.)
 * 'Object' -> 'Model' (gui)
-* binding of textures images into binary?
-* proper loading of textures [Florian]
 
 
 
