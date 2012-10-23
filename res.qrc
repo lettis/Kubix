@@ -1,0 +1,20 @@
+ <!DOCTYPE RCC><RCC version="1.0">
+ <qresource>
+     <file>res/side1.png</file>
+     <file>res/side2.png</file>
+     <file>res/side3.png</file>
+     <file>res/side4.png</file>
+     <file>res/side5.png</file>
+     <file>res/side6.png</file>
+
+     <file>res/side1b.png</file>
+     <file>res/side2b.png</file>
+     <file>res/side3b.png</file>
+     <file>res/side4b.png</file>
+     <file>res/side5b.png</file>
+     <file>res/side6b.png</file>
+
+     <file>res/sidek.png</file>
+     <file>res/sidekb.png</file>
+ </qresource>
+ </RCC>
