@@ -15,41 +15,42 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <string>
+#ifndef GUI_OPENGL__HPP
+#define GUI_OPENGL__HPP
 
-#include <QApplication>
+#include <QtOpenGL/QGLWidget>
+#include <QPoint>
+#include <QWheelEvent>
 
-#include "tools.hpp"
-#include "gui_opengl.hpp"
-#include "handler.hpp"
-#include "engine.hpp"
+#include "models.hpp"
 
-int main(int argc, char** argv){
-  // load Qt-Resources
-  Q_INIT_RESOURCE(res);
+namespace KBX {
+  class GLWidget : public QGLWidget {
+      Q_OBJECT // must include this if you use Qt signals/slots
+  public:
+    Color bgColor;
 
-  // enable logging
-  KBX::Logger::enableInfos();
-  KBX::Logger::enableWarnings();
-  KBX::Logger::enableErrors();
+  private:
+      Scene* scene;
+      QPoint mousePos;
 
-  // build logger instance for main
-  KBX::Logger mainLog("main");
+      Object* pickObject(QPoint p);
 
-  try{
-    // TODO: get config from cmd arguments + rc-files
-    //Config config( HUMAN_AI, 4, KBX_Strategy(1.0) );
-    QApplication app(argc, argv);
+      Logger log;
+  
+  protected:
+      void initializeGL();
+      void resizeGL(int w, int h);
+      void paintGL();
+      void mousePressEvent(QMouseEvent *event);
+      void mouseMoveEvent(QMouseEvent *event);
+      void wheelEvent(QWheelEvent *event);
+      void keyPressEvent(QKeyEvent *event);
+  public:
+      GLWidget(QWidget *parent = NULL);
+      ~GLWidget() {}
+  };
 
-    KBX::GLWidget window;
-    window.resize(800,600);
-    window.show();
+} // end namespace KBX
 
-    return app.exec();
-
-  }catch(const char* errMsg){
-    mainLog.error( std::string(errMsg) );
-    return 1;
-  }
-}
-
+#endif

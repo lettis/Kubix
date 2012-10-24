@@ -22,54 +22,56 @@
 #include <map>
 #include <vector>
 
-#include "SDL_opengl.h"
+#include <QtOpenGL/QGLWidget>
 
 #include "gui.hpp"
 
-template<class NumType> int sgn(NumType n);
-int sgn(float f);
-int sgn(int i);
+namespace KBX {
+  template<class NumType> int sgn(NumType n);
+  int sgn(float f);
+  int sgn(int i);
+  
+  void loadTextures();
+  
+  void checkGLError();
+  std::string stringprintf(std::string str, ...);
+  
+  /// represents a simple logger class, use it instead of cout/cerr-statements!
+  class Logger{
+      std::string  _name;
+      static std::ostream* _out;
+      static std::ostream* _err;
+      static std::vector<std::string> _filters;
+      static bool  _infosEnabled;
+      static bool  _warningsEnabled;
+      static bool  _errorsEnabled;
+      static std::string _getTime();
+      void _sendMessage(std::string category, std::string msg);
+  public:
+      Logger(std::string name);
+      static void setOut(std::ostream* out);
+      static void setErr(std::ostream* err);
+      static void enableInfos();
+      static void disableInfos();
+      static void enableWarnings();
+      static void disableWarnings();
+      static void enableErrors();
+      static void disableErrors();
+      static void filter(std::string name);
+      void info(std::string msg);
+      void warning(std::string msg);
+      void error(std::string msg);
+  };
+  
+  /// handles the textures for OpenGL
+  class TextureHandler{
+      GLuint* textures;
+      /// point external keys to internal index of textures array
+      std::map<size_t, size_t> keys;
+  public: 
+      void load(std::map<size_t, std::string> files);
+      GLuint get(size_t key);
+  };
 
-void loadTextures();
-
-void checkGLError();
-std::string stringprintf(std::string str, ...);
-
-/// represents a simple logger class, use it instead of cout/cerr-statements!
-class KBX_Logger{
-    std::string  _name;
-    static std::ostream* _out;
-    static std::ostream* _err;
-    static std::vector<std::string> _filters;
-    static bool  _infosEnabled;
-    static bool  _warningsEnabled;
-    static bool  _errorsEnabled;
-    static std::string _getTime();
-    void _sendMessage(std::string category, std::string msg);
-public:
-    KBX_Logger(std::string name);
-    static void setOut(std::ostream* out);
-    static void setErr(std::ostream* err);
-    static void enableInfos();
-    static void disableInfos();
-    static void enableWarnings();
-    static void disableWarnings();
-    static void enableErrors();
-    static void disableErrors();
-    static void filter(std::string name);
-    void info(std::string msg);
-    void warning(std::string msg);
-    void error(std::string msg);
-};
-
-/// handles the textures for OpenGL
-class TextureHandler{
-    GLuint* textures;
-    /// point external keys to internal index of textures array
-    std::map<size_t, size_t> keys;
-    void loadTexture(const char* filename, GLuint textureId );
-public: 
-    void load(std::map<size_t, std::string> files);
-    GLuint get(size_t key);
-};
+} // end namespace KBX
 #endif
