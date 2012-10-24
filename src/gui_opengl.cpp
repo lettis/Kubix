@@ -42,7 +42,7 @@ namespace KBX {
 
   void GLWidget::initializeGL() {
     glEnable(GL_DEPTH_TEST);
-    const Color& bgColor = Color::GREY20;
+    this->bgColor = Color::GREY20;
     glClearColor(  bgColor.r
                  , bgColor.g
                  , bgColor.b
