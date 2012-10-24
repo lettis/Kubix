@@ -34,6 +34,7 @@ namespace KBX {
 //        GLuint kingTextureBlack[1];
 //        GLuint kingTextureWhite[1];
 //      };
+    Color bgColor;
 
   private:
       Scene* scene;

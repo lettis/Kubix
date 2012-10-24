@@ -29,12 +29,6 @@ namespace KBX { class GLWidget; }
 
 namespace KBX {
   /// define states for gui activity (illumination)
-  enum Activity{
-       DEFAULT
-      ,HIGHLIGHTED
-      ,SELECTED
-      ,MARKED
-  };
   
   /// defines a simple vector in 3d-cartesian coordinates
   class Vec{
@@ -101,72 +95,46 @@ namespace KBX {
       void zoom(float factor);
   };
   
-  class Object;
-  /// handle for an object's mouse events and identification
-  class ObjectHandler{
-      std::vector<Object*> objects;
-  public: 
-      // the nullId is the id that corresponds to the NULL pointer.
-      // it is, however, not neccessarily zero,
-      // as it is supposed to correspond to the color id 
-      // of the background color
-      size_t nullId;
-      ObjectHandler();
-      Object* get(size_t id);
-      size_t add(Object* obj);
-      void remove(Object* obj);
-      void remove(size_t id);
-  };
-  
+  class Scene;
   // Object
   //  abstract class defining opengl object
   class Object{
   protected:
-      std::vector<float>   _angle;
-      std::vector<Vec> _rotAxis;
-      bool    _isVisible;
-      Vec _pos;
-      // define opengl for this object
-      virtual void _render(bool picking = false) = 0;
-      // rotate object around _rotAxis by _angle
-      void _rotate();
-      // translate object to _pos
-      void _translate();
+    std::vector<float>   _angle;
+    std::vector<Vec> _rotAxis;
+    bool    _isVisible;
+    Scene* scene;
+    bool isSelected;
+    bool isHighlighted;
+    bool isMarked;
+    Vec _pos;
+    // define opengl for this object
+    virtual void _render() = 0;
+    // rotate object around _rotAxis by _angle
+    void _rotate();
+    // translate object to _pos
+    void _translate();
+    virtual void _setColor();
+    virtual void setColor();
   public:
-      static void loadTexture(QString filename, GLuint* textureIds, size_t nId);
-
-      // colors for different activities
-      std::map<Activity, Color> coloring;
-//TODO: get rid of activityState and use setters for states (+internal flags) instead
-      Activity activityState;
-      // a unique id of this object
-      const size_t id;
-      // the object list handles all Objects ever constructed
-      static ObjectHandler objectList;
-      // constructor
-      Object();
-      Object(Vec pos);
-      // virtual destructor
-      virtual ~Object(){
-          // we need to remove the object from the objectList
-          Object::objectList.remove(this);
-      }
-  //TODO: implement setters for states
-      // set/unset object to marked state
-      void setMarked();
-      void setUnmarked();
-      // set/unset object to selected state
-      void setSelected();
-      void setUnselected();
-      // set/unset object to highlighted state
-      void setHighlighted();
-      void setUnhighlighted();
-      // sets angle and axis to define a rotation
-      void rotate(Vec axis, float angle);
-      // sets vector to define a translation
-      void translate(Vec direction);
-      // render the object and perform translation / rotation
-      void display(bool picking = false);
+    static void loadTexture(QString filename, GLuint* textureIds, size_t nId);
+    static Color cSelected;
+    static Color cHighlighted;
+    static Color cMarked;
+    // constructor
+    Object(Scene* scene);
+    Object(Scene* scene, Vec pos);
+    virtual Object* clicked(size_t id);
+    virtual void clearStates();
+    void setMarkedState(bool marked);
+    void setSelectedState(bool selected);
+    void setHighlightedState(bool highlighted);
+    // sets angle and axis to define a rotation
+    void rotate(Vec axis, float angle);
+    // sets vector to define a translation
+    void translate(Vec direction);
+    // render the object and perform translation / rotation
+    void display();
   };
   
   
@@ -184,15 +152,15 @@ namespace KBX {
       void _animRotate(Vec axis, float angle);
       void _animTranslate(Vec direction);
   public:
-      AnimObject();
-      AnimObject(Vec pos);
-      void rotate(Vec axis, float angle){
-          Object::rotate(axis, angle);
-      }
-      // sets angle and axis to define a rotation
-      void rotate(Vec axis, float angle, float step);
-      // sets vector to define a translation
-      void translate(Vec direction, float step);
+    AnimObject(Scene* scene);
+    AnimObject(Scene* scene, Vec pos);
+    void rotate(Vec axis, float angle){
+      Object::rotate(axis, angle);
+    }
+    // sets angle and axis to define a rotation
+    void rotate(Vec axis, float angle, float step);
+    // sets vector to define a translation
+    void translate(Vec direction, float step);
   };
   // -- AnimObject
   
@@ -204,56 +172,40 @@ namespace KBX {
       static bool texturesLoaded;
       static void loadTextures();
 
-      void _render(bool picking = false);
-      PlayColor _playColor;
+    void _render();
+    PlayColor _playColor;
   public:
-//      // texture container
-//      static TextureHandler textures;
-//      // faces of white dice
-//      static const size_t FACE_K_W;
-//      static const size_t FACE_K_B;
-//      static const size_t FACE_1_W;
-//      static const size_t FACE_2_W;
-//      static const size_t FACE_3_W;
-//      static const size_t FACE_4_W;
-//      static const size_t FACE_5_W;
-//      static const size_t FACE_6_W;
-//      // faces of black dice
-//      static const size_t FACE_1_B;
-//      static const size_t FACE_2_B;
-//      static const size_t FACE_3_B;
-//      static const size_t FACE_4_B;
-//      static const size_t FACE_5_B;
-//      static const size_t FACE_6_B;
-      
       const bool IS_KING;
-      Die(Vec pos, PlayColor color);
-      Die(Vec pos, PlayColor color, bool IS_KING);
-      void setColors();
+      Die(Scene* scene, Vec pos, PlayColor color);
+      Die(Scene* scene, Vec pos, PlayColor color, bool IS_KING);
   };
   
   /// Board Tile
   ///  defines game board tile
   class Tile: public Object{
-      void _render(bool picking = false);
-      Color basicColor;
+    void _render();
+    Color basicColor;
+    void setColor();
   public:
-      Tile();
-      Tile(Vec pos, Color color);
-      void setColors();
+    Tile(Scene* scene);
+    Tile(Scene* scene, Vec pos, Color color);
   };
   
   /// Board
   ///  defines game board
   class Board: public Object{
-      size_t _nX;
-      size_t _nY;
-      std::vector< std::vector<Tile*> > _tiles;
-      void _render(bool picking = false);
+    size_t _nX;
+    size_t _nY;
+    std::vector< std::vector<Tile*> > _tiles;
+    void _render();
+    void _setColor(){};
   public:
-      Board(size_t rows, size_t cols);
-      ~Board();
-      size_t getTileId(size_t x, size_t y);
+    Board(Scene* scene, size_t rows, size_t cols);
+    ~Board();
+    Object* clicked(size_t id);
+    void clearStates();
+    // TODO: check if getTileId is needed and reimplement if neccessary
+    size_t getTileId(size_t x, size_t y);
   };
   
   /// Defines the whole scene.
@@ -262,31 +214,41 @@ namespace KBX {
       Every object added to the scene will be rendered,
       when the scene is rendered.
   */
-  class Scene : public Object{
-      GLWidget* act;
+  class Scene: public Object{
+  protected:
+    GLWidget* act;
+    
+    std::vector<Object*> objList;
+    
+    Game*  _game;
+    Board* _board;
+    std::map<size_t, size_t> _id2Die;
+    std::map<size_t, std::pair<size_t,size_t> > _id2Field;
+    
+    Camera cam;
+    void _render();
+    void _setColor(){};
+    
+    std::vector<Die*> _dice;
 
-      std::vector<Object*> objList;
-
-      Game*  _game;
-      Board* _board;
-      std::map<size_t, size_t> _id2Die;
-      std::map<size_t, std::pair<size_t,size_t> > _id2Field;
-
-      Camera cam;
-      void _render(bool picking = false);
-
-      std::vector<Die*> _dice;
   public:
-      Scene(GLWidget* act);
-      ~Scene();
-      Vec getOrientation();
-      void add(Object* obj);
-      void rotate(float angle, size_t direction);
-      void zoom(float factor);
+    Scene(GLWidget* act);
+    ~Scene();
+    Vec getOrientation();
+    void add(Object* obj);
+    
+    void rotate(float angle, size_t direction);
+    void zoom(float factor);
+    void clearStates();
+    Object* clicked(size_t id);
+    Object* pickObject(QPoint p);
 
-      void markNext(int dx, int dy);
-      //TODO: implement Scene.select()
-      void select();
+    void markNext(int dx, int dy);
+    //TODO: implement Scene.select()
+    void select();
+
+    bool picking;
+    size_t idcount;
   };
 
 } // end namespace KBX

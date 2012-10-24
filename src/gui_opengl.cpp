@@ -1,8 +1,6 @@
 #include "gui_opengl.hpp"
 #include "tools.hpp"
-
-#include <iostream> //TODO
-
+#include "models.hpp"
 #include <QImage>
 #include <QLabel> //TODO test, remove afterwards
 #include <QTimer>
@@ -10,6 +8,7 @@
 #include <GL/glu.h>
 
 namespace KBX {
+
   GLWidget::GLWidget(QWidget *parent)
     : QGLWidget(parent),
       log("act")
@@ -50,10 +49,7 @@ namespace KBX {
     );
     // ...and tell the object list that our background color
     // does not correspond to any kind of object
-    Object::objectList.nullId = bgColor.id();
-
-    // after initializing OpenGL add the scene:
-    this->scene = new Scene(this);
+    // Object::objectList.nullId = bgColor.id();
   }
   
   void GLWidget::resizeGL(int w, int h) {
@@ -75,13 +71,16 @@ namespace KBX {
     Object* obj;
     if (event->button() == Qt::LeftButton){
       // pick object
-      obj = this->pickObject( event->pos() );
+      scene->clearStates();
+      obj = this->scene->pickObject( event->pos() );
+      if(obj){
+	obj->setSelectedState(true);
+      }
     } else if (event->button() == Qt::RightButton){
       // save mouse position for scene rotation
       this->mousePos = event->pos();
-    } else {
-      event->ignore();
-    }
+    } 
+    event->ignore();
   }
 
   void GLWidget::mouseMoveEvent(QMouseEvent *event) {
