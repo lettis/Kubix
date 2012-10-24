@@ -525,7 +525,8 @@ namespace KBX {
     if (this->_playColor == BLACK){
       b=1;
     }
-    glEnable( GL_TEXTURE_2D );
+    if( ! this->scene->picking )
+      glEnable( GL_TEXTURE_2D );
     // face 1
     if( ! this->scene->picking){
       if ( this->IS_KING ){
@@ -846,6 +847,13 @@ namespace KBX {
       this->cam.zoom( factor );
   }
 
+  void Scene::display_picking(){
+    this->idcount = 0;
+    this->picking = true;
+    glClearColor(1.0f,1.0f,1.0f,0.0f);
+    this->display();
+    picking = false;
+  }
 
 /// pick Object at given mouse coordinates
   /**
@@ -858,16 +866,11 @@ namespace KBX {
     glGetIntegerv(GL_VIEWPORT, viewport);
     // get color information from frame buffer
     unsigned char pixel[3];
-    this->idcount = 0;
-    this->picking = true;
-    glClearColor(1.0f,1.0f,1.0f,0.0f);
-    this->display();
+    this->display_picking();
     // Important: gl (0,0) is bottom left but window coords (0,0) are top left -> have to subtract y from height
     glReadPixels(p.x(), viewport[3] - p.y(), 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
     size_t id = Color(pixel[0], pixel[1], pixel[2]).id();
     this->idcount = 0;
-    picking = false;
-    glClearColor(  this->act->bgColor.r, this->act->bgColor.g, this->act->bgColor.b, 0.0f);
     Logger l("Scene::pickObject");
     l.info(stringprintf("clicked object id: %d",(int)id));
     Object* obj = this->clicked(id);

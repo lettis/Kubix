@@ -20,26 +20,6 @@ namespace KBX {
     timer->start(30);
   }
 
-
-  /// pick Object at given mouse coordinates
-  /**
-      \param p mouse coordinates
-      \returns Object* to object under mouse cursor
-  */
-/*  Object* GLWidget::pickObject(QPoint p){
-    // get resolution from settings
-    GLint viewport[4];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-    // get color information from frame buffer
-    unsigned char pixel[3];
-    this->scene->display();
-    // Important: gl (0,0) is bottom left but window coords (0,0) are top left -> have to subtract y from height
-    glReadPixels(p.x(), viewport[3] - p.y(), 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
-    size_t id = Color(pixel[0], pixel[1], pixel[2]).id();
-    return Object::objectList.get(id);
-  }
-  */
-
   void GLWidget::initializeGL() {
     glEnable(GL_DEPTH_TEST);
     this->bgColor = Color::GREY20;
@@ -66,7 +46,9 @@ namespace KBX {
   }
   
   void GLWidget::paintGL() {
+    glClearColor(  this->bgColor.r, this->bgColor.g, this->bgColor.b, 0.0f);
     this->scene->display();
+    // if you want to debug the color-picking, use the this->scene->display_picking() instead
   }
 
   void GLWidget::mousePressEvent(QMouseEvent *event) {

@@ -246,6 +246,7 @@ namespace KBX {
     void markNext(int dx, int dy);
     //TODO: implement Scene.select()
     void select();
+    void display_picking();
 
     bool picking;
     size_t idcount;
