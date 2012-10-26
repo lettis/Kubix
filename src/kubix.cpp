@@ -21,8 +21,6 @@
 
 #include "tools.hpp"
 #include "gui_opengl.hpp"
-#include "handler.hpp"
-#include "engine.hpp"
 
 int main(int argc, char** argv){
   // load Qt-Resources

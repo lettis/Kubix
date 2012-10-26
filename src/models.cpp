@@ -46,52 +46,52 @@ namespace KBX {
   const Color Color::BLUE  (0.0f, 0.0f, 1.0f);
   // define different versions of the Color constructor depending on parameters
   Color::Color(){
-      this->r = 0;
-      this->g = 0;
-      this->b = 0;
+    this->r = 0;
+    this->g = 0;
+    this->b = 0;
   }
   Color::Color(size_t id){
-      this->r = float(id%255)/255;
-      this->g = float((id/255)%255)/255;
-      this->b = float((id/(255*255))%255)/255;
+    this->r = float(id%255)/255;
+    this->g = float((id/255)%255)/255;
+    this->b = float((id/(255*255))%255)/255;
   }
   Color::Color(unsigned char r, unsigned char g, unsigned char b){
-      this->r = float(r)/255;
-      this->g = float(g)/255;
-      this->b = float(b)/255;
+    this->r = float(r)/255;
+    this->g = float(g)/255;
+    this->b = float(b)/255;
   }
   Color::Color(int r, int g, int b){
-      this->r = float(r)/255;
-      this->g = float(g)/255;
-      this->b = float(b)/255;
+    this->r = float(r)/255;
+    this->g = float(g)/255;
+    this->b = float(b)/255;
   }
   Color::Color(float r, float g, float b){
-      this->r = r;
-      this->g = g;
-      this->b = b;
+    this->r = r;
+    this->g = g;
+    this->b = b;
   }
   size_t Color::id() const {
-      // this implementation of a (distinct) color id can
-      // lead to pretty large numbers. it is used for the
-      // picking mechanism. every object gets an own color
-      // to distinguish it from the others when a click happens.
-      // therefore, the size of the id-value depends highly
-      // on the number of objects.
-      // additionally, the picking-mechanism starts by 
-      // assigning all shades of red before going over to the
-      // other numbers. we therefore dont expect much trouble here...
-      return this->r*255 + 255*255*this->g + 255*255*255*this->b;
+    // this implementation of a (distinct) color id can
+    // lead to pretty large numbers. it is used for the
+    // picking mechanism. every object gets an own color
+    // to distinguish it from the others when a click happens.
+    // therefore, the size of the id-value depends highly
+    // on the number of objects.
+    // additionally, the picking-mechanism starts by 
+    // assigning all shades of red before going over to the
+    // other numbers. we therefore dont expect much trouble here...
+    return this->r*255 + 255*255*this->g + 255*255*255*this->b;
   }
   /// call glColor3f with internal values
   void Color::glColor() const {
-      glColor3f( this->r, this->g, this->b );
+    glColor3f( this->r, this->g, this->b );
   }
 
   /// constructor initializing nullvector
   Vec::Vec(){
-      this->x = 0;
-      this->y = 0;
-      this->z = 0;
+    this->x = 0;
+    this->y = 0;
+    this->z = 0;
   }
   /// constructor of the Vec class 
   /**
@@ -100,32 +100,32 @@ namespace KBX {
      \param z z-coordinate (front-back in standard view)
    */
   Vec::Vec(float x, float y, float z){
-      this->x = x;
-      this->y = y;
-      this->z = z;
+    this->x = x;
+    this->y = y;
+    this->z = z;
   }
   /// calculate the euclidian norm
   float Vec::norm(){
-      float norm = 0;
-      norm += this->x * this->x;
-      norm += this->y * this->y;
-      norm += this->z * this->z;
-      return sqrt(norm);
+    float norm = 0;
+    norm += this->x * this->x;
+    norm += this->y * this->y;
+    norm += this->z * this->z;
+    return sqrt(norm);
   }
   /// normalize vector to length=1
   /*
       \returns the normalized vector
   */
   Vec Vec::normalize(){
-      float norm = this->norm();
-      if (norm != 0){
-          return Vec(   this->x/norm
-  		                , this->y/norm
-  		                , this->z/norm
-  		       );
-      }else{
-          throw "div by zero in vector norm";
-      }
+    float norm = this->norm();
+    if (norm != 0){
+      return Vec(   this->x/norm
+                  , this->y/norm
+                  , this->z/norm
+      );
+    }else{
+      throw "div by zero in vector norm";
+    }
   }
   /// scale vector by factor
   /**
@@ -133,24 +133,24 @@ namespace KBX {
       scaling is done by multiplying every element of the vector by the factor a
   */
   Vec Vec::scale(float a){
-      return Vec( a*this->x, a*this->y, a*this->z );
+    return Vec( a*this->x, a*this->y, a*this->z );
   }
   /// add vector
   /**
       \param v the vector to be added
   */
   Vec Vec::add(Vec v){
-      return Vec( this->x + v.x
-  		           ,this->y + v.y
-  		           ,this->z + v.z
-  		   );
+    return Vec( this->x + v.x
+               ,this->y + v.y
+               ,this->z + v.z
+    );
   }
   /// subtract vector
   /**
       \param v the vector to be subtracted
   */
   Vec Vec::sub(Vec v){
-      return this->add( v.scale(-1) );
+    return this->add( v.scale(-1) );
   }
   /// rotate vector around given axis
   /**
@@ -159,28 +159,28 @@ namespace KBX {
       \returns the rotated vector
   */
   Vec Vec::rotate(Vec rotAxis, float angle){
-      // first normalize rotation axis
-      rotAxis = rotAxis.normalize();
-      float n1=rotAxis.x;
-      float n2=rotAxis.y;
-      float n3=rotAxis.z;
-      // convert angle from degrees to radians
-      angle = angle * 2*M_PI / 360;
-      // calculate cosine, (1-cosine), sine
-      float c=cos(angle);
-      float cc=1-c;
-      float s=sin(angle);
-      // calculate new coordinates by applying rotation matrix
-      float x= this->x*(c+n1*n1*cc)
-              +this->y*(n1*n2*cc-n3*s)
-              +this->z*(n1*n3*cc+n2*s);
-      float y= this->x*(n2*n1*cc+n3*s)
-              +this->y*(c+n2*n2*cc)
-              +this->z*(n2*n3*cc-n1*s); 
-      float z= this->x*(n3*n1*cc-n2*s)
-              +this->y*(n3*n2*cc+n1*s)
-              +this->z*(c+n3*n3*cc);
-      return Vec(x,y,z);
+    // first normalize rotation axis
+    rotAxis = rotAxis.normalize();
+    float n1=rotAxis.x;
+    float n2=rotAxis.y;
+    float n3=rotAxis.z;
+    // convert angle from degrees to radians
+    angle = angle * 2*M_PI / 360;
+    // calculate cosine, (1-cosine), sine
+    float c=cos(angle);
+    float cc=1-c;
+    float s=sin(angle);
+    // calculate new coordinates by applying rotation matrix
+    float x= this->x*(c+n1*n1*cc)
+            +this->y*(n1*n2*cc-n3*s)
+            +this->z*(n1*n3*cc+n2*s);
+    float y= this->x*(n2*n1*cc+n3*s)
+            +this->y*(c+n2*n2*cc)
+            +this->z*(n2*n3*cc-n1*s); 
+    float z= this->x*(n3*n1*cc-n2*s)
+            +this->y*(n3*n2*cc+n1*s)
+            +this->z*(c+n3*n3*cc);
+    return Vec(x,y,z);
   }
   /// calculate the cross product
   /**
@@ -188,34 +188,34 @@ namespace KBX {
       \returns the cross product  (this X v)
   */
   Vec Vec::cross(Vec v){
-      Vec result;
-      result.x = this->y*v.z - this->z*v.y;
-      result.y = this->z*v.x - this->x*v.z;
-      result.z = this->x*v.y - this->y*v.x;
-      return result;
+    Vec result;
+    result.x = this->y*v.z - this->z*v.y;
+    result.y = this->z*v.x - this->x*v.z;
+    result.z = this->x*v.y - this->y*v.x;
+    return result;
   }
   /// constructor initializing to pos=(0,0,0) and target=(0,0,-1)
   Camera::Camera(){
-      this->position = Vec(0,0,0);
-      this->target = Vec(0,0,-1);
+    this->position = Vec(0,0,0);
+    this->target = Vec(0,0,-1);
   }
   /// constructor initializing to given pos and target=(0,0,-1)
   Camera::Camera(Vec pos){
-      this->position = pos;
-      this->target = Vec(0,0,-1);
+    this->position = pos;
+    this->target = Vec(0,0,-1);
   }
   /// constructor initializing to given pos and target
   Camera::Camera(Vec pos, Vec target){
-      this->position = pos;
-      this->target = target;
+    this->position = pos;
+    this->target = target;
   }
   /// update the OpenGL camera perspective
   void Camera::updateView(){
-      // set OpenGL camera
-      gluLookAt( this->position.x, this->position.y, this->position.z,
-                 this->target.x  , this->target.y  , this->target.z,
-                 0,1,0
-      );
+    // set OpenGL camera
+    gluLookAt( this->position.x, this->position.y, this->position.z,
+               this->target.x  , this->target.y  , this->target.z,
+               0,1,0
+    );
   }
   /// get orientation of camera
   Vec Camera::getOrientation(){
@@ -227,14 +227,14 @@ namespace KBX {
       \param target the target to be set (i.e. the point where to look at)
   */
   void Camera::setTarget(Vec target){
-      this->target = target;
+    this->target = target;
   }
   /// set new position
   /**
       \param position the new position of the camera
   */
   void Camera::setPosition(Vec position){
-      this->position = position;
+    this->position = position;
   }
   /// set new camera position by rotating around target
   /**
@@ -245,23 +245,23 @@ namespace KBX {
       negative means to the left (horizontal) or downwards (vertical).
   */
   void Camera::rotate(float angle, size_t direction){
-      Vec v=this->position.sub( this->target );
-      if (direction == this->HORIZONTAL){
-          // rotate in horizontal plane, i.e. around the y-axis
-          v = v.rotate( Vec(0,1,0), angle );
+    Vec v=this->position.sub( this->target );
+    if (direction == this->HORIZONTAL){
+      // rotate in horizontal plane, i.e. around the y-axis
+      v = v.rotate( Vec(0,1,0), angle );
+      this->position = this->target.add( v );
+    }else if (direction == this->VERTICAL){
+      // rotate in vertical plane, i.e. around the axis
+      // orthogonal to the y-axis and the vector v.
+      if (   (v.normalize().y < 0.99 && angle > 0)  
+           ||(v.normalize().y > -0.99 && angle < 0) ){
+          Vec ortho = v.cross( Vec(0,1,0) );
+          v = v.rotate( ortho, angle );
           this->position = this->target.add( v );
-      }else if (direction == this->VERTICAL){
-          // rotate in vertical plane, i.e. around the axis
-          // orthogonal to the y-axis and the vector v.
-          if (   (v.normalize().y < 0.99 && angle > 0)  
-               ||(v.normalize().y > -0.99 && angle < 0) ){
-              Vec ortho = v.cross( Vec(0,1,0) );
-              v = v.rotate( ortho, angle );
-              this->position = this->target.add( v );
-          }
-      }else{
-          throw "cannot rotate in unknown direction";
       }
+    }else{
+      throw "cannot rotate in unknown direction";
+    }
   }
   /// reset camera position by zooming in/out
   /**
@@ -273,12 +273,12 @@ namespace KBX {
   */
   void Camera::zoom(float factor){
     if (factor <= 0){
-        throw "cannot zoom by negative or zero zoom factor";
+      throw "cannot zoom by negative or zero zoom factor";
     }
     Vec diff = this->position.sub( this->target );
     diff = diff.scale( factor );
     if(diff.norm() < 900 && diff.norm() > 15){
-        this->position = this->target.add( diff );
+      this->position = this->target.add( diff );
     }
   }
   
@@ -299,7 +299,7 @@ namespace KBX {
   void Board::clearStates(){
     for (size_t x=0; x < this->_nX; x++){
       for (size_t y=0; y < this->_nY; y++){
-	this->_tiles[x][y]->clearStates();
+        this->_tiles[x][y]->clearStates();
       }
     }
   }
@@ -381,8 +381,8 @@ namespace KBX {
     // to the local frame of reference
     // (this is needed, since the OpenGL coordinate system rotates with the objects)
     if ( !this->_rotAxis.empty() ){
-        size_t last = this->_rotAxis.size()-1;
-        axis = axis.rotate( this->_rotAxis[ last ].scale( -1 ), this->_angle[ last ] );
+      size_t last = this->_rotAxis.size()-1;
+      axis = axis.rotate( this->_rotAxis[ last ].scale( -1 ), this->_angle[ last ] );
     }
     this->_rotAxis.push_back( axis );
   }
@@ -408,7 +408,7 @@ namespace KBX {
   /// actually rotate object (private, only called by 'display')
   void Object::_rotate(){
     for(size_t i=0; i<this->_angle.size(); i++){
-        glRotatef( this->_angle[i], this->_rotAxis[i].x, this->_rotAxis[i].y, this->_rotAxis[i].z );
+      glRotatef( this->_angle[i], this->_rotAxis[i].x, this->_rotAxis[i].y, this->_rotAxis[i].z );
     }
   }
   /// actually translate object (private, only called by 'display')
@@ -439,35 +439,35 @@ namespace KBX {
   
   /// set the object color before rendering
   void Object::setColor(){
-      if(this->isSelected){
-	this->cSelected.glColor();
-	return;
-      }
-      if(this->isHighlighted){
-	this->cHighlighted.glColor();
-	return;
-      }
-      if(this->isMarked){
-	this->cMarked.glColor();
-	return;
-      }
-      Color::WHITE.glColor();
+    if(this->isSelected){
+      this->cSelected.glColor();
+      return;
+    }
+    if(this->isHighlighted){
+      this->cHighlighted.glColor();
+      return;
+    }
+    if(this->isMarked){
+      this->cMarked.glColor();
+      return;
+    }
+    Color::WHITE.glColor();
   }
 
   void Tile::setColor(){
-      if(this->isSelected){
-	this->cSelected.glColor();
-	return;
-      }
-      if(this->isHighlighted){
-	this->cHighlighted.glColor();
-	return;
-      }
-      if(this->isMarked){
-	this->cMarked.glColor();
-	return;
-      }
-      this->basicColor.glColor();
+    if(this->isSelected){
+      this->cSelected.glColor();
+      return;
+    }
+    if(this->isHighlighted){
+      this->cHighlighted.glColor();
+      return;
+    }
+    if(this->isMarked){
+      this->cMarked.glColor();
+      return;
+    }
+    this->basicColor.glColor();
   }
   
   /// inherit parent constructor
@@ -619,32 +619,32 @@ namespace KBX {
     // setup tiles to form a checkered layout
     for(size_t x=0; x < this->_nX; x++){
       for(size_t y=0; y < this->_nY; y++){
-	tileColor = ( (x%2 + y%2)%2 == 0 ) ? dark : bright;
-	tilePosition = Vec(   (float)x - (float)(this->_nX)/2
-			      ,-0.5
-			      ,-(float)y + (float)(this->_nY)/2 -1
-			      );
-	this->_tiles[x][y] = new Tile(this->scene, tilePosition, tileColor );
+        tileColor = ( (x%2 + y%2)%2 == 0 ) ? dark : bright;
+        tilePosition = Vec(   (float)x - (float)(this->_nX)/2
+			                      ,-0.5
+			                      ,-(float)y + (float)(this->_nY)/2 -1
+			                 );
+        this->_tiles[x][y] = new Tile(this->scene, tilePosition, tileColor );
       }
     }
   }
   /// free memory of allocated tiles in destructor
   Board::~Board(){
-      std::vector<Tile*>::iterator ys;
-      for (size_t x=0; x < this->_nX; x++){
-          for (ys=this->_tiles[x].begin(); ys < this->_tiles[x].end(); ys++){
-              delete *ys;
-          }
+    std::vector<Tile*>::iterator ys;
+    for (size_t x=0; x < this->_nX; x++){
+      for (ys=this->_tiles[x].begin(); ys < this->_tiles[x].end(); ys++){
+        delete *ys;
       }
+    }
   }
   /// display board by rendering every tile
   void Board::_render(){
-      for (size_t x=0; x < this->_nX; x++){
-          for (size_t y=0; y < this->_nY; y++){
-              glLoadName(x+y*this->_nY);
-              this->_tiles[x][y]->display();
-          }
+    for (size_t x=0; x < this->_nX; x++){
+      for (size_t y=0; y < this->_nY; y++){
+        glLoadName(x+y*this->_nY);
+        this->_tiles[x][y]->display();
       }
+    }
   }
   /// return gui id of tile defined by its coordinates
   // TODO: this piece of code is deprecated and should be replaced by something else
@@ -660,39 +660,39 @@ namespace KBX {
   }
   /// render the tile
   void Tile::_render(){
-      Logger log("Tile::_render");
-      glBegin( GL_QUADS );
-       // upper face
-       glVertex3f(0.0, 0.0, 0.0);
-       glVertex3f(1.0, 0.0, 0.0);
-       glVertex3f(1.0, 0.0, 1.0);
-       glVertex3f(0.0, 0.0, 1.0);
-       // lower face
-       glVertex3f(0.0, -0.1, 0.0);
-       glVertex3f(1.0, -0.1, 0.0);
-       glVertex3f(1.0, -0.1, 1.0);
-       glVertex3f(0.0, -0.1, 1.0);
-       // sides
-       glVertex3f(0.0,  0.0, 0.0);
-       glVertex3f(1.0,  0.0, 0.0);
-       glVertex3f(1.0, -0.1, 0.0);
-       glVertex3f(0.0, -0.1, 0.0);
+    Logger log("Tile::_render");
+    glBegin( GL_QUADS );
+     // upper face
+     glVertex3f(0.0, 0.0, 0.0);
+     glVertex3f(1.0, 0.0, 0.0);
+     glVertex3f(1.0, 0.0, 1.0);
+     glVertex3f(0.0, 0.0, 1.0);
+     // lower face
+     glVertex3f(0.0, -0.1, 0.0);
+     glVertex3f(1.0, -0.1, 0.0);
+     glVertex3f(1.0, -0.1, 1.0);
+     glVertex3f(0.0, -0.1, 1.0);
+     // sides
+     glVertex3f(0.0,  0.0, 0.0);
+     glVertex3f(1.0,  0.0, 0.0);
+     glVertex3f(1.0, -0.1, 0.0);
+     glVertex3f(0.0, -0.1, 0.0);
   
-       glVertex3f(0.0,  0.0, 1.0);
-       glVertex3f(1.0,  0.0, 1.0);
-       glVertex3f(1.0, -0.1, 1.0);
-       glVertex3f(0.0, -0.1, 1.0);
+     glVertex3f(0.0,  0.0, 1.0);
+     glVertex3f(1.0,  0.0, 1.0);
+     glVertex3f(1.0, -0.1, 1.0);
+     glVertex3f(0.0, -0.1, 1.0);
   
-       glVertex3f(0.0,  0.0, 0.0);
-       glVertex3f(0.0,  0.0, 1.0);
-       glVertex3f(0.0, -0.1, 1.0);
-       glVertex3f(0.0, -0.1, 0.0);
+     glVertex3f(0.0,  0.0, 0.0);
+     glVertex3f(0.0,  0.0, 1.0);
+     glVertex3f(0.0, -0.1, 1.0);
+     glVertex3f(0.0, -0.1, 0.0);
   
-       glVertex3f(1.0,  0.0, 0.0);
-       glVertex3f(1.0,  0.0, 1.0);
-       glVertex3f(1.0, -0.1, 1.0);
-       glVertex3f(1.0, -0.1, 0.0);
-      glEnd();
+     glVertex3f(1.0,  0.0, 0.0);
+     glVertex3f(1.0,  0.0, 1.0);
+     glVertex3f(1.0, -0.1, 1.0);
+     glVertex3f(1.0, -0.1, 0.0);
+    glEnd();
   }
   
   /// scene constructor
@@ -771,11 +771,11 @@ namespace KBX {
     this->_dice.back()->rotate( clockwise, 90 );
     // add dice to scene
     for (size_t i=0; i < this->_dice.size(); i++){
-        // add dice to scene
-        this->add( this->_dice[i] );
-        // add mapping from id of gui-die to
-        // internal id (here: i) of abstract representation
-	//        this->_id2Die[ this->_dice[i]->id ] = i;
+      // add dice to scene
+      this->add( this->_dice[i] );
+      // add mapping from id of gui-die to
+      // internal id (here: i) of abstract representation
+      //        this->_id2Die[ this->_dice[i]->id ] = i;
     }
     // initialize the board and add it to the scene
     this->_board = new Board(this, 9, 9);
@@ -819,11 +819,11 @@ namespace KBX {
       \throws string exception, if trying to add null-reference to scene
   */
   void Scene::add(Object* obj){
-      if (obj){
-          this->objList.push_back( obj );
-      }else{
-          throw "unable to add object to scene (null-reference)";
-      }
+    if (obj){
+      this->objList.push_back( obj );
+    }else{
+      throw "unable to add object to scene (null-reference)";
+    }
   }
   /// rotate the scene
   /**
@@ -831,12 +831,12 @@ namespace KBX {
       \param direction the direction of the rotation, either Camera.HORIZONTAL or Camera.VERTICAL
   */
   void Scene::rotate(float angle, size_t direction){
-      this->cam.rotate( angle, direction );
+    this->cam.rotate( angle, direction );
   }
   
   /// obtain camera orientation relative to center of scene
   Vec Scene::getOrientation(){
-      return this->cam.getOrientation();
+    return this->cam.getOrientation();
   }
   
   /// zoom the scene in/out
@@ -844,7 +844,7 @@ namespace KBX {
       \param factor the zoom factor
   */
   void Scene::zoom(float factor){
-      this->cam.zoom( factor );
+    this->cam.zoom( factor );
   }
 
   void Scene::display_picking(){
@@ -874,9 +874,12 @@ namespace KBX {
     Logger l("Scene::pickObject");
     l.info(stringprintf("clicked object id: %d",(int)id));
     Object* obj = this->clicked(id);
-    if(obj) return obj;
-    l.warning(stringprintf("sorry, could not find object matching id %d",(int)id));
-    return NULL;
+    if(obj){
+      return obj;
+    } else {
+      l.warning(stringprintf("sorry, could not find object matching id %d",(int)id));
+      return NULL;
+    }
   }
   Object* Scene::clicked(size_t id){
     for(size_t i=0; i<this->objList.size(); i++){

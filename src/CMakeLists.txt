@@ -22,7 +22,6 @@ ADD_EXECUTABLE(../Kubix
   engine.cpp
   gui_opengl.cpp
   models.cpp
-  gui.cpp
   tools.cpp
   ${KBX_MOC_OUTFILES}
   ${KBX_RESOURCES_RCC}

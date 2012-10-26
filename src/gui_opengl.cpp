@@ -1,8 +1,6 @@
 #include "gui_opengl.hpp"
 #include "tools.hpp"
 #include "models.hpp"
-#include <QImage>
-#include <QLabel> //TODO test, remove afterwards
 #include <QTimer>
 
 #include <GL/glu.h>
@@ -58,7 +56,7 @@ namespace KBX {
       scene->clearStates();
       obj = this->scene->pickObject( event->pos() );
       if(obj){
-	obj->setSelectedState(true);
+        obj->setSelectedState(true);
       }
     } else if (event->button() == Qt::RightButton){
       // save mouse position for scene rotation
