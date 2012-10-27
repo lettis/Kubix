@@ -50,13 +50,10 @@ namespace KBX {
   };
   
   /* helper functions */
-  int sign(int x);
-  int isNumber( char* str );
-  void swap(int& a, int& b);
   PlayColor inverse(PlayColor color);
   /*                  */
   
-  /// defines playing strategy of cpu
+  /// defines playing strategy of AI
   class Strategy{
   public:
       const int coeffDiceRatio;
@@ -69,7 +66,7 @@ namespace KBX {
   	const PlayMode mode;
   	const size_t cpuLevel;
   	const Strategy strategy;
-      Config(PlayMode mode, size_t cpuLevel, Strategy strategy);
+    Config(PlayMode mode, size_t cpuLevel, Strategy strategy);
   };
   
   class Move{
@@ -119,22 +116,22 @@ namespace KBX {
   };
   
   class Game{
-  	int          _fields[9][9];
+  	int      _fields[9][9];
   	DieState _dice[18];
-      Config   _config;
+    Config   _config;
   public:
-      Game(Config config);
-      bool            moveIsValid(size_t dieIndex, Move& move);
-      void            makeMove(size_t dieIndex, Move& move);
-      PlayColor   getWinner();
-      DieState*   getDie(size_t id);
-      DieState*   getDie(size_t x, size_t y);
-      int             getDieId(size_t x, size_t y);
-      float           rate(PlayColor color);
-      Evaluation  evaluateMoves(int level, PlayColor color, float alpha, float beta, bool initialCall);
-      // rating functions
-      float           rateDiceRatio(PlayColor color);
+    Game(Config config);
+    bool        moveIsValid(size_t dieIndex, Move& move);
+    void        makeMove(size_t dieIndex, Move& move);
+    void        undoMove();
+    PlayColor   getWinner();
+    DieState*   getDie(size_t id);
+    DieState*   getDie(size_t x, size_t y);
+    int         getDieId(size_t x, size_t y);
+    float       rate(PlayColor color);
+    Evaluation  evaluateMoves(int level, PlayColor color, float alpha, float beta, bool initialCall);
+    // rating functions
+    float           rateDiceRatio(PlayColor color);
   };
-
 } // end namespace KBX
 #endif

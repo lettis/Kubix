@@ -23,33 +23,9 @@
 #include <algorithm>
 
 #include "engine.hpp"
-
+#include "tools.hpp"
 
 namespace KBX {
-
-  /// return sign of number (-1, 0 or 1)
-  /**
-      \returns  1, if sign of x is positive 
-      \returns -1, if sign of x is negative
-      \returns  0, if x is zero
-  */
-  int sign(int x){
-  	if      ( x==0 )    return  0;
-  	else if ( x >0 )    return  1;
-  	else                return -1;
-  }
-  //TODO: check, if needed, else delete
-  /// check if given string is a number
-  //bool isNumber( char* str ){
-      //if ( strspn( str, "1234567890 " ) == strlen(str) )    return true;
-      //else                                                  return false;
-  //}
-  /// swap values of a & b
-  void swap(int& a, int& b){
-      int buf=a;
-      a = b;
-      b = buf;
-  }
   /// switch color from BLACK to WHITE and vice versa
   PlayColor inverse(PlayColor color){
       switch(color){
@@ -340,6 +316,11 @@ namespace KBX {
       // move die to new position
       this->_fields[ dieState.x() ][ dieState.y() ] = dieIndex;
   }
+
+  void Game::undoMove(){
+    //TODO: implement
+  }
+
   /// check if a given move is valid
   /**
       \returns true, if the move is valid, else false
@@ -365,14 +346,14 @@ namespace KBX {
               end--;
           }
           for(size_t i=1; i <= end; i++){
-              if ( this->_fields[ dieState.x()+i*sign(move.dx) ][ dieState.y() ]  != CLEAR ){
+              if ( this->_fields[ dieState.x()+i*sgn(move.dx) ][ dieState.y() ]  != CLEAR ){
                   // there is a die on the way => move is not possible
                   return false;
               }
           }
           // iterate over y-values
           for(size_t i=1; i < fabs(move.dy); i++){
-              if ( this->_fields[ dieState.x()+move.dx ][ dieState.y()+i*sign(move.dy) ]  != CLEAR ){
+              if ( this->_fields[ dieState.x()+move.dx ][ dieState.y()+i*sgn(move.dy) ]  != CLEAR ){
                   // there is a die on the way => move is not possible
                   return false;
               }
@@ -384,14 +365,14 @@ namespace KBX {
           }
           // iterate over y-values first
           for(size_t i=1; i <= end; i++){
-              if ( this->_fields[ dieState.x() ][ dieState.y()+i*sign(move.dy) ] != CLEAR ){
+              if ( this->_fields[ dieState.x() ][ dieState.y()+i*sgn(move.dy) ] != CLEAR ){
                   // there is a die on the way => move is not possible
                   return false;
               }
           }
           // iterate over x-values (after y-iteration)
           for(size_t i=1; i < fabs(move.dy); i++){
-              if ( this->_fields[ dieState.x()+i*sign(move.dx) ][ dieState.y()+move.dy ] != CLEAR ){
+              if ( this->_fields[ dieState.x()+i*sgn(move.dx) ][ dieState.y()+move.dy ] != CLEAR ){
                   // there is a die on the way => move is not possible
                   return false;
               }

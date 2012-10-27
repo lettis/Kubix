@@ -31,6 +31,8 @@ namespace KBX {
   int sgn(float f);
   int sgn(int i);
   
+  void swap(int& a, int& b);
+
   void loadTextures();
   
   void checkGLError();

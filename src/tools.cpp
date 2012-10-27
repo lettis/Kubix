@@ -34,21 +34,34 @@
 
 
 namespace KBX {
+  /// return sign of number (-1, 0 or 1)
+  /**
+      \returns  1, if sign of x is positive 
+      \returns -1, if sign of x is negative
+      \returns  0, if x is zero
+  */
   template<class NumType>
   int sgn(NumType n){
     if( n < 0 ){
       return -1;
+    } else if( n == 0 ){
+      return 0;
+    } else {
+      return 1;
     }
-    return 1;
   }
-  
   int sgn(float f){
     return sgn<float> (f);
   }
   int sgn(int i){
     return sgn<int> (i);
   }
-  
+  /// swap values of integers a & b
+  void swap(int& a, int& b){
+      int buf=a;
+      a = b;
+      b = buf;
+  }
   
   /// initialize logger and give it a name
   /**
