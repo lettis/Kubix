@@ -55,14 +55,14 @@ namespace KBX {
   
   /// defines playing strategy of AI
   class Strategy{
-  public:
-      const int coeffDiceRatio;
-      Strategy( float coeffDiceRatio );
+   public:
+    const int coeffDiceRatio;
+    Strategy( float coeffDiceRatio );
   };
   
   /// configuration settings
   class Config{
-  public:
+   public:
   	const PlayMode mode;
   	const size_t cpuLevel;
   	const Strategy strategy;
@@ -70,57 +70,57 @@ namespace KBX {
   };
   
   class Move{
-  public:
-      int dx;
-      int dy;
-      bool FIRST_X;
-      Move();
-      Move(int dx, int dy, bool FIRST_X);
-      Move invert();
+   public:
+    int  dx;
+    int  dy;
+    bool FIRST_X;
+    Move();
+    Move(int dx, int dy, bool FIRST_X);
+    Move invert();
   };
   
   /// defines the current state of a die (i.e. position, orientation, value, color, etc.)
   class DieState{
-      static const size_t _state[26][5];
+    static const size_t _state[26][5];
   	int _x;
   	int _y;
   	PlayColor _color;
-      size_t _formerState;
-  	size_t _curState;
-  public:
-      static const size_t nPossibleMoves[7];
-      // list of possible (relative) moves for a die
-      static const std::vector< std::vector<Move> > possibleMoves;
-      static const std::vector< std::vector<Move> > initPossibleMoves();
-  
-      DieState();
-      DieState(int x, int y, PlayColor color, size_t state);
-  
-      void move(size_t direction);
-      void kill();
-      void revive();
-      bool gotKilled();
-      size_t getValue();
-      size_t getColor();
-      int x();
-      int y();
+    size_t    _formerState;
+  	size_t    _curState;
+   public:
+    static const size_t nPossibleMoves[7];
+    // list of possible (relative) moves for a die
+    static const std::vector< std::vector<Move> > possibleMoves;
+    static const std::vector< std::vector<Move> > initPossibleMoves();
+    
+    DieState();
+    DieState(int x, int y, PlayColor color, size_t state);
+    
+    void   move(size_t direction);
+    void   kill();
+    void   revive();
+    bool   gotKilled();
+    size_t getValue();
+    size_t getColor();
+    int    x();
+    int    y();
   };
   
   class Evaluation{
-  public:
-      float rating;
-      int dieIndex;
-      Move move;
-      Evaluation(float rating);
-      Evaluation(float rating, int dieIndex, Move move);
+   public:
+          Evaluation(float rating);
+          Evaluation(float rating, int dieIndex, Move move);
+    float rating;
+    int   dieIndex;
+    Move  move;
   };
   
   class Game{
   	int      _fields[9][9];
   	DieState _dice[18];
     Config   _config;
-  public:
-    Game(Config config);
+   public:
+                Game(Config config);
     bool        moveIsValid(size_t dieIndex, Move& move);
     void        makeMove(size_t dieIndex, Move& move);
     void        undoMove();
@@ -131,7 +131,7 @@ namespace KBX {
     float       rate(PlayColor color);
     Evaluation  evaluateMoves(int level, PlayColor color, float alpha, float beta, bool initialCall);
     // rating functions
-    float           rateDiceRatio(PlayColor color);
+    float       rateDiceRatio(PlayColor color);
   };
 } // end namespace KBX
 #endif

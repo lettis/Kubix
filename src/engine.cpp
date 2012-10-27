@@ -28,35 +28,35 @@
 namespace KBX {
   /// switch color from BLACK to WHITE and vice versa
   PlayColor inverse(PlayColor color){
-      switch(color){
-          case BLACK:
-              return WHITE;
-          case WHITE:
-              return BLACK;
-          default:
-              // do nothing
-              return color;
-      }
+    switch(color){
+      case BLACK:
+        return WHITE;
+      case WHITE:
+        return BLACK;
+      default:
+        // do nothing
+        return color;
+    }
   }
   
-  Strategy::Strategy(float coeffDiceRatio) :
-       coeffDiceRatio(coeffDiceRatio)
+  Strategy::Strategy(float coeffDiceRatio)
+    : coeffDiceRatio(coeffDiceRatio)
   {}
   
-  Config::Config(PlayMode mode, size_t cpuLevel, Strategy strategy) :
-       mode(mode)
+  Config::Config(PlayMode mode, size_t cpuLevel, Strategy strategy)
+    :  mode(mode)
       ,cpuLevel(cpuLevel)
       ,strategy(strategy)
   {}
   
   /// initialize a move
-  Move::Move() :
-       dx(0)
+  Move::Move()
+    :  dx(0)
       ,dy(0)
       ,FIRST_X(false)
   {}
-  Move::Move(int dx, int dy, bool FIRST_X) :
-       dx(dx)
+  Move::Move(int dx, int dy, bool FIRST_X)
+    :  dx(dx)
       ,dy(dy)
       ,FIRST_X(FIRST_X)
   {}
@@ -66,15 +66,15 @@ namespace KBX {
   }
   
   /// initialize a die's state
-  DieState::DieState() :
-       _x(-1)
+  DieState::DieState()
+    :  _x(-1)
       ,_y(-1)
       ,_color(NONE_OF_BOTH)
       ,_formerState(-1)
       ,_curState(-1)
   {}
-  DieState::DieState(int x, int y, PlayColor color, size_t state) :
-       _x(x)
+  DieState::DieState(int x, int y, PlayColor color, size_t state)
+    :  _x(x)
       ,_y(y)
       ,_color(color)
       ,_formerState(-1)
@@ -86,41 +86,41 @@ namespace KBX {
   const std::vector< std::vector<Move> > DieState::possibleMoves = initPossibleMoves();
   /// calculate possible moves per die value and save to list
   const std::vector< std::vector<Move> > DieState::initPossibleMoves(){
-      std::vector< std::vector<Move> > possibleMoves;
-      // this is just a placeholder on index 0 and won't be used
+    std::vector< std::vector<Move> > possibleMoves;
+    // this is just a placeholder on index 0 and won't be used
+    possibleMoves.push_back( std::vector<Move>() );
+    // calculate move possibilities for every die-value in every direction
+    // (all theoretical possibilities, independent of board size, situation, etc)
+    for (size_t val=1; val <= 6; val++){
       possibleMoves.push_back( std::vector<Move>() );
-      // calculate move possibilities for every die-value in every direction
-      // (all theoretical possibilities, independent of board size, situation, etc)
-      for (size_t val=1; val <= 6; val++){
-          possibleMoves.push_back( std::vector<Move>() );
-          // reference to current list
-          std::vector<Move>& moveList = possibleMoves.back();
-          // moves in all four directions without turning
-          moveList.push_back( Move( val,    0,  true) );
-          moveList.push_back( Move(-val,    0,  true) );
-          moveList.push_back( Move(   0,  val, false) );
-          moveList.push_back( Move(   0, -val, false) );
-          // moves in all directions with turning
-          for (size_t i=1; i < val; i++){
-              /* +x,+y first x */
-              moveList.push_back( Move( i, val-i,  true) );
-              /* -x,+y first x */
-              moveList.push_back( Move(-i, val-i,  true) );
-              /* +x,+y first y */
-              moveList.push_back( Move( i, val-i, false) );
-              /* -x,+y first y */
-              moveList.push_back( Move(-i, val-i, false) );
-              /* +x,-y first x */
-              moveList.push_back( Move( i, -(val-i), true) );
-              /* -x,-y first x */
-              moveList.push_back( Move(-i, -(val-i), true) );
-              /* +x,-y first y */
-              moveList.push_back( Move( i, -(val-i), false) );
-              /* -x,-y first y */
-              moveList.push_back( Move(-i, -(val-i), false) );
-          }
+      // reference to current list
+      std::vector<Move>& moveList = possibleMoves.back();
+      // moves in all four directions without turning
+      moveList.push_back( Move( val,    0,  true) );
+      moveList.push_back( Move(-val,    0,  true) );
+      moveList.push_back( Move(   0,  val, false) );
+      moveList.push_back( Move(   0, -val, false) );
+      // moves in all directions with turning
+      for (size_t i=1; i < val; i++){
+        /* +x,+y first x */
+        moveList.push_back( Move( i, val-i,  true) );
+        /* -x,+y first x */
+        moveList.push_back( Move(-i, val-i,  true) );
+        /* +x,+y first y */
+        moveList.push_back( Move( i, val-i, false) );
+        /* -x,+y first y */
+        moveList.push_back( Move(-i, val-i, false) );
+        /* +x,-y first x */
+        moveList.push_back( Move( i, -(val-i), true) );
+        /* -x,-y first x */
+        moveList.push_back( Move(-i, -(val-i), true) );
+        /* +x,-y first y */
+        moveList.push_back( Move( i, -(val-i), false) );
+        /* -x,-y first y */
+        moveList.push_back( Move(-i, -(val-i), false) );
       }
-      return possibleMoves;
+    }
+    return possibleMoves;
   }
   /// initialize die states
   /**
@@ -145,180 +145,180 @@ namespace KBX {
                    o-----o
   */
   const size_t DieState::_state[26][5] = {
-       //indices define: value, north, south, east, west
-        { 1, 4,16,12, 8 }
-      , { 1, 9,14, 5,19 }
-      , { 1,18, 6,11,15 }
-      , { 1,13,10,17, 7 }
-      , { 2,20, 0,13, 9 }
-      , { 2,11,12,22, 1 }
-      , { 2, 2,21,10,14 }
-      , { 2,15, 8, 3,23 }
-      , { 3, 7,19, 0,21 }
-      , { 3,23, 1, 4,18 }
-      , { 3, 3,22,16, 6 }
-      , { 3,17, 5,20, 2 }
-      , { 4, 5,17,21, 0 }
-      , { 4,22, 3,18, 4 }
-      , { 4, 1,23, 6,16 }
-      , { 4,19, 7, 2,20 }
-      , { 5, 0,20,14,10 }
-      , { 5,12,11,23, 3 }
-      , { 5,21, 2, 9,13 }
-      , { 5, 8,15, 1,22 }
-      , { 6,16, 4,15,11 }
-      , { 6, 6,18, 8,12 }
-      , { 6,10,13,19, 5 }
-      , { 6,14, 9, 7,17 }
-      , { 1,24,24,24,24 } // king's die
-      , { 0,25,25,25,25 } // state == die got killed
+     //indices define: value, north, south, east, west
+      { 1, 4,16,12, 8 }
+    , { 1, 9,14, 5,19 }
+    , { 1,18, 6,11,15 }
+    , { 1,13,10,17, 7 }
+    , { 2,20, 0,13, 9 }
+    , { 2,11,12,22, 1 }
+    , { 2, 2,21,10,14 }
+    , { 2,15, 8, 3,23 }
+    , { 3, 7,19, 0,21 }
+    , { 3,23, 1, 4,18 }
+    , { 3, 3,22,16, 6 }
+    , { 3,17, 5,20, 2 }
+    , { 4, 5,17,21, 0 }
+    , { 4,22, 3,18, 4 }
+    , { 4, 1,23, 6,16 }
+    , { 4,19, 7, 2,20 }
+    , { 5, 0,20,14,10 }
+    , { 5,12,11,23, 3 }
+    , { 5,21, 2, 9,13 }
+    , { 5, 8,15, 1,22 }
+    , { 6,16, 4,15,11 }
+    , { 6, 6,18, 8,12 }
+    , { 6,10,13,19, 5 }
+    , { 6,14, 9, 7,17 }
+    , { 1,24,24,24,24 } // king's die
+    , { 0,25,25,25,25 } // state == die got killed
   };
   /// set state to the one you get, when moving in given direction
   void DieState::move(size_t direction){
-      this->_curState = this->_state[ this->_curState ][direction];
-      switch( direction ){
-          case NORTH:
-              this->_y++;
-              break;
-          case SOUTH:
-              this->_y--;
-              break;
-          case EAST:
-              this->_x++;
-              break;
-          case WEST:
-              this->_x--;
-              break;
-          default:
-              // do nothing
-              break;
-      }
+    this->_curState = this->_state[ this->_curState ][direction];
+    switch( direction ){
+      case NORTH:
+        this->_y++;
+        break;
+      case SOUTH:
+        this->_y--;
+        break;
+      case EAST:
+        this->_x++;
+        break;
+      case WEST:
+        this->_x--;
+        break;
+      default:
+        // do nothing
+        break;
+    }
   }
   /// set state to DEAD (kill it!)
   void DieState::kill(){
-      this->_formerState = this->_curState;
-      this->_curState = DEAD;
+    this->_formerState = this->_curState;
+    this->_curState = DEAD;
   }
   /// set state to the one, before die got killed (revive it!)
   void DieState::revive(){
-      this->_curState = this->_formerState;
+    this->_curState = this->_formerState;
   }
   /// check, if die got killed
   /**
       \returns true, if die got killed; else false
   */
   bool DieState::gotKilled(){
-      return (this->_curState == DEAD);
+    return (this->_curState == DEAD);
   }
   /// return current value (1, ..., 6) of die
   size_t DieState::getValue(){
-      return this->_state[ this->_curState ][VALUE];
+    return this->_state[ this->_curState ][VALUE];
   }
   /// return color (BLACK or WHITE) of die
   size_t DieState::getColor(){
-      return this->_color;
+    return this->_color;
   }
   /// return x position
   int DieState::x(){
-      return this->_x;
+    return this->_x;
   }
   /// return y position
   int DieState::y(){
-      return this->_y;
+    return this->_y;
   }
   
   /// initialize evaluation (without proper move, only rating)
-  Evaluation::Evaluation(float rating) :
-       rating(rating)
+  Evaluation::Evaluation(float rating)
+    :  rating(rating)
       ,dieIndex(-1)
       ,move(Move())
   {}
   /// initialize evaluation (with rating and move)
-  Evaluation::Evaluation(float rating, int dieIndex, Move move) :
-       rating(rating)
+  Evaluation::Evaluation(float rating, int dieIndex, Move move)
+    :  rating(rating)
       ,dieIndex(dieIndex)
       ,move(move)
   {}
   
   /// initialize game
-  Game::Game(Config config) :
-        _config(config)
+  Game::Game(Config config)
+    : _config(config)
   {
-      // initialize white dice
-      this->_dice[ 0] = DieState( 0, 0, WHITE, 19 );
-      this->_dice[ 1] = DieState( 1, 0, WHITE,  1 );
-      this->_dice[ 2] = DieState( 2, 0, WHITE,  5 );
-      this->_dice[ 3] = DieState( 3, 0, WHITE, 22 );
-      this->_dice[ 4] = DieState( 4, 0, WHITE, 24 );
-      this->_dice[ 5] = DieState( 5, 0, WHITE, 22 );
-      this->_dice[ 6] = DieState( 6, 0, WHITE,  5 );
-      this->_dice[ 7] = DieState( 7, 0, WHITE,  1 );
-      this->_dice[ 8] = DieState( 8, 0, WHITE, 19 );
-      // initialize black dice
-      this->_dice[ 9] = DieState( 0, 8, BLACK, 17 );
-      this->_dice[10] = DieState( 1, 8, BLACK,  3 );
-      this->_dice[11] = DieState( 2, 8, BLACK,  7 );
-      this->_dice[12] = DieState( 3, 8, BLACK, 23 );
-      this->_dice[13] = DieState( 4, 8, BLACK, 24 );
-      this->_dice[14] = DieState( 5, 8, BLACK, 23 );
-      this->_dice[15] = DieState( 6, 8, BLACK,  7 );
-      this->_dice[16] = DieState( 7, 8, BLACK,  3 );
-      this->_dice[17] = DieState( 8, 8, BLACK, 17 );
-      // initialize fields with ids of dice (or clear)
+    // initialize white dice
+    this->_dice[ 0] = DieState( 0, 0, WHITE, 19 );
+    this->_dice[ 1] = DieState( 1, 0, WHITE,  1 );
+    this->_dice[ 2] = DieState( 2, 0, WHITE,  5 );
+    this->_dice[ 3] = DieState( 3, 0, WHITE, 22 );
+    this->_dice[ 4] = DieState( 4, 0, WHITE, 24 );
+    this->_dice[ 5] = DieState( 5, 0, WHITE, 22 );
+    this->_dice[ 6] = DieState( 6, 0, WHITE,  5 );
+    this->_dice[ 7] = DieState( 7, 0, WHITE,  1 );
+    this->_dice[ 8] = DieState( 8, 0, WHITE, 19 );
+    // initialize black dice
+    this->_dice[ 9] = DieState( 0, 8, BLACK, 17 );
+    this->_dice[10] = DieState( 1, 8, BLACK,  3 );
+    this->_dice[11] = DieState( 2, 8, BLACK,  7 );
+    this->_dice[12] = DieState( 3, 8, BLACK, 23 );
+    this->_dice[13] = DieState( 4, 8, BLACK, 24 );
+    this->_dice[14] = DieState( 5, 8, BLACK, 23 );
+    this->_dice[15] = DieState( 6, 8, BLACK,  7 );
+    this->_dice[16] = DieState( 7, 8, BLACK,  3 );
+    this->_dice[17] = DieState( 8, 8, BLACK, 17 );
+    // initialize fields with ids of dice (or clear)
+    for (size_t x=0; x <= 8; x++){
+      this->_fields[x][0] = x;
+    }
+    for (size_t y=1; y <= 7; y++){
       for (size_t x=0; x <= 8; x++){
-          this->_fields[x][0] = x;
+        this->_fields[x][y] = CLEAR;
       }
-      for (size_t y=1; y <= 7; y++){
-          for (size_t x=0; x <= 8; x++){
-              this->_fields[x][y] = CLEAR;
-          }
-      }
-      for (size_t x=0; x <= 8; x++){
-          this->_fields[x][8] = x+9;
-      }
+    }
+    for (size_t x=0; x <= 8; x++){
+      this->_fields[x][8] = x+9;
+    }
   }
   /// move die over board
   void Game::makeMove(size_t dieIndex, Move& move){
-      DieState& dieState = this->_dice[ dieIndex ];
-      // delete die from current position on board
-      this->_fields[ dieState.x() ][ dieState.y() ] = CLEAR;
-      // get directions for horizontal movement (aka x coordinate)
-      int directionX, directionY;
-      if (move.dx < 0) { directionX = WEST; }
-      else             { directionX = EAST; }
-      // get directions for vertical movement (aka y coordinate)
-      if (move.dy < 0) { directionY = SOUTH; }
-      else             { directionY = NORTH; }
-      // assume move to go first in y direction
-      int stepsFirst      = abs( move.dy );
-      int directionFirst  = directionY;
-      int stepsSec        = abs( move.dx );
-      int directionSec    = directionX;
-      // swap values if move goes in x direction first
-      if (move.FIRST_X){
-          swap( stepsFirst, stepsSec );
-          swap( directionFirst, directionSec );
-      }
-      // traverse through dice states
-      for (size_t i=stepsFirst; i>0; i--){
-          // rotate in first direction
-          dieState.move( directionFirst ); 
-      }
-      for (size_t i=stepsSec; i>0; i--){
-          // rotate in second direction
-          dieState.move( directionFirst ); 
-      }
-      // delete old die on this position before moving new die to it
-      int keyOldDie = this->_fields[ dieState.x() ][ dieState.y() ];
-      if (keyOldDie != CLEAR){
-          this->_dice[ keyOldDie ].kill();
-      }
-      // move die to new position
-      this->_fields[ dieState.x() ][ dieState.y() ] = dieIndex;
+    DieState& dieState = this->_dice[ dieIndex ];
+    // delete die from current position on board
+    this->_fields[ dieState.x() ][ dieState.y() ] = CLEAR;
+    // get directions for horizontal movement (aka x coordinate)
+    int directionX, directionY;
+    if (move.dx < 0) { directionX = WEST; }
+    else             { directionX = EAST; }
+    // get directions for vertical movement (aka y coordinate)
+    if (move.dy < 0) { directionY = SOUTH; }
+    else             { directionY = NORTH; }
+    // assume move to go first in y direction
+    int stepsFirst      = abs( move.dy );
+    int directionFirst  = directionY;
+    int stepsSec        = abs( move.dx );
+    int directionSec    = directionX;
+    // swap values if move goes in x direction first
+    if (move.FIRST_X){
+      swap( stepsFirst, stepsSec );
+      swap( directionFirst, directionSec );
+    }
+    // traverse through dice states
+    for (size_t i=stepsFirst; i>0; i--){
+      // rotate in first direction
+      dieState.move( directionFirst ); 
+    }
+    for (size_t i=stepsSec; i>0; i--){
+      // rotate in second direction
+      dieState.move( directionFirst ); 
+    }
+    // delete old die on this position before moving new die to it
+    int keyOldDie = this->_fields[ dieState.x() ][ dieState.y() ];
+    if (keyOldDie != CLEAR){
+      this->_dice[ keyOldDie ].kill();
+    }
+    // move die to new position
+    this->_fields[ dieState.x() ][ dieState.y() ] = dieIndex;
   }
 
   void Game::undoMove(){
-    //TODO: implement
+    //TODO: implement, return move (for gui)
   }
 
   /// check if a given move is valid
@@ -329,7 +329,7 @@ namespace KBX {
   	DieState dieState = this->_dice[ dieIndex ];
   	// check, if move is farer than die value allows
   	if (dieState.getValue() != fabs(move.dx) + fabs(move.dy)){
-          return false;
+      return false;
     }
   	// check, if move goes off the board
     if (   dieState.x() + move.dx < 0
@@ -343,94 +343,93 @@ namespace KBX {
   		// iterate over x-values (before y-iteration)
       size_t end = fabs(move.dx);
   		if ( move.dy == 0 ){
-              end--;
-          }
-          for(size_t i=1; i <= end; i++){
-              if ( this->_fields[ dieState.x()+i*sgn(move.dx) ][ dieState.y() ]  != CLEAR ){
-                  // there is a die on the way => move is not possible
-                  return false;
-              }
-          }
-          // iterate over y-values
-          for(size_t i=1; i < fabs(move.dy); i++){
-              if ( this->_fields[ dieState.x()+move.dx ][ dieState.y()+i*sgn(move.dy) ]  != CLEAR ){
-                  // there is a die on the way => move is not possible
-                  return false;
-              }
-          }
-      } else {
-          size_t end = fabs(move.dy);
-          if ( move.dx == 0 ){
-              end--;
-          }
-          // iterate over y-values first
-          for(size_t i=1; i <= end; i++){
-              if ( this->_fields[ dieState.x() ][ dieState.y()+i*sgn(move.dy) ] != CLEAR ){
-                  // there is a die on the way => move is not possible
-                  return false;
-              }
-          }
-          // iterate over x-values (after y-iteration)
-          for(size_t i=1; i < fabs(move.dy); i++){
-              if ( this->_fields[ dieState.x()+i*sgn(move.dx) ][ dieState.y()+move.dy ] != CLEAR ){
-                  // there is a die on the way => move is not possible
-                  return false;
-              }
-          }
+        end--;
       }
-      // check target field
-      int idTarget = this->_fields[ dieState.x()+move.dx ][ dieState.y()+move.dy ];
-      if (idTarget != CLEAR ){
-          // check if it is a dice of the enemy
-          if( dieState.getColor() == this->_dice[ idTarget ].getColor() ){
-              // dice have same color, cannot move to this field
-              return false;
-          }
+      for(size_t i=1; i <= end; i++){
+        if ( this->_fields[ dieState.x()+i*sgn(move.dx) ][ dieState.y() ]  != CLEAR ){
+          // there is a die on the way => move is not possible
+          return false;
+        }
       }
-      // everything is ok, move possible
-      return true;
+      // iterate over y-values
+      for(size_t i=1; i < fabs(move.dy); i++){
+        if ( this->_fields[ dieState.x()+move.dx ][ dieState.y()+i*sgn(move.dy) ]  != CLEAR ){
+          // there is a die on the way => move is not possible
+          return false;
+        }
+      }
+    } else { // first move in y direction
+      size_t end = fabs(move.dy);
+      if ( move.dx == 0 ){
+        end--;
+      }
+      // iterate over y-values first
+      for(size_t i=1; i <= end; i++){
+        if ( this->_fields[ dieState.x() ][ dieState.y()+i*sgn(move.dy) ] != CLEAR ){
+          // there is a die on the way => move is not possible
+          return false;
+        }
+      }
+      // iterate over x-values (after y-iteration)
+      for(size_t i=1; i < fabs(move.dy); i++){
+        if ( this->_fields[ dieState.x()+i*sgn(move.dx) ][ dieState.y()+move.dy ] != CLEAR ){
+          // there is a die on the way => move is not possible
+          return false;
+        }
+      }
+    }
+    // check target field
+    int idTarget = this->_fields[ dieState.x()+move.dx ][ dieState.y()+move.dy ];
+    if (idTarget != CLEAR ){
+      // check if it is a dice of the enemy
+      if( dieState.getColor() == this->_dice[ idTarget ].getColor() ){
+        // dice have same color, cannot move to this field
+        return false;
+      }
+    }
+    // everything is ok, move possible
+    return true;
   }
   /// get winner of game (black or white)
   /**
       \returns black or white; null if nobody has won yet
   */
   PlayColor Game::getWinner(){
-      DieState& kingW = this->_dice[ KING_WHITE ];
-      DieState& kingB = this->_dice[ KING_BLACK ];
-      // check if king dice gets killed
-      if ( kingW.gotKilled() )  return BLACK;
-      if ( kingB.gotKilled() )  return WHITE;
-      // winning by conquering opponents king field
-      if ( (kingW.x()==8) && (kingW.y()==4) ) return WHITE;
-      if ( (kingB.x()==0) && (kingB.y()==4) ) return BLACK;
-      // nobody has won yet
-      return NONE_OF_BOTH;
+    DieState& kingW = this->_dice[ KING_WHITE ];
+    DieState& kingB = this->_dice[ KING_BLACK ];
+    // check if king dice gets killed
+    if ( kingW.gotKilled() )  return BLACK;
+    if ( kingB.gotKilled() )  return WHITE;
+    // winning by conquering opponents king field
+    if ( (kingW.x()==8) && (kingW.y()==4) ) return WHITE;
+    if ( (kingB.x()==0) && (kingB.y()==4) ) return BLACK;
+    // nobody has won yet
+    return NONE_OF_BOTH;
   }
   /// get die state of die with given id
   DieState* Game::getDie(size_t id){
-      //TODO: error checking
-      if ( id < 18 ){
-          return &this->_dice[ id ];
-      } else {
-          throw "index error: given index does not define a valid die";
-      }
+    if ( id < 18 ){
+      return &this->_dice[ id ];
+    } else {
+      throw "index error: given index does not define a valid die";
+    }
   }
   /// get die state of die with given coordinates
   int Game::getDieId(size_t x, size_t y){
-      if ( x < 9 && y < 9 ){
-          return this->_fields[x][y];
-      } else {
-          throw "index error: given coordinates do not define a valid field";
-      }
+    if ( x < 9 && y < 9 ){
+      return this->_fields[x][y];
+    } else {
+      throw "index error: given coordinates do not define a valid field";
+    }
   }
   /// get die state of die with given coordinates
   DieState* Game::getDie(size_t x, size_t y){
-      if ( x < 9 && y < 9 ){
-          int id = this->_fields[x][y];
-          return &this->_dice[ id ];
-      } else {
-          throw "index error: given coordinates do not define a valid field";
-      }
+    if ( x < 9 && y < 9 ){
+      int id = this->_fields[x][y];
+      return &this->_dice[ id ];
+    } else {
+      throw "index error: given coordinates do not define a valid field";
+    }
   }
   /// rate the current game for a specified playcolor (black or white)
   /**
@@ -438,17 +437,17 @@ namespace KBX {
       value the single ratings based on the defined strategy.
   */
   float Game::rate( PlayColor color ){
-      PlayColor winner;
-      // check, if game is over
-      winner = this->getWinner();
-      // best/worst case if winning condition reached
-      if ( winner ){
-          if ( winner == color )  return 100.0;
-          else                    return   0.0;
-      }
-      float rating=0;
-      rating += this->_config.strategy.coeffDiceRatio * this->rateDiceRatio( color );
-      return rating;
+    PlayColor winner;
+    // check, if game is over
+    winner = this->getWinner();
+    // best/worst case if winning condition reached
+    if ( winner ){
+      if ( winner == color )  return 100.0;
+      else                    return   0.0;
+    }
+    float rating=0;
+    rating += this->_config.strategy.coeffDiceRatio * this->rateDiceRatio( color );
+    return rating;
   }
   /// evaluate best possible move up to a certain level
   /**
@@ -456,75 +455,75 @@ namespace KBX {
       this is done recursively by a form of the NegaMax algorithm with alpha-beta pruning
   */
   Evaluation Game::evaluateMoves(int level, PlayColor color, float alpha, float beta, bool initialCall){
-      // container for best move candidates
-      std::vector<Evaluation> bestCandidates;
-      // limit indices to significant color
-      size_t from, to;
-      if ( color == WHITE ){
-          from =  0;
-          to   =  8;
-      } else {
-          from =  9;
-          to   = 17;
-      }
-      // iterate over all dice of a color
-      for (size_t d=from; d <= to; d++){
-          // get value of current die 
-          size_t value = this->_dice[d].getValue();
-          // iterate over max number of moves for given dice value (stored in state-array) 
-          for (size_t i=0; i < DieState::nPossibleMoves[ value ]; i++){
-              // check if this specific move is valid 
-              Move move = DieState::possibleMoves[value][i];
-              
-              if ( this->moveIsValid( d, move ) ){
-                  // store all data to undo move later 
-                  Move moveBack = move.invert();
-                  // kill the die lying on the target field
-                  int idDieOnTarget = this->_fields[ this->_dice[d].x() + move.dx ] [ this->_dice[d].y() + move.dy ];
-                  if ( idDieOnTarget != CLEAR){
-                      this->_dice[ idDieOnTarget ].kill();
-                  }
-                  // perform move 
-                  this->makeMove( d, move );
-                  // get rating, either directly
-                  // or by recursive call
-                  float rating;
-                  if ( level == 1 ){
-                      rating = this->rate( color );
-                  } else {
-                      // recursive call for next step (negative weighting, since it is opponent's turn)
-                      rating = -this->evaluateMoves( level-1, inverse(color), -beta, -alpha, false ).rating;
-                  }
-                  // undo move 
-                  this->makeMove( d, moveBack );
-                  // revive killed die on target field
-                  if( idDieOnTarget != CLEAR ){
-                      this->_dice[ idDieOnTarget ].revive();
-                  }
-                  // alpha-beta pruning 
-                  if ( rating >= beta ){
-                      return Evaluation(beta);
-                  }
-                  if ( rating >= alpha){
-                      alpha = rating;
-                      if ( initialCall == true ){
-                          if ( rating > alpha ){
-                              // clear the candidate list, if rating better than before
-                              bestCandidates.clear();
-                          }
-                          // add good move to candidate list
-                          bestCandidates.push_back( Evaluation(rating, d, move) );
-                      }
-                  }
-              }
+    // container for best move candidates
+    std::vector<Evaluation> bestCandidates;
+    // limit indices to significant color
+    size_t from, to;
+    if ( color == WHITE ){
+      from =  0;
+      to   =  8;
+    } else {
+      from =  9;
+      to   = 17;
+    }
+    // iterate over all dice of a color
+    for (size_t d=from; d <= to; d++){
+      // get value of current die 
+      size_t value = this->_dice[d].getValue();
+      // iterate over max number of moves for given dice value (stored in state-array) 
+      for (size_t i=0; i < DieState::nPossibleMoves[ value ]; i++){
+        // check if this specific move is valid 
+        Move move = DieState::possibleMoves[value][i];
+        
+        if ( this->moveIsValid( d, move ) ){
+          // store all data to undo move later 
+          Move moveBack = move.invert();
+          // kill the die lying on the target field
+          int idDieOnTarget = this->_fields[ this->_dice[d].x() + move.dx ] [ this->_dice[d].y() + move.dy ];
+          if ( idDieOnTarget != CLEAR){
+            this->_dice[ idDieOnTarget ].kill();
           }
+          // perform move 
+          this->makeMove( d, move );
+          // get rating, either directly
+          // or by recursive call
+          float rating;
+          if ( level == 1 ){
+            rating = this->rate( color );
+          } else {
+            // recursive call for next step (negative weighting, since it is opponent's turn)
+            rating = -this->evaluateMoves( level-1, inverse(color), -beta, -alpha, false ).rating;
+          }
+          // undo move 
+          this->makeMove( d, moveBack );
+          // revive killed die on target field
+          if( idDieOnTarget != CLEAR ){
+            this->_dice[ idDieOnTarget ].revive();
+          }
+          // alpha-beta pruning 
+          if ( rating >= beta ){
+            return Evaluation(beta);
+          }
+          if ( rating >= alpha){
+            alpha = rating;
+            if ( initialCall == true ){
+              if ( rating > alpha ){
+                // clear the candidate list, if rating better than before
+                bestCandidates.clear();
+              }
+              // add good move to candidate list
+              bestCandidates.push_back( Evaluation(rating, d, move) );
+            }
+          }
+        }
       }
-      if ( initialCall == true ){
-          // select move randomly from the list
-          std::random_shuffle( bestCandidates.begin(), bestCandidates.end() );
-          return bestCandidates[0];
-      }
-      return Evaluation(alpha);
+    }
+    if ( initialCall == true ){
+      // select move randomly from the list
+      std::random_shuffle( bestCandidates.begin(), bestCandidates.end() );
+      return bestCandidates[0];
+    }
+    return Evaluation(alpha);
   }
   
   /// rate dice ratio
@@ -535,27 +534,28 @@ namespace KBX {
             0%:   only opponent's dices on board
   */
   float Game::rateDiceRatio(PlayColor color){
-      // default rating: 50% 
-      float rating = 50;
-      for ( size_t i=0; i <= 17; i++ ){
-          if ( this->_dice[i].gotKilled() ){
-              // i from 0  to 8 resembles white dice, from 9 to 17 black dice
-              if (  (i<=8 && color==WHITE) || (i>=9 && color==BLACK)  )
-                  // subtract 5.5% for lost dice 
-                  rating -= 5.5;
-              else
-                  // add 5.5% for opponents loss of dice 
-                  rating += 5.5;
-          }
+    // default rating: 50% 
+    float rating = 50;
+    for ( size_t i=0; i <= 17; i++ ){
+      if ( this->_dice[i].gotKilled() ){
+        // i from 0  to 8 resembles white dice, from 9 to 17 black dice
+        if (  (i<=8 && color==WHITE) || (i>=9 && color==BLACK)  ){
+          // subtract 5.5% for lost dice 
+          rating -= 5.5;
+        } else {
+          // add 5.5% for opponents loss of dice 
+          rating += 5.5;
+        }
       }
-      return rating;
+    }
+    return rating;
   }
-
 } // end namespace KBX
 
 
-// TODO: all lines below seem not to be needed anymore: delete
 
+
+// TODO: all lines below seem not to be needed anymore: delete
 
 //int filterMoves(int *returnBuffer, int diceKey, Board* board ){
 //	int i,v=0;
