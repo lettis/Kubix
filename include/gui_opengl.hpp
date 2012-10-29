@@ -39,16 +39,21 @@ namespace KBX {
       Logger log;
   
   protected:
-      void initializeGL();
-      void resizeGL(int w, int h);
-      void paintGL();
-      void mousePressEvent(QMouseEvent *event);
-      void mouseMoveEvent(QMouseEvent *event);
-      void wheelEvent(QWheelEvent *event);
-      void keyPressEvent(QKeyEvent *event);
+    void initializeGL();
+    void resizeGL(int w, int h);
+    void paintGL();
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
+    void keyPressEvent(QKeyEvent *event);
+
+  protected slots:
+    void newGame();
+
   public:
-      GLWidget(QWidget *parent = NULL);
-      ~GLWidget() {}
+    GLWidget(QWidget *parent = NULL);
+    ~GLWidget() {}
+    void initializeGUI();
   };
 
 } // end namespace KBX

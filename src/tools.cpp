@@ -29,7 +29,6 @@
 #include <QtOpenGL/QGLWidget>
 
 #include "models.hpp"
-#include "gui.hpp"
 #include "tools.hpp"
 
 

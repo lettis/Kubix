@@ -4,8 +4,28 @@
 #include <QTimer>
 
 #include <GL/glu.h>
+#include <QtGui>
 
 namespace KBX {
+
+  void GLWidget::initializeGUI(){
+    QPushButton *btn_newGame = new QPushButton(
+					    QApplication::translate("childwidget", "New Game"), this);
+    btn_newGame->setFocusPolicy( Qt::NoFocus );
+    connect(btn_newGame, SIGNAL( released() ), this, SLOT( newGame() ) );
+
+    QPushButton *btn_quit = new QPushButton(
+					    QApplication::translate("childwidget", "Quit"), this);
+    btn_quit->setFocusPolicy( Qt::NoFocus );
+    connect(btn_quit, SIGNAL( released() ), this, SLOT( close() ) );
+    btn_quit->move(500, 0);
+  }
+  
+  void GLWidget::newGame(){
+    this->scene->wipe();
+    this->scene->setup();
+  }
+    
 
   GLWidget::GLWidget(QWidget *parent)
     : QGLWidget(parent),

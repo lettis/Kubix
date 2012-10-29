@@ -640,10 +640,12 @@ namespace KBX {
   Board::~Board(){
     std::vector<Tile*>::iterator ys;
     for (size_t x=0; x < this->_nX; x++){
-      for (ys=this->_tiles[x].begin(); ys < this->_tiles[x].end(); ys++){
+      for (ys=this->_tiles[x].begin(); ys != this->_tiles[x].end(); ys++){
         delete *ys;
       }
+      this->_tiles[x].clear();
     }
+    this->_tiles.clear();
   }
 
   /// display board by rendering every tile
@@ -803,13 +805,29 @@ namespace KBX {
     }
   }
 
+  /// wipe all objects from the scene
+  void Scene::wipe(){
+    for (std::vector<Object*>::iterator obj = this->objList.begin(); obj != this->objList.end(); obj++){
+      delete *obj;
+    }
+    this->_dice.clear();
+    this->objList.clear();
+    this->_board = NULL;
+  }
+
   /// scene constructor
   Scene::Scene(GLWidget* act)
     :Object(this)
     ,picking(false)
     ,act(act)
+    ,_board(NULL)
     ,cam(Vec(0,0,100),Vec(0,0,0))
+    ,messages("Scene")
   {
+    this->setup();
+  }
+
+  void Scene::setup(){
     // define rotation axes
     // TODO: x/y coordinates of gui and engine seem not to match
     Vec toFront         (-1.0,  0.0,  0.0);
@@ -910,7 +928,9 @@ namespace KBX {
   }
   
   // scene destructor
-  Scene::~Scene() {}
+  Scene::~Scene() {
+    this->wipe();
+  }
    
   /// render the scene
   void Scene::_render(){
@@ -1026,6 +1046,10 @@ namespace KBX {
       if there is no object marked, automatically mark the field in the middle.
   */
   void Scene::markNext(int dx, int dy){
+    if(!this->_board){
+      this->messages.warning("Scene::markNext called without board!");
+      return;
+    }
     this->_board->getTile(this->markX, this->markY)->setMarkedState(false);
     if(this->markX+dx < this->_board->getNX())
       this->markX += dx;
@@ -1036,7 +1060,10 @@ namespace KBX {
 
   void Scene::select(){
     this->clearStates();
-    this->_board->getTile(this->markX, this->markY)->setSelectedState(true);
+    if(this->_board)
+      this->_board->getTile(this->markX, this->markY)->setSelectedState(true);
+    else 
+      this->messages.warning("Scene::select called without board!");
   }
 
 } // end namespace KBX

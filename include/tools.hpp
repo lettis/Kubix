@@ -24,8 +24,6 @@
 
 #include <QtOpenGL/QGLWidget>
 
-#include "gui.hpp"
-
 namespace KBX {
   template<class NumType> int sgn(NumType n);
   int sgn(float f);

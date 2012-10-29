@@ -41,6 +41,7 @@ int main(int argc, char** argv){
 
     KBX::GLWidget window;
     window.resize(800,600);
+    window.initializeGUI();
     window.show();
 
     return app.exec();

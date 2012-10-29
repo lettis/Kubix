@@ -247,6 +247,8 @@ namespace KBX {
     Game*  _game;
     Board* _board;
     
+    Logger messages;
+
     Camera cam;
     void _render();
     void _setColor(){};
@@ -259,6 +261,9 @@ namespace KBX {
     Vec getOrientation();
     void add(Object* obj);
     
+    void wipe();
+    void setup();
+
     void rotate(float angle, size_t direction);
     void zoom(float factor);
     void clearStates();
