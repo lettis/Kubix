@@ -96,6 +96,9 @@ namespace KBX {
   };
   
   class Scene;
+  class Die;
+  class Tile;
+
   // Object
   //  abstract class defining opengl object
   class Object{
@@ -170,16 +173,22 @@ namespace KBX {
   /// Die
   ///  defines a die
   class Die : public AnimObject{
-      static GLuint textures[];
-      static bool texturesLoaded;
-      static void loadTextures();
+    static GLuint textures[];
+    static bool texturesLoaded;
+    static void loadTextures();
+    
+    Tile* _tile;
 
     void _render();
     PlayColor _playColor;
   public:
-      const bool IS_KING;
-      Die(Scene* scene, Vec pos, PlayColor color);
-      Die(Scene* scene, Vec pos, PlayColor color, bool IS_KING);
+    const bool IS_KING;
+    
+    void setTile(Tile* t);
+    Tile* getTile();
+    
+    Die(Scene* scene, Vec pos, PlayColor color);
+    Die(Scene* scene, Vec pos, PlayColor color, bool IS_KING);
   };
   
   /// Board Tile
@@ -188,7 +197,14 @@ namespace KBX {
     void _render();
     Color basicColor;
     void setColor();
+
+    Die* _die;
+
   public:
+
+    Die* getDie();
+    void setDie(Die* d);
+
     Tile(Scene* scene);
     Tile(Scene* scene, Vec pos, Color color);
   };
