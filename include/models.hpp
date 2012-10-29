@@ -205,6 +205,9 @@ namespace KBX {
     Die* getDie();
     void setDie(Die* d);
 
+    void setMarkedState(bool marked);
+    void setSelectedState(bool selected);
+
     Tile(Scene* scene);
     Tile(Scene* scene, Vec pos, Color color);
   };

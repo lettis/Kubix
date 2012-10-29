@@ -194,21 +194,25 @@ namespace KBX {
     result.z = this->x*v.y - this->y*v.x;
     return result;
   }
+
   /// constructor initializing to pos=(0,0,0) and target=(0,0,-1)
   Camera::Camera(){
     this->position = Vec(0,0,0);
     this->target = Vec(0,0,-1);
   }
+
   /// constructor initializing to given pos and target=(0,0,-1)
   Camera::Camera(Vec pos){
     this->position = pos;
     this->target = Vec(0,0,-1);
   }
+
   /// constructor initializing to given pos and target
   Camera::Camera(Vec pos, Vec target){
     this->position = pos;
     this->target = target;
   }
+
   /// update the OpenGL camera perspective
   void Camera::updateView(){
     // set OpenGL camera
@@ -217,6 +221,7 @@ namespace KBX {
                0,1,0
     );
   }
+
   /// get orientation of camera
   Vec Camera::getOrientation(){
     return this->position.sub( this->target );
@@ -229,6 +234,7 @@ namespace KBX {
   void Camera::setTarget(Vec target){
     this->target = target;
   }
+
   /// set new position
   /**
       \param position the new position of the camera
@@ -236,6 +242,7 @@ namespace KBX {
   void Camera::setPosition(Vec position){
     this->position = position;
   }
+
   /// set new camera position by rotating around target
   /**
       \param angle angle of rotation [degrees]
@@ -263,6 +270,7 @@ namespace KBX {
       throw "cannot rotate in unknown direction";
     }
   }
+
   /// reset camera position by zooming in/out
   /**
       \param factor floating point number > 0, defines the zoom factor
@@ -282,32 +290,10 @@ namespace KBX {
     }
   }
   
-  /// clear all object states
-  /**
-     set all objects isSelected, isMarked and isHighlighted state to false
-  */
-  void Scene::clearStates(){
-    for(size_t id = 0; id < objList.size(); id++){
-      objList[id]->clearStates();
-    }
-  }
-
-  /// clear all tile states
-  /**
-     set all tiles isSelected, isMarked and isHighlighted state to false
-  */
-  void Board::clearStates(){
-    for (size_t x=0; x < this->_nX; x++){
-      for (size_t y=0; y < this->_nY; y++){
-        this->_tiles[x][y]->clearStates();
-      }
-    }
-  }
-
-  /// clear all states
+  /// load Object textures
   /*
-    set isSelected, isMarked and isHighlighted to false
-  */
+    TODO: documentation
+   */
   void Object::loadTexture(QString filename, GLuint* textures, size_t nTexture){
     QImage tex, img = QImage(filename);
     tex = QGLWidget::convertToGLFormat( img );
@@ -327,6 +313,11 @@ namespace KBX {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   }
 
+
+  /// clear all states
+  /*
+    set isSelected, isMarked and isHighlighted to false
+  */
   void Object::clearStates(){
     this->setSelectedState(false);
     this->setMarkedState(false);
@@ -351,6 +342,7 @@ namespace KBX {
       // and retrieve our own unique id from there
        //      ,id(Object::objectList.add(this)) 
   {}
+
   /// constructor setting the object's position
   Object::Object(Scene* scene, Vec pos) :
     _angle(0)
@@ -361,6 +353,7 @@ namespace KBX {
     ,isSelected(false)
     ,scene(scene)
   {}
+
   /// set object rotation (accumulatively)
   /**
       \param axis the axis around which the object will be rotated
@@ -436,7 +429,7 @@ namespace KBX {
       this->setColor();
     }
   }
-  
+
   /// set the object color before rendering
   void Object::setColor(){
     if(this->isSelected){
@@ -452,22 +445,6 @@ namespace KBX {
       return;
     }
     Color::WHITE.glColor();
-  }
-
-  void Tile::setColor(){
-    if(this->isSelected){
-      this->cSelected.glColor();
-      return;
-    }
-    if(this->isHighlighted){
-      this->cHighlighted.glColor();
-      return;
-    }
-    if(this->isMarked){
-      this->cMarked.glColor();
-      return;
-    }
-    this->basicColor.glColor();
   }
   
   /// inherit parent constructor
@@ -492,6 +469,8 @@ namespace KBX {
   {
     Die::loadTextures();
   }
+
+  /// inherit parent constructor and set color
   Die::Die(Scene* scene, Vec pos, PlayColor color, bool IS_KING) :
     AnimObject(scene, pos)
     ,_playColor(color)
@@ -515,6 +494,32 @@ namespace KBX {
       Die::loadTexture( QString(":res/sidekb.png"), Die::textures, 13 );
       Die::texturesLoaded = true;
     }
+  }
+
+  /// set the tile belonging to this die
+  /**
+     \param t new tile to be associated to this die
+  */
+  void Die::setTile(Tile* t){
+    if(this->_tile){
+      if(this->_tile->getDie() != this)
+	throw "Error: trying to dissociate die from unassociated tile!";
+      this->_tile->setDie(NULL);
+    }
+    this->_tile = t;
+    if(this->_tile){
+      if(this->_tile->getDie() != NULL)
+	throw "Error: trying to associate die to already occupied tile!";
+      this->_tile->setDie(this);
+    }
+  }
+
+  /// get the tile belonging to this die
+  /**
+     \return tile currently associated to this die
+  */
+  Tile* Die::getTile(){
+    return this->_tile;
   }
 
   /// render the die
@@ -630,6 +635,7 @@ namespace KBX {
       }
     }
   }
+
   /// free memory of allocated tiles in destructor
   Board::~Board(){
     std::vector<Tile*>::iterator ys;
@@ -639,6 +645,7 @@ namespace KBX {
       }
     }
   }
+
   /// display board by rendering every tile
   void Board::_render(){
     for (size_t x=0; x < this->_nX; x++){
@@ -648,6 +655,7 @@ namespace KBX {
       }
     }
   }
+
   /// return tile defined by its coordinates
   Tile* Board::getTile(size_t x, size_t y){
     if(x < this->_nX && y < this->_nY)
@@ -656,40 +664,44 @@ namespace KBX {
     return NULL;
   }
 
+  /// get the number of tile columns
   size_t Board::getNY(){
     return this->_nY;
   }
+
+  /// get the number of tile rows
   size_t Board::getNX(){
     return this->_nX;
   }
-  
-  void Die::setTile(Tile* t){
-    if(this->_tile){
-      if(this->_tile->getDie() != this)
-	throw "Error: trying to dissociate die from unassociated tile!";
-      this->_tile->setDie(NULL);
+ 
+  /// return object by clicked color id
+  /**
+     \param id id of color clicked
+     \return associated object
+  */
+  Object* Board::clicked(size_t id){
+    Object* obj;
+    for (size_t x=0; x < this->_nX; x++){
+      for (size_t y=0; y < this->_nY; y++){
+	obj = this->_tiles[x][y]->clicked(id);
+	if(obj) return obj;
+      }
     }
-    this->_tile = t;
-    if(this->_tile){
-      if(this->_tile->getDie() != NULL)
-	throw "Error: trying to associate die to already occupied tile!";
-      this->_tile->setDie(this);
+    return NULL;
+  }
+
+  /// clear all tile states
+  /**
+     set all tiles isSelected, isMarked and isHighlighted state to false
+  */
+  void Board::clearStates(){
+    for (size_t x=0; x < this->_nX; x++){
+      for (size_t y=0; y < this->_nY; y++){
+        this->_tiles[x][y]->clearStates();
+      }
     }
   }
-
-  Tile* Die::getTile(){
-    return this->_tile;
-  }
-
-  void Tile::setDie(Die* d){
-    this->_die = d;
-  }
-
-  Die* Tile::getDie(){
-    return this->_die;
-  }
-
-
+ 
   /// tile constructor
   Tile::Tile(Scene* scene, Vec pos, Color color) :
     Object(scene, pos)
@@ -697,6 +709,7 @@ namespace KBX {
     ,_die(NULL)
   {
   }
+
   /// render the tile
   void Tile::_render(){
     Logger log("Tile::_render");
@@ -733,7 +746,63 @@ namespace KBX {
      glVertex3f(1.0, -0.1, 0.0);
     glEnd();
   }
+
+  /// set the tile color before rendering
+  void Tile::setColor(){
+    if(this->isSelected){
+      this->cSelected.glColor();
+      return;
+    }
+    if(this->isHighlighted){
+      this->cHighlighted.glColor();
+      return;
+    }
+    if(this->isMarked){
+      this->cMarked.glColor();
+      return;
+    }
+    this->basicColor.glColor();
+  }
+
+  void Tile::setMarkedState(bool marked){
+    if(this->_die)
+      this->_die->setMarkedState(marked);
+    this->isMarked=marked;
+  }
   
+  void Tile::setSelectedState(bool selected){
+    if(this->_die)
+      this->_die->setSelectedState(selected);
+    else
+      this->isSelected=selected;
+  };
+
+  /// set the die belonging to this tile
+  /**
+     \param d new die to be associated to this tile
+  */
+  void Tile::setDie(Die* d){
+    this->_die = d;
+  }
+
+  /// get the die belonging to this tile
+  /**
+     \return die currently associated to this tile
+  */
+  Die* Tile::getDie(){
+    return this->_die;
+  }
+  
+  /// clear all object states
+  /**
+     set all objects isSelected, isMarked and isHighlighted state to false
+  */
+  void Scene::clearStates(){
+    for(size_t id = 0; id < objList.size(); id++){
+      objList[id]->clearStates();
+    }
+  }
+
   /// scene constructor
   Scene::Scene(GLWidget* act)
     :Object(this)
@@ -895,6 +964,12 @@ namespace KBX {
     this->cam.zoom( factor );
   }
 
+  /// display in picking mode
+  /**
+     renders the scene in picking-mode. all textures are disabled and
+     all object are drawn in a unique color to make them identifyable
+     by the color of the pixel clicked.
+  */
   void Scene::display_picking(){
     this->idcount = 0;
     this->picking = true;
@@ -929,22 +1004,19 @@ namespace KBX {
       return NULL;
     }
   }
+
+  /// return object by clicked color id
+  /**
+     \param id id of color clicked
+     \return associated object
+  */
   Object* Scene::clicked(size_t id){
     for(size_t i=0; i<this->objList.size(); i++){
       Object* obj = this->objList[i]->clicked(id);
       if(obj) return obj;
     }
   }
-  Object* Board::clicked(size_t id){
-    Object* obj;
-    for (size_t x=0; x < this->_nX; x++){
-      for (size_t y=0; y < this->_nY; y++){
-	obj = this->_tiles[x][y]->clicked(id);
-	if(obj) return obj;
-      }
-    }
-    return NULL;
-  }
+
   /// mark next object on the board
   /**
       \param dx relative coordinate in x direction depending on currently marked object
@@ -954,26 +1026,17 @@ namespace KBX {
       if there is no object marked, automatically mark the field in the middle.
   */
   void Scene::markNext(int dx, int dy){
-    Tile* t;
-    t = this->_board->getTile(this->markX, this->markY);
-    if(!t) throw "Error in Scene::markNext(): received NULL reference to OLD tile";
-    t->setMarkedState(false);
-    if(t->getDie()) t->getDie()->setMarkedState(false);
+    this->_board->getTile(this->markX, this->markY)->setMarkedState(false);
     if(this->markX+dx < this->_board->getNX())
       this->markX += dx;
     if(this->markY+dy < this->_board->getNY())
       this->markY += dy;
-    t = this->_board->getTile(this->markX, this->markY);
-    if(!t) throw "Error in Scene::markNext(): received NULL reference to NEW tile";
-    t->setMarkedState(true);
-    if(t->getDie()) t->getDie()->setMarkedState(true);
+    this->_board->getTile(this->markX, this->markY)->setMarkedState(true);
   }
 
   void Scene::select(){
     this->clearStates();
-    Tile* t = this->_board->getTile(this->markX, this->markY);
-    t->setSelectedState(true);
-    if(t->getDie()) t->getDie()->setSelectedState(true);
+    this->_board->getTile(this->markX, this->markY)->setSelectedState(true);
   }
 
 } // end namespace KBX
