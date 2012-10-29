@@ -646,11 +646,20 @@ namespace KBX {
       }
     }
   }
-  /// return gui id of tile defined by its coordinates
-  // TODO: this piece of code is deprecated and should be replaced by something else
-  //size_t Board::getTileId(size_t x, size_t y){
-  //    return this->_tiles[x][y]->id;
-  //}
+  /// return tile defined by its coordinates
+  Tile* Board::getTile(size_t x, size_t y){
+    if(x < this->_nX && y < this->_nY)
+      return this->_tiles[x][y];
+    else throw "Error: Tile index out of range";
+    return NULL;
+  }
+
+  size_t Board::getNY(){
+    return this->_nY;
+  }
+  size_t Board::getNX(){
+    return this->_nX;
+  }
   
   /// tile constructor
   Tile::Tile(Scene* scene, Vec pos, Color color) :
@@ -780,16 +789,8 @@ namespace KBX {
     // initialize the board and add it to the scene
     this->_board = new Board(this, 9, 9);
     this->add( this->_board );
-    // add mapping from id of board-tile (gui representation) to
-    // its xy-coordinates
-    /*
-      TODO: this piece of code is deprecated and should be replaced by something else
-    for (size_t x=0; x < 9; x++){
-        for (size_t y=0; y < 9; y++){
-            std::pair<size_t,size_t> xy(x,y);
-	    //            this->_id2Field[ this->_board->getTileId(x,y) ] = xy;
-        }
-    }*/
+    this->markX = 4;
+    this->markY = 4;
   }
   
   // scene destructor
@@ -906,37 +907,17 @@ namespace KBX {
       if there is no object marked, automatically mark the field in the middle.
   */
   void Scene::markNext(int dx, int dy){
-    // TODO: This piece of code is deprecated and should be replaced with something else
-//    int x,y;
-//    if (this->_markedId == CLEAR){
-//      // if no field marked, set centre field marked
-//      x = 3;
-//      y = 2;
-//    } else {
-//      if ( this->_id2Field.count( this->_markedId ) == 1 ){
-//        // prev. marked obj. was a field
-//        std::pair<size_t,size_t> xy = this->_id2Field[ this->_markedId ];
-//        x = xy.first;
-//        y = xy.second;
-//      } else {
-//        // prev. marked obj. was a die
-//        size_t dieId = this->_id2Die[ this->_markedId ];
-//        DieState* die = this->_game->getDie( dieId );
-//        x = die->x();
-//        y = die->y();
-//      }
-//      // check boundaries
-//      if ( 0 <= x+dx && x+dx < 9 ){
-//        x += dx;
-//      }
-//      if ( 0 <= y+dy && y+dy < 9 ){
-//        y += dy;
-//      }
-//    }
-//    size_t id = this->_board->getTileId( x, y );
-//    // mark the object
-//    //TODO: bullshit
-//    //this->_mark( id );
+    this->clearStates();
+    if(this->markX+dx < this->_board->getNX())
+      this->markX += dx;
+    if(this->markY+dy < this->_board->getNY())
+      this->markY += dy;
+    this->_board->getTile(this->markX, this->markY)->setMarkedState(true);
   }
-  
+
+  void Scene::select(){
+    this->clearStates();
+    this->_board->getTile(this->markX, this->markY)->setSelectedState(true);
+  }
+
 } // end namespace KBX

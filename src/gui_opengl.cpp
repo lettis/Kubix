@@ -128,8 +128,7 @@ namespace KBX {
         this->scene->markNext( 1,  0 );
         break;
       case Qt::Key_Space:
-        //this->scene->select();
-
+        this->scene->select();
       default:
         event->ignore();
         break;

@@ -103,6 +103,8 @@ namespace KBX {
     std::vector<float>   _angle;
     std::vector<Vec> _rotAxis;
     bool    _isVisible;
+    size_t markX;
+    size_t markY;
     Scene* scene;
     bool isSelected;
     bool isHighlighted;
@@ -200,12 +202,15 @@ namespace KBX {
     void _render();
     void _setColor(){};
   public:
+    size_t getNX();
+    size_t getNY();
     Board(Scene* scene, size_t rows, size_t cols);
     ~Board();
     Object* clicked(size_t id);
     void clearStates();
-    // TODO: check if getTileId is needed and reimplement if neccessary
-    size_t getTileId(size_t x, size_t y);
+    Die* getDie(size_t x, size_t y);
+    Tile* getTile(size_t x, size_t y);
+    
   };
   
   /// Defines the whole scene.
@@ -222,8 +227,6 @@ namespace KBX {
     
     Game*  _game;
     Board* _board;
-    std::map<size_t, size_t> _id2Die;
-    std::map<size_t, std::pair<size_t,size_t> > _id2Field;
     
     Camera cam;
     void _render();
@@ -244,7 +247,6 @@ namespace KBX {
     Object* pickObject(QPoint p);
 
     void markNext(int dx, int dy);
-    //TODO: implement Scene.select()
     void select();
     void display_picking();
 
