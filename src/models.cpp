@@ -195,16 +195,16 @@ namespace KBX {
     return result;
   }
 
-  /// constructor initializing to pos=(0,0,0) and target=(0,0,-1)
+  /// constructor initializing to pos=(0,0,0) and target=(0,1,0)
   Camera::Camera(){
     this->position = Vec(0,0,0);
-    this->target = Vec(0,0,-1);
+    this->target = Vec(0,1,0);
   }
 
-  /// constructor initializing to given pos and target=(0,0,-1)
+  /// constructor initializing to given pos and target=(0,1,0)
   Camera::Camera(Vec pos){
     this->position = pos;
-    this->target = Vec(0,0,-1);
+    this->target = Vec(0,1,0);
   }
 
   /// constructor initializing to given pos and target
@@ -218,7 +218,7 @@ namespace KBX {
     // set OpenGL camera
     gluLookAt( this->position.x, this->position.y, this->position.z,
                this->target.x  , this->target.y  , this->target.z,
-               0,1,0
+               0,0,1
     );
   }
 
@@ -255,14 +255,14 @@ namespace KBX {
     Vec v=this->position.sub( this->target );
     if (direction == this->HORIZONTAL){
       // rotate in horizontal plane, i.e. around the y-axis
-      v = v.rotate( Vec(0,1,0), angle );
+      v = v.rotate( Vec(0,0,1), angle );
       this->position = this->target.add( v );
     }else if (direction == this->VERTICAL){
       // rotate in vertical plane, i.e. around the axis
       // orthogonal to the y-axis and the vector v.
-      if (   (v.normalize().y < 0.99 && angle > 0)  
-           ||(v.normalize().y > -0.99 && angle < 0) ){
-          Vec ortho = v.cross( Vec(0,1,0) );
+      if (   (v.normalize().z < 0.99 && angle > 0)  
+           ||(v.normalize().z > -0.99 && angle < 0) ){
+          Vec ortho = v.cross( Vec(0,0,1) );
           v = v.rotate( ortho, angle );
           this->position = this->target.add( v );
       }
@@ -628,8 +628,8 @@ namespace KBX {
       for(size_t y=0; y < this->_nY; y++){
         tileColor = ( (x%2 + y%2)%2 == 0 ) ? dark : bright;
         tilePosition = Vec(   (float)x - (float)(this->_nX)/2
+			                      ,(float)y - (float)(this->_nY)/2 
 			                      ,-0.5
-			                      ,-(float)y + (float)(this->_nY)/2 -1
 			                 );
         this->_tiles[x][y] = new Tile(this->scene, tilePosition, tileColor );
       }
@@ -717,35 +717,35 @@ namespace KBX {
     Logger log("Tile::_render");
     glBegin( GL_QUADS );
      // upper face
-     glVertex3f(0.0, 0.0, 0.0);
-     glVertex3f(1.0, 0.0, 0.0);
-     glVertex3f(1.0, 0.0, 1.0);
-     glVertex3f(0.0, 0.0, 1.0);
-     // lower face
-     glVertex3f(0.0, -0.1, 0.0);
-     glVertex3f(1.0, -0.1, 0.0);
-     glVertex3f(1.0, -0.1, 1.0);
-     glVertex3f(0.0, -0.1, 1.0);
-     // sides
-     glVertex3f(0.0,  0.0, 0.0);
-     glVertex3f(1.0,  0.0, 0.0);
-     glVertex3f(1.0, -0.1, 0.0);
-     glVertex3f(0.0, -0.1, 0.0);
-  
-     glVertex3f(0.0,  0.0, 1.0);
-     glVertex3f(1.0,  0.0, 1.0);
-     glVertex3f(1.0, -0.1, 1.0);
-     glVertex3f(0.0, -0.1, 1.0);
-  
-     glVertex3f(0.0,  0.0, 0.0);
-     glVertex3f(0.0,  0.0, 1.0);
-     glVertex3f(0.0, -0.1, 1.0);
-     glVertex3f(0.0, -0.1, 0.0);
-  
-     glVertex3f(1.0,  0.0, 0.0);
-     glVertex3f(1.0,  0.0, 1.0);
-     glVertex3f(1.0, -0.1, 1.0);
-     glVertex3f(1.0, -0.1, 0.0);
+     glVertex3f(0.0, 0.0,  0.0);
+     glVertex3f(1.0, 0.0,  0.0);
+     glVertex3f(1.0, 1.0,  0.0);
+     glVertex3f(0.0, 1.0,  0.0);
+     // lower face	      
+     glVertex3f(0.0, 0.0, -0.1);
+     glVertex3f(1.0, 0.0, -0.1);
+     glVertex3f(1.0, 1.0, -0.1);
+     glVertex3f(0.0, 1.0, -0.1);
+     // sides		      
+     glVertex3f(0.0, 0.0,  0.0);
+     glVertex3f(1.0, 0.0,  0.0);
+     glVertex3f(1.0, 0.0, -0.1);
+     glVertex3f(0.0, 0.0, -0.1);
+  			      
+     glVertex3f(0.0, 1.0,  0.0);
+     glVertex3f(1.0, 1.0,  0.0);
+     glVertex3f(1.0, 1.0, -0.1);
+     glVertex3f(0.0, 1.0, -0.1);
+  			      
+     glVertex3f(0.0, 0.0,  0.0);
+     glVertex3f(0.0, 1.0,  0.0);
+     glVertex3f(0.0, 1.0, -0.1);
+     glVertex3f(0.0, 0.0, -0.1);
+  			      
+     glVertex3f(1.0, 0.0,  0.0);
+     glVertex3f(1.0, 1.0,  0.0);
+     glVertex3f(1.0, 1.0, -0.1);
+     glVertex3f(1.0, 0.0, -0.1);
     glEnd();
   }
 
@@ -821,7 +821,7 @@ namespace KBX {
     ,picking(false)
     ,act(act)
     ,_board(NULL)
-    ,cam(Vec(0,0,100),Vec(0,0,0))
+    ,cam(Vec(0,-100,20),Vec(0,0,0))
     ,messages("Scene")
   {
     this->setup();
@@ -829,13 +829,12 @@ namespace KBX {
 
   void Scene::setup(){
     // define rotation axes
-    // TODO: x/y coordinates of gui and engine seem not to match
     Vec toFront         (-1.0,  0.0,  0.0);
     Vec toBack          ( 1.0,  0.0,  0.0);
-    Vec toLeft          ( 0.0,  0.0,  1.0);
-    Vec toRight         ( 0.0,  0.0, -1.0);
-    Vec clockwise       ( 0.0, -1.0,  0.0);
-    Vec counterClockwise( 0.0,  1.0,  0.0);
+    Vec toLeft          ( 0.0,  1.0,  0.0);
+    Vec toRight         ( 0.0, -1.0,  0.0);
+    Vec clockwise       ( 0.0,  0.0, -1.0);
+    Vec counterClockwise( 0.0,  0.0,  1.0);
 
     // setup dice with correct orientation.
     // per definition, the dice are set up in the same order as the dice
@@ -854,70 +853,70 @@ namespace KBX {
     this->markY = 4;
   
     // white dice; w1 is in lower left corner, w8 in lower right
-    this->_dice.push_back( new Die(this, Vec(-4,0, 4), WHITE ) );
+    this->_dice.push_back( new Die(this, Vec(-4,-4, 0), WHITE ) );
     this->_dice.back()->rotate( counterClockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(0,0));
-    this->_dice.push_back( new Die(this, Vec(-3,0, 4), WHITE ) );
+    this->_dice.push_back( new Die(this, Vec(-3,-4, 0), WHITE ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(1,0));
-    this->_dice.push_back( new Die(this, Vec(-2,0, 4), WHITE ) );
+    this->_dice.push_back( new Die(this, Vec(-2,-4, 0), WHITE ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( counterClockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(2,0));
-    this->_dice.push_back( new Die(this, Vec(-1,0, 4), WHITE ) );
+    this->_dice.push_back( new Die(this, Vec(-1,-4, 0), WHITE ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(3,0));
-    this->_dice.push_back( new Die(this, Vec( 0,0, 4), WHITE, true ) );
+    this->_dice.push_back( new Die(this, Vec( 0,-4, 0), WHITE, true ) );
     this->_dice.back()->setTile(this->_board->getTile(4,0));
-    this->_dice.push_back( new Die(this, Vec( 1,0, 4), WHITE ) );
+    this->_dice.push_back( new Die(this, Vec( 1,-4, 0), WHITE ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(5,0));
-    this->_dice.push_back( new Die(this, Vec( 2,0, 4), WHITE ) );
+    this->_dice.push_back( new Die(this, Vec( 2,-4, 0), WHITE ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( counterClockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(6,0));
-    this->_dice.push_back( new Die(this, Vec( 3,0, 4), WHITE ) );
+    this->_dice.push_back( new Die(this, Vec( 3,-4, 0), WHITE ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( counterClockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(7,0));
-    this->_dice.push_back( new Die(this, Vec( 4,0, 4), WHITE ) );
+    this->_dice.push_back( new Die(this, Vec( 4,-4, 0), WHITE ) );
     this->_dice.back()->rotate( counterClockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(8,0));
 
     // black dice; b1 is in upper left corner, b8 in upper right
-    this->_dice.push_back( new Die(this, Vec(-4,0,-4), BLACK ) );
+    this->_dice.push_back( new Die(this, Vec(-4,4,0), BLACK ) );
     this->_dice.back()->rotate( clockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(0,8));
-    this->_dice.push_back( new Die(this, Vec(-3,0,-4), BLACK ) );
+    this->_dice.push_back( new Die(this, Vec(-3,4,0), BLACK ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(1,8));
-    this->_dice.push_back( new Die(this, Vec(-2,0,-4), BLACK ) );
+    this->_dice.push_back( new Die(this, Vec(-2,4,0), BLACK ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( clockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(2,8));
-    this->_dice.push_back( new Die(this, Vec(-1,0,-4), BLACK ) );
+    this->_dice.push_back( new Die(this, Vec(-1,4,0), BLACK ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(3,8));
-    this->_dice.push_back( new Die(this, Vec( 0,0,-4), BLACK, true ) );
+    this->_dice.push_back( new Die(this, Vec( 0,4,0), BLACK, true ) );
     this->_dice.back()->setTile(this->_board->getTile(4,8));
-    this->_dice.push_back( new Die(this, Vec( 1,0,-4), BLACK ) );
+    this->_dice.push_back( new Die(this, Vec( 1,4,0), BLACK ) );
     this->_dice.back()->rotate( toFront, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(5,8));
-    this->_dice.push_back( new Die(this, Vec( 2,0,-4), BLACK ) );
+    this->_dice.push_back( new Die(this, Vec( 2,4,0), BLACK ) );
     this->_dice.back()->rotate( toBack, 180 );
     this->_dice.back()->rotate( clockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(6,8));
-    this->_dice.push_back( new Die(this, Vec( 3,0,-4), BLACK ) );
+    this->_dice.push_back( new Die(this, Vec( 3,4,0), BLACK ) );
     this->_dice.back()->rotate( toBack, 90 );
     this->_dice.back()->rotate( clockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(7,8));
-    this->_dice.push_back( new Die(this, Vec( 4,0,-4), BLACK ) );
+    this->_dice.push_back( new Die(this, Vec( 4,4,0), BLACK ) );
     this->_dice.back()->rotate( clockwise, 90 );
     this->_dice.back()->setTile(this->_board->getTile(8,8));
 
@@ -1045,10 +1044,18 @@ namespace KBX {
       mark next object on relative coordinates depending on the currently marked object.
       if there is no object marked, automatically mark the field in the middle.
   */
-  void Scene::markNext(int dx, int dy){
+  void Scene::markNext(Vec delta){
     if(!this->_board){
       this->messages.warning("Scene::markNext called without board!");
       return;
+    }
+    int dx, dy;
+    if(fabs(delta.y) >= fabs(delta.x)){
+      dy = sgn(delta.y);
+      dx = 0;
+    } else {
+      dy = 0;
+      dx = sgn(delta.x);
     }
     this->_board->getTile(this->markX, this->markY)->setMarkedState(false);
     if(this->markX+dx < this->_board->getNX())

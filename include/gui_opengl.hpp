@@ -52,6 +52,8 @@ namespace KBX {
     bool needUpdate();
 
     Object* pickObject(QPoint p);
+
+    bool relativeMarking;
     
     Logger log;
     
@@ -67,6 +69,7 @@ namespace KBX {
   protected slots:
     void newGame();
     void setAutoRefresh(bool newAutoRefresh);
+    void setRelativeMarking(bool newRelativeMarking);
 
   public:
     GLWidget(QWidget *parent = NULL);

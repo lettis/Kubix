@@ -17,13 +17,22 @@ namespace KBX {
     btn_quit->setFocusPolicy( Qt::NoFocus );
     connect(btn_quit, SIGNAL( released() ), this, SLOT( close() ) );
     btn_quit->setToolTip("Quit Kubix");
-    btn_quit->move(500, 0);
+    btn_quit->move(700, 0);
 
     QCheckBox* chbx_autoRefresh = new QCheckBox(QApplication::translate("childwidget", "Auto-Refresh"), this);
     connect( chbx_autoRefresh,  SIGNAL( toggled(bool) ), this, SLOT(setAutoRefresh(bool)));
-    chbx_autoRefresh->move(600, 0);
+    chbx_autoRefresh->move(400, 0);
     chbx_autoRefresh->setToolTip("Auto-Refresh will cause the scene to be redrawn regularly, even if nothing changed meanwhile.\nWithout Auto-Refresh, the scene will only be redrawn if changes happened since the last redraw.\nOnly enable if you experience flickering or other graphics issues.");
     chbx_autoRefresh->setFocusPolicy( Qt::NoFocus );
+    this->setAutoRefresh(false);
+
+    QCheckBox* chbx_relativeMarking = new QCheckBox(QApplication::translate("childwidget", "relative Marking"), this);
+    connect( chbx_relativeMarking,  SIGNAL( toggled(bool) ), this, SLOT(setRelativeMarking(bool)));
+    chbx_relativeMarking->move(550, 0);
+    chbx_relativeMarking->setToolTip("Relative Marking will cause the keyboard controls for marking objects to behave relative to the current camera position.");
+    chbx_relativeMarking->setFocusPolicy( Qt::NoFocus );
+    this->setRelativeMarking(false);
+
   }
   
   void GLWidget::newGame(){
@@ -111,6 +120,12 @@ namespace KBX {
     this->autoRefresh = newAutoRefresh;
     this->changed();
   }
+
+
+  void GLWidget::setRelativeMarking(bool newRelativeMarking){
+    this->relativeMarking = newRelativeMarking;
+  }
+
   
   void GLWidget::resizeGL(int w, int h) {
     glViewport(0, 0, w, h);
@@ -183,10 +198,10 @@ namespace KBX {
         break;
 
       case Qt::Key_A:
-        this->scene->rotate(  angle, Camera::HORIZONTAL );
+        this->scene->rotate( -angle, Camera::HORIZONTAL );
         break;
       case Qt::Key_D:
-        this->scene->rotate( -angle, Camera::HORIZONTAL );
+        this->scene->rotate(  angle, Camera::HORIZONTAL );
         break;
       case Qt::Key_W:
         this->scene->rotate(  angle, Camera::VERTICAL );
@@ -202,16 +217,16 @@ namespace KBX {
         break;
 
       case Qt::Key_Up:
-        this->scene->markNext( 0,  1 );
+        this->scene->markNext( this->relativeMarking ? this->scene->getOrientation().rotate(Vec(0,0,1),180) : Vec(0,1,0)); 
         break;
       case Qt::Key_Down:
-        this->scene->markNext( 0, -1 );
+        this->scene->markNext( this->relativeMarking ? this->scene->getOrientation().rotate(Vec(0,0,1),0) : Vec(0,-1,0)); 
         break;
       case Qt::Key_Left:
-        this->scene->markNext(-1,  0 );
+        this->scene->markNext( this->relativeMarking ? this->scene->getOrientation().rotate(Vec(0,0,1),-90) : Vec(-1,0,0)); 
         break;
       case Qt::Key_Right:
-        this->scene->markNext( 1,  0 );
+        this->scene->markNext( this->relativeMarking ? this->scene->getOrientation().rotate(Vec(0,0,1),90) : Vec(1,0,0)); 
         break;
       case Qt::Key_Space:
         this->scene->select();

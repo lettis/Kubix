@@ -270,7 +270,7 @@ namespace KBX {
     Object* clicked(size_t id);
     Object* pickObject(QPoint p);
 
-    void markNext(int dx, int dy);
+    void markNext(Vec delta);
     void select();
     void display_picking();
 
