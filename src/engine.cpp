@@ -50,20 +50,30 @@ namespace KBX {
   {}
   
   /// initialize a move
-  Move::Move()
+  RelativeMove::RelativeMove()
     :  dx(0)
       ,dy(0)
       ,FIRST_X(false)
   {}
-  Move::Move(int dx, int dy, bool FIRST_X)
+  RelativeMove::RelativeMove(int dx, int dy, bool FIRST_X)
     :  dx(dx)
       ,dy(dy)
       ,FIRST_X(FIRST_X)
   {}
   /// invert the move (ie move back and reset to former position/orientation)
-  Move Move::invert(){
-      return Move( -dx, -dy, !this->FIRST_X);
+  RelativeMove RelativeMove::invert(){
+      return RelativeMove( -dx, -dy, !this->FIRST_X);
   }
+
+  Move::Move()
+    : dieIndex(-1),
+      rel( RelativeMove() )
+  {}
+
+  Move::Move(int dieIndex, RelativeMove rel)
+    : dieIndex(dieIndex),
+      rel(rel)
+  {}
   
   /// initialize a die's state
   DieState::DieState()
@@ -83,41 +93,41 @@ namespace KBX {
   /// save the number of possible moves per die value
   const size_t DieState::nPossibleMoves[7] = { 0, 4, 12, 20, 28, 36, 44 };
   /// save all possible moves
-  const std::vector< std::vector<Move> > DieState::possibleMoves = initPossibleMoves();
+  const std::vector< std::vector<RelativeMove> > DieState::possibleMoves = initPossibleMoves();
   /// calculate possible moves per die value and save to list
-  const std::vector< std::vector<Move> > DieState::initPossibleMoves(){
-    std::vector< std::vector<Move> > possibleMoves;
+  const std::vector< std::vector<RelativeMove> > DieState::initPossibleMoves(){
+    std::vector< std::vector<RelativeMove> > possibleMoves;
     // this is just a placeholder on index 0 and won't be used
-    possibleMoves.push_back( std::vector<Move>() );
+    possibleMoves.push_back( std::vector<RelativeMove>() );
     // calculate move possibilities for every die-value in every direction
     // (all theoretical possibilities, independent of board size, situation, etc)
     for (size_t val=1; val <= 6; val++){
-      possibleMoves.push_back( std::vector<Move>() );
+      possibleMoves.push_back( std::vector<RelativeMove>() );
       // reference to current list
-      std::vector<Move>& moveList = possibleMoves.back();
+      std::vector<RelativeMove>& moveList = possibleMoves.back();
       // moves in all four directions without turning
-      moveList.push_back( Move( val,    0,  true) );
-      moveList.push_back( Move(-val,    0,  true) );
-      moveList.push_back( Move(   0,  val, false) );
-      moveList.push_back( Move(   0, -val, false) );
+      moveList.push_back( RelativeMove( val,    0,  true) );
+      moveList.push_back( RelativeMove(-val,    0,  true) );
+      moveList.push_back( RelativeMove(   0,  val, false) );
+      moveList.push_back( RelativeMove(   0, -val, false) );
       // moves in all directions with turning
       for (size_t i=1; i < val; i++){
         /* +x,+y first x */
-        moveList.push_back( Move( i, val-i,  true) );
+        moveList.push_back( RelativeMove( i, val-i,  true) );
         /* -x,+y first x */
-        moveList.push_back( Move(-i, val-i,  true) );
+        moveList.push_back( RelativeMove(-i, val-i,  true) );
         /* +x,+y first y */
-        moveList.push_back( Move( i, val-i, false) );
+        moveList.push_back( RelativeMove( i, val-i, false) );
         /* -x,+y first y */
-        moveList.push_back( Move(-i, val-i, false) );
+        moveList.push_back( RelativeMove(-i, val-i, false) );
         /* +x,-y first x */
-        moveList.push_back( Move( i, -(val-i), true) );
+        moveList.push_back( RelativeMove( i, -(val-i), true) );
         /* -x,-y first x */
-        moveList.push_back( Move(-i, -(val-i), true) );
+        moveList.push_back( RelativeMove(-i, -(val-i), true) );
         /* +x,-y first y */
-        moveList.push_back( Move( i, -(val-i), false) );
+        moveList.push_back( RelativeMove( i, -(val-i), false) );
         /* -x,-y first y */
-        moveList.push_back( Move(-i, -(val-i), false) );
+        moveList.push_back( RelativeMove(-i, -(val-i), false) );
       }
     }
     return possibleMoves;
@@ -230,13 +240,11 @@ namespace KBX {
   /// initialize evaluation (without proper move, only rating)
   Evaluation::Evaluation(float rating)
     :  rating(rating)
-      ,dieIndex(-1)
       ,move(Move())
   {}
   /// initialize evaluation (with rating and move)
-  Evaluation::Evaluation(float rating, int dieIndex, Move move)
+  Evaluation::Evaluation(float rating, Move move)
     :  rating(rating)
-      ,dieIndex(dieIndex)
       ,move(move)
   {}
   
@@ -278,24 +286,24 @@ namespace KBX {
     }
   }
   /// move die over board
-  void Game::makeMove(size_t dieIndex, Move& move){
-    DieState& dieState = this->_dice[ dieIndex ];
+  void Game::makeMove(Move move){
+    DieState& dieState = this->_dice[ move.dieIndex ];
     // delete die from current position on board
     this->_fields[ dieState.x() ][ dieState.y() ] = CLEAR;
     // get directions for horizontal movement (aka x coordinate)
     int directionX, directionY;
-    if (move.dx < 0) { directionX = WEST; }
-    else             { directionX = EAST; }
+    if (move.rel.dx < 0) { directionX = WEST; }
+    else                 { directionX = EAST; }
     // get directions for vertical movement (aka y coordinate)
-    if (move.dy < 0) { directionY = SOUTH; }
-    else             { directionY = NORTH; }
+    if (move.rel.dy < 0) { directionY = SOUTH; }
+    else                 { directionY = NORTH; }
     // assume move to go first in y direction
-    int stepsFirst      = abs( move.dy );
+    int stepsFirst      = abs( move.rel.dy );
     int directionFirst  = directionY;
-    int stepsSec        = abs( move.dx );
+    int stepsSec        = abs( move.rel.dx );
     int directionSec    = directionX;
     // swap values if move goes in x direction first
-    if (move.FIRST_X){
+    if (move.rel.FIRST_X){
       swap( stepsFirst, stepsSec );
       swap( directionFirst, directionSec );
     }
@@ -314,7 +322,7 @@ namespace KBX {
       this->_dice[ keyOldDie ].kill();
     }
     // move die to new position
-    this->_fields[ dieState.x() ][ dieState.y() ] = dieIndex;
+    this->_fields[ dieState.x() ][ dieState.y() ] = move.dieIndex;
   }
 
   void Game::undoMove(){
@@ -325,61 +333,61 @@ namespace KBX {
   /**
       \returns true, if the move is valid, else false
   */
-  bool Game::moveIsValid(size_t dieIndex, Move& move){
-  	DieState dieState = this->_dice[ dieIndex ];
+  bool Game::moveIsValid(Move move){
+  	DieState dieState = this->_dice[ move.dieIndex ];
   	// check, if move is farer than die value allows
-  	if (dieState.getValue() != fabs(move.dx) + fabs(move.dy)){
+  	if (dieState.getValue() != fabs(move.rel.dx) + fabs(move.rel.dy)){
       return false;
     }
   	// check, if move goes off the board
-    if (   dieState.x() + move.dx < 0
-        || dieState.x() + move.dx > 8
-        || dieState.y() + move.dy < 0
-        || dieState.y() + move.dy > 8 ){
+    if (   dieState.x() + move.rel.dx < 0
+        || dieState.x() + move.rel.dx > 8
+        || dieState.y() + move.rel.dy < 0
+        || dieState.y() + move.rel.dy > 8 ){
         return false;
     }
   	// check, if there are dice on the way, that cannot be crossed
-  	if (move.FIRST_X){
+  	if (move.rel.FIRST_X){
   		// iterate over x-values (before y-iteration)
-      size_t end = fabs(move.dx);
-  		if ( move.dy == 0 ){
+      size_t end = fabs(move.rel.dx);
+  		if ( move.rel.dy == 0 ){
         end--;
       }
       for(size_t i=1; i <= end; i++){
-        if ( this->_fields[ dieState.x()+i*sgn(move.dx) ][ dieState.y() ]  != CLEAR ){
+        if ( this->_fields[ dieState.x()+i*sgn(move.rel.dx) ][ dieState.y() ]  != CLEAR ){
           // there is a die on the way => move is not possible
           return false;
         }
       }
       // iterate over y-values
-      for(size_t i=1; i < fabs(move.dy); i++){
-        if ( this->_fields[ dieState.x()+move.dx ][ dieState.y()+i*sgn(move.dy) ]  != CLEAR ){
+      for(size_t i=1; i < fabs(move.rel.dy); i++){
+        if ( this->_fields[ dieState.x()+move.rel.dx ][ dieState.y()+i*sgn(move.rel.dy) ]  != CLEAR ){
           // there is a die on the way => move is not possible
           return false;
         }
       }
     } else { // first move in y direction
-      size_t end = fabs(move.dy);
-      if ( move.dx == 0 ){
+      size_t end = fabs(move.rel.dy);
+      if ( move.rel.dx == 0 ){
         end--;
       }
       // iterate over y-values first
       for(size_t i=1; i <= end; i++){
-        if ( this->_fields[ dieState.x() ][ dieState.y()+i*sgn(move.dy) ] != CLEAR ){
+        if ( this->_fields[ dieState.x() ][ dieState.y()+i*sgn(move.rel.dy) ] != CLEAR ){
           // there is a die on the way => move is not possible
           return false;
         }
       }
       // iterate over x-values (after y-iteration)
-      for(size_t i=1; i < fabs(move.dy); i++){
-        if ( this->_fields[ dieState.x()+i*sgn(move.dx) ][ dieState.y()+move.dy ] != CLEAR ){
+      for(size_t i=1; i < fabs(move.rel.dy); i++){
+        if ( this->_fields[ dieState.x()+i*sgn(move.rel.dx) ][ dieState.y()+move.rel.dy ] != CLEAR ){
           // there is a die on the way => move is not possible
           return false;
         }
       }
     }
     // check target field
-    int idTarget = this->_fields[ dieState.x()+move.dx ][ dieState.y()+move.dy ];
+    int idTarget = this->_fields[ dieState.x()+move.rel.dx ][ dieState.y()+move.rel.dy ];
     if (idTarget != CLEAR ){
       // check if it is a dice of the enemy
       if( dieState.getColor() == this->_dice[ idTarget ].getColor() ){
@@ -473,18 +481,18 @@ namespace KBX {
       // iterate over max number of moves for given dice value (stored in state-array) 
       for (size_t i=0; i < DieState::nPossibleMoves[ value ]; i++){
         // check if this specific move is valid 
-        Move move = DieState::possibleMoves[value][i];
+        RelativeMove move = DieState::possibleMoves[value][i];
         
-        if ( this->moveIsValid( d, move ) ){
+        if ( this->moveIsValid( Move(d, move) ) ){
           // store all data to undo move later 
-          Move moveBack = move.invert();
+          RelativeMove moveBack = move.invert();
           // kill the die lying on the target field
           int idDieOnTarget = this->_fields[ this->_dice[d].x() + move.dx ] [ this->_dice[d].y() + move.dy ];
           if ( idDieOnTarget != CLEAR){
             this->_dice[ idDieOnTarget ].kill();
           }
           // perform move 
-          this->makeMove( d, move );
+          this->makeMove( Move(d, move) );
           // get rating, either directly
           // or by recursive call
           float rating;
@@ -495,7 +503,7 @@ namespace KBX {
             rating = -this->evaluateMoves( level-1, inverse(color), -beta, -alpha, false ).rating;
           }
           // undo move 
-          this->makeMove( d, moveBack );
+          this->makeMove( Move(d, moveBack) );
           // revive killed die on target field
           if( idDieOnTarget != CLEAR ){
             this->_dice[ idDieOnTarget ].revive();
@@ -512,7 +520,7 @@ namespace KBX {
                 bestCandidates.clear();
               }
               // add good move to candidate list
-              bestCandidates.push_back( Evaluation(rating, d, move) );
+              bestCandidates.push_back( Evaluation(rating, Move(d, move)) );
             }
           }
         }

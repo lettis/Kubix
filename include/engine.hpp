@@ -69,14 +69,22 @@ namespace KBX {
     Config(PlayMode mode, size_t cpuLevel, Strategy strategy);
   };
   
-  class Move{
+  class RelativeMove{
    public:
     int  dx;
     int  dy;
     bool FIRST_X;
+    RelativeMove();
+    RelativeMove(int dx, int dy, bool FIRST_X);
+    RelativeMove invert();
+  };
+
+  class Move {
+   public:
+    int dieIndex;
+    RelativeMove rel;
     Move();
-    Move(int dx, int dy, bool FIRST_X);
-    Move invert();
+    Move(int dieIndex, RelativeMove rel);
   };
   
   /// defines the current state of a die (i.e. position, orientation, value, color, etc.)
@@ -90,8 +98,8 @@ namespace KBX {
    public:
     static const size_t nPossibleMoves[7];
     // list of possible (relative) moves for a die
-    static const std::vector< std::vector<Move> > possibleMoves;
-    static const std::vector< std::vector<Move> > initPossibleMoves();
+    static const std::vector< std::vector<RelativeMove> > possibleMoves;
+    static const std::vector< std::vector<RelativeMove> > initPossibleMoves();
     
     DieState();
     DieState(int x, int y, PlayColor color, size_t state);
@@ -109,9 +117,8 @@ namespace KBX {
   class Evaluation{
    public:
           Evaluation(float rating);
-          Evaluation(float rating, int dieIndex, Move move);
+          Evaluation(float rating, Move move);
     float rating;
-    int   dieIndex;
     Move  move;
   };
   
@@ -121,8 +128,8 @@ namespace KBX {
     Config   _config;
    public:
                 Game(Config config);
-    bool        moveIsValid(size_t dieIndex, Move& move);
-    void        makeMove(size_t dieIndex, Move& move);
+    bool        moveIsValid(Move move);
+    void        makeMove(Move move);
     void        undoMove();
     PlayColor   getWinner();
     DieState*   getDie(size_t id);
