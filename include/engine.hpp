@@ -38,15 +38,15 @@
 
 namespace KBX {
   enum PlayMode{
-        HUMAN_HUMAN
-      , HUMAN_AI
-      , AI_HUMAN
+     HUMAN_HUMAN
+   , HUMAN_AI
+   , AI_HUMAN
   };
   
   enum PlayColor{
-        BLACK = -1
-      , WHITE =  1
-      , NONE_OF_BOTH = 0
+     BLACK = -1
+   , WHITE =  1
+   , NONE_OF_BOTH = 0
   };
   
   /* helper functions */

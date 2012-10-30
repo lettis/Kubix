@@ -1,5 +1,5 @@
 build instructions:
-  - be sure to have the SDL installed on your system
+  - be sure to have OpenGL and Qt installed on your system
   - cd ~KubixRoot
   - cmake .
   - make
