@@ -206,10 +206,9 @@ namespace KBX {
     float zoom  = 0.05;
     switch(event->key()) {
       case Qt::Key_Escape:
-        //close();
-        //TODO: escape should unmark/delect
+        // escape unmarks / delects
+        this->scene->clearStates();
         break;
-
       case Qt::Key_A:
         this->scene->rotate( -angle, Camera::HORIZONTAL );
         break;
