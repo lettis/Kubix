@@ -252,7 +252,7 @@ namespace KBX {
         break;
       case Qt::Key_Right:
         if ( this->relativeMarking ){
-          this->scene->markNext( this->scene->getOrientation().rotate(Vec(0,0,1),90) )
+          this->scene->markNext( this->scene->getOrientation().rotate(Vec(0,0,1),90) );
         } else { 
           this->scene->markNext( Vec(1,0,0) ); 
         }
