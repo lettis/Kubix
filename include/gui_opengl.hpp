@@ -20,6 +20,7 @@
 
 #include <QtOpenGL/QGLWidget>
 #include <QPoint>
+#include <QTimer>
 #include <QWheelEvent>
 
 #include "models.hpp"
@@ -30,14 +31,30 @@ namespace KBX {
   public:
     Color bgColor;
 
+    void changed();
+    void setAutoUpdate(bool newAutoUpdate);
+
   private:
-      Scene* scene;
-      QPoint mousePos;
+    Scene* scene;
+    QPoint mousePos;
+    QTimer* updateTimer;
+    
+    bool autoRefresh;
+    bool autoUpdate;
 
-      Object* pickObject(QPoint p);
+    int nBuffers;
+    // bfChange keeps track of the changes of the scene
+    // bfChange  > 0: perform a redraw for the next bfChange frames
+    // bfChange == 0: do not perform redraws
+    // bfChange  < 0: permanently perform redraws
+    int bfChange;
+    void updated();
+    bool needUpdate();
 
-      Logger log;
-  
+    Object* pickObject(QPoint p);
+    
+    Logger log;
+    
   protected:
     void initializeGL();
     void resizeGL(int w, int h);
@@ -49,6 +66,7 @@ namespace KBX {
 
   protected slots:
     void newGame();
+    void setAutoRefresh(bool newAutoRefresh);
 
   public:
     GLWidget(QWidget *parent = NULL);

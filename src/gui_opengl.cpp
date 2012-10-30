@@ -1,7 +1,6 @@
 #include "gui_opengl.hpp"
 #include "tools.hpp"
 #include "models.hpp"
-#include <QTimer>
 
 #include <GL/glu.h>
 #include <QtGui>
@@ -9,33 +8,34 @@
 namespace KBX {
 
   void GLWidget::initializeGUI(){
-    QPushButton *btn_newGame = new QPushButton(
-					    QApplication::translate("childwidget", "New Game"), this);
+    QPushButton *btn_newGame = new QPushButton(QApplication::translate("childwidget", "New Game"), this);
     btn_newGame->setFocusPolicy( Qt::NoFocus );
     connect(btn_newGame, SIGNAL( released() ), this, SLOT( newGame() ) );
+    btn_newGame->setToolTip("Start a new game\nThe current game state will be lost.");
 
-    QPushButton *btn_quit = new QPushButton(
-					    QApplication::translate("childwidget", "Quit"), this);
+    QPushButton *btn_quit = new QPushButton(QApplication::translate("childwidget", "Quit"), this);
     btn_quit->setFocusPolicy( Qt::NoFocus );
     connect(btn_quit, SIGNAL( released() ), this, SLOT( close() ) );
+    btn_quit->setToolTip("Quit Kubix");
     btn_quit->move(500, 0);
+
+    QCheckBox* chbx_autoRefresh = new QCheckBox(QApplication::translate("childwidget", "Auto-Refresh"), this);
+    connect( chbx_autoRefresh,  SIGNAL( toggled(bool) ), this, SLOT(setAutoRefresh(bool)));
+    chbx_autoRefresh->move(600, 0);
+    chbx_autoRefresh->setToolTip("Auto-Refresh will cause the scene to be redrawn regularly, even if nothing changed meanwhile.\nWithout Auto-Refresh, the scene will only be redrawn if changes happened since the last redraw.\nOnly enable if you experience flickering or other graphics issues.");
+    chbx_autoRefresh->setFocusPolicy( Qt::NoFocus );
   }
   
   void GLWidget::newGame(){
     this->scene->wipe();
     this->scene->setup();
   }
-    
 
   GLWidget::GLWidget(QWidget *parent)
     : QGLWidget(parent),
       log("act")
   {
     setMouseTracking(false);
-
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-    timer->start(30);
   }
 
   void GLWidget::initializeGL() {
@@ -47,9 +47,69 @@ namespace KBX {
                  , 0.0f
     );
     this->scene = new Scene(this);
-    // ...and tell the object list that our background color
-    // does not correspond to any kind of object
-    // Object::objectList.nullId = bgColor.id();
+
+    this->updateTimer = new QTimer(this);
+    connect(this->updateTimer, SIGNAL(timeout()), this, SLOT(update()));
+    this->updateTimer->start(30);
+    this->nBuffers = 2;
+    this->setAutoRefresh(false);
+    this->changed();
+  }
+
+  /// notify the GLWidget that the scene has changed
+  void GLWidget::changed(){
+    if(this->autoUpdate || this->autoRefresh)
+      this->bfChange = -1;
+    else
+      this->bfChange = this->nBuffers;
+  }
+
+  /// notify the GLWidget that the scene has been updated
+  void GLWidget::updated(){
+    if(! this->bfChange==0) this->bfChange--;
+  }
+
+
+  /// ask the GLWidget if the scene needs an update/redraw
+  /*
+    \return true if the scene needs to be redrawn, false otherwise
+   */
+  bool GLWidget::needUpdate(){
+    if(this->bfChange == 0) 
+      return false;
+    return true;
+  }
+
+  /// enable/disable automatic updating of the scene
+  /*
+    \param autoUpdate true if automatic updating should be enabled, false otherwise
+    
+    similar to setAutoRefresh, this function controls the automatic redrawing of the scene
+    however, while setAutoRefresh reflects user-controlled changes, setAutoUpdate is called
+    internally to temporarily enable/disable updating while graphical action is taking place
+    such as animated motions of objects
+  */
+  void GLWidget::setAutoUpdate(bool newAutoUpdate){
+    this->autoUpdate = newAutoUpdate;
+    this->changed();
+  }
+
+  /// enable/disable automatic scene refreshing
+  /**
+     \param newAutoRefresh true if automatic scene refreshing is desired, false otherwise
+
+     if set to true, this causes the scene to be redrawn on every timeout of updateTimer
+     wasting some GPU power for permanently redrawing a non-changing scene
+
+     on the other hand, if set to false (default), the changed(), updated() and needUpdate()
+     methods will be used to automatically keep track of whether the scene needs a redraw
+     or not, saving GPU power
+
+     ony set to true if there are probems with the graphics
+  */
+  void GLWidget::setAutoRefresh(bool newAutoRefresh){
+    this->autoRefresh = newAutoRefresh;
+    this->changed();
   }
   
   void GLWidget::resizeGL(int w, int h) {
@@ -64,9 +124,12 @@ namespace KBX {
   }
   
   void GLWidget::paintGL() {
-    glClearColor(  this->bgColor.r, this->bgColor.g, this->bgColor.b, 0.0f);
-    this->scene->display();
-    // if you want to debug the color-picking, use the this->scene->display_picking() instead
+    if(this->needUpdate()){
+      glClearColor(  this->bgColor.r, this->bgColor.g, this->bgColor.b, 0.0f);
+      this->scene->display();
+      // if you want to debug the color-picking, use the this->scene->display_picking() instead
+      this->updated();
+    }
   }
 
   void GLWidget::mousePressEvent(QMouseEvent *event) {
@@ -83,6 +146,7 @@ namespace KBX {
       this->mousePos = event->pos();
     } 
     event->ignore();
+    this->changed();
   }
 
   void GLWidget::mouseMoveEvent(QMouseEvent *event) {
@@ -98,6 +162,7 @@ namespace KBX {
         delta.y() * rotAngle,
         Camera::VERTICAL
       );
+      this->changed();
     } else {
       event->ignore();
     }
@@ -106,6 +171,7 @@ namespace KBX {
   void GLWidget::wheelEvent(QWheelEvent *event) {
     Logger l("wheel");
     this->scene->zoom( 1 - 0.0005 * event->delta() );
+    this->changed();
   }
   
   void GLWidget::keyPressEvent(QKeyEvent* event) {
@@ -153,5 +219,6 @@ namespace KBX {
         event->ignore();
         break;
     }
+    this->changed();
   }
 } // end namespace KBX
