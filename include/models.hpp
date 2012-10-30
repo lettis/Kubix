@@ -96,6 +96,9 @@ namespace KBX {
   };
   
   class Scene;
+  class Die;
+  class Tile;
+
   // Object
   //  abstract class defining opengl object
   class Object{
@@ -103,6 +106,8 @@ namespace KBX {
     std::vector<float>   _angle;
     std::vector<Vec> _rotAxis;
     bool    _isVisible;
+    size_t markX;
+    size_t markY;
     Scene* scene;
     bool isSelected;
     bool isHighlighted;
@@ -168,16 +173,22 @@ namespace KBX {
   /// Die
   ///  defines a die
   class Die : public AnimObject{
-      static GLuint textures[];
-      static bool texturesLoaded;
-      static void loadTextures();
+    static GLuint textures[];
+    static bool texturesLoaded;
+    static void loadTextures();
+    
+    Tile* _tile;
 
     void _render();
     PlayColor _playColor;
   public:
-      const bool IS_KING;
-      Die(Scene* scene, Vec pos, PlayColor color);
-      Die(Scene* scene, Vec pos, PlayColor color, bool IS_KING);
+    const bool IS_KING;
+    
+    void setTile(Tile* t);
+    Tile* getTile();
+    
+    Die(Scene* scene, Vec pos, PlayColor color);
+    Die(Scene* scene, Vec pos, PlayColor color, bool IS_KING);
   };
   
   /// Board Tile
@@ -186,7 +197,17 @@ namespace KBX {
     void _render();
     Color basicColor;
     void setColor();
+
+    Die* _die;
+
   public:
+
+    Die* getDie();
+    void setDie(Die* d);
+
+    void setMarkedState(bool marked);
+    void setSelectedState(bool selected);
+
     Tile(Scene* scene);
     Tile(Scene* scene, Vec pos, Color color);
   };
@@ -200,12 +221,15 @@ namespace KBX {
     void _render();
     void _setColor(){};
   public:
+    size_t getNX();
+    size_t getNY();
     Board(Scene* scene, size_t rows, size_t cols);
     ~Board();
     Object* clicked(size_t id);
     void clearStates();
-    // TODO: check if getTileId is needed and reimplement if neccessary
-    size_t getTileId(size_t x, size_t y);
+    Die* getDie(size_t x, size_t y);
+    Tile* getTile(size_t x, size_t y);
+    
   };
   
   /// Defines the whole scene.
@@ -222,9 +246,9 @@ namespace KBX {
     
     Game*  _game;
     Board* _board;
-    std::map<size_t, size_t> _id2Die;
-    std::map<size_t, std::pair<size_t,size_t> > _id2Field;
     
+    Logger messages;
+
     Camera cam;
     void _render();
     void _setColor(){};
@@ -237,14 +261,16 @@ namespace KBX {
     Vec getOrientation();
     void add(Object* obj);
     
+    void wipe();
+    void setup();
+
     void rotate(float angle, size_t direction);
     void zoom(float factor);
     void clearStates();
     Object* clicked(size_t id);
     Object* pickObject(QPoint p);
 
-    void markNext(int dx, int dy);
-    //TODO: implement Scene.select()
+    void markNext(Vec delta);
     void select();
     void display_picking();
 
