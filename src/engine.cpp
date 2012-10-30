@@ -284,9 +284,29 @@ namespace KBX {
     for (size_t x=0; x <= 8; x++){
       this->_fields[x][8] = x+9;
     }
+    // initialize last-move iterator
+    this->lastMove = this->moveList.begin();
   }
   /// move die over board
-  void Game::makeMove(Move move){
+  void Game::makeMove(Move move, bool storeMove=true){
+    if (storeMove){
+      // delete moves in list form here to end if lastMove != moveList.end()
+      if ( this->lastMove != this->moveList.end() ){
+        this->moveList.erase( this->lastMove, this->moveList.end() );
+        if ( this->moveList.empty() ){
+          // point to begin
+          this->lastMove = this->moveList.begin();
+        } else {
+          // point to last element
+          this->lastMove = this->moveList.end();
+          this->lastMove--;
+        }
+      }
+      // store move in move list and increase last-move pointer
+      this->moveList.push_back(move);
+      this->lastMove++;
+    }
+    //// perform move
     DieState& dieState = this->_dice[ move.dieIndex ];
     // delete die from current position on board
     this->_fields[ dieState.x() ][ dieState.y() ] = CLEAR;
@@ -325,8 +345,29 @@ namespace KBX {
     this->_fields[ dieState.x() ][ dieState.y() ] = move.dieIndex;
   }
 
-  void Game::undoMove(){
-    //TODO: implement, return move (for gui)
+  Move Game::undoMove(){
+    //TODO: untested
+    if ( this->lastMove != this->moveList.begin() ){
+      Move backMove = *this->lastMove;
+      backMove.rel = backMove.rel.invert();
+      this->makeMove( backMove, false );
+      this->lastMove--;
+      return backMove;
+    } else {
+      return Move();
+    }
+  }
+
+  Move Game::redoMove(){
+    //TODO: untested
+    if ( this->lastMove != this->moveList.end() ){
+      this->lastMove++;
+      Move forwardMove = *this->lastMove;
+      this->makeMove( forwardMove, false );
+      return forwardMove;
+    } else {
+      return Move();
+    }
   }
 
   /// check if a given move is valid

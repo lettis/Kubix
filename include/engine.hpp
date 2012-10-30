@@ -19,6 +19,7 @@
 #define ENGINE__HPP
 
 #include <stddef.h>
+#include <list>
 
 //TODO: enums!
 
@@ -126,11 +127,14 @@ namespace KBX {
   	int      _fields[9][9];
   	DieState _dice[18];
     Config   _config;
+    std::list<Move> moveList;
+    std::list<Move>::iterator lastMove;
    public:
                 Game(Config config);
     bool        moveIsValid(Move move);
-    void        makeMove(Move move);
-    void        undoMove();
+    void        makeMove(Move move, bool storeMove);
+    Move        undoMove();
+    Move        redoMove();
     PlayColor   getWinner();
     DieState*   getDie(size_t id);
     DieState*   getDie(size_t x, size_t y);
