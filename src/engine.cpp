@@ -599,6 +599,77 @@ namespace KBX {
     }
     return rating;
   }
+
+
+  bool Game::write(std::ostream& out) const {
+    for(size_t i=0; i<9; i++){
+      for(size_t j=0; j<9; j++){
+	out << this->_fields[i][j] << KBX::separator;
+      }
+      out << KBX::separator;
+    }
+    out << KBX::separator;
+
+    for(size_t i=0; i<18; i++){
+      if(!this->_dice[i].write(out)) return false;
+    }
+    
+    if(!this->_config.write(out)) return false;
+
+    size_t mpos = 0;
+    size_t i=0;
+    for(std::list<Move>::const_iterator m = this->moveList.begin(); m != this->moveList.end(); m++){
+      if(!m->write(out)) return false;
+      i++;
+      if(m == this->lastMove) mpos = i;
+    }
+    out << KBX::separator;
+    out << mpos << KBX::separator;
+
+    out << KBX::separator;
+    return true;
+  }
+
+
+  bool DieState::write(std::ostream& out) const {
+    out << this->_x << KBX::separator;
+    out << this->_y << KBX::separator;
+    out << this->_color << KBX::separator;
+    out << this->_formerState << KBX::separator;
+    out << this->_curState << KBX::separator;
+    out << KBX::separator;
+    return true;
+  }
+
+  bool Config::write(std::ostream& out) const {
+    out << this->mode << KBX::separator;
+    out << this->cpuLevel << KBX::separator;
+    this->strategy.write(out);
+    out << KBX::separator;
+    return true;
+  }
+
+  bool Strategy::write(std::ostream& out) const {
+    out << this->coeffDiceRatio << KBX::separator;
+    out << KBX::separator;
+    return true;
+  }
+
+  bool RelativeMove::write(std::ostream& out) const {
+    out << this->dx << KBX::separator;
+    out << this->dy << KBX::separator;
+    out << this->FIRST_X << KBX::separator;
+    out << KBX::separator;
+    return true;
+  };
+
+  bool Move::write(std::ostream& out) const {
+    out << this->dieIndex << KBX::separator;
+    if(!this->rel.write(out)) return false;
+    return true;
+  };
+
+
 } // end namespace KBX
 
 

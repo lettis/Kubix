@@ -4,6 +4,57 @@
 
 #include <GL/glu.h>
 #include <QtGui>
+#include <fstream>
+#include <sstream>
+
+
+/// show a 'Save File'-Dialog
+/**
+   Qt already offers a function for displaying 'save-file'-dialogs.
+   While this works flawlessly under Win and MacOS, automatically appending
+   the file extension does not work under *nix - hence this workaround/wrapper.
+
+   courtesy to Dave Mateer for this piece of code
+   http://stackoverflow.com/questions/9822177/is-there-a-way-to-automatically-add-extensions-to-a-file-using-qfiledialog-on-li
+*/
+QString showSaveFileDialog(QWidget *parent,
+			   const QString &title,
+			   const QString &directory,
+			   const QString &filter) {
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
+  return QFileDialog::getSaveFileName(parent,
+				      title,
+				      directory,
+				      filter);
+#else
+  QFileDialog dialog(parent, title, directory, filter);
+    if (parent) {
+      dialog.setWindowModality(Qt::WindowModal);
+    }
+    QRegExp filter_regex(QLatin1String("(?:^\\*\\.(?!.*\\()|\\(\\*\\.)(\\w+)"));
+    QStringList filters = filter.split(QLatin1String(";;"));
+    if (!filters.isEmpty()) {
+      dialog.setNameFilter(filters.first());
+      if (filter_regex.indexIn(filters.first()) != -1) {
+	dialog.setDefaultSuffix(filter_regex.cap(1));
+      }
+    }
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    if (dialog.exec() == QDialog::Accepted) {
+      QString file_name = dialog.selectedFiles().first();
+      QFileInfo info(file_name);
+      if (info.suffix().isEmpty() && !dialog.selectedNameFilter().isEmpty()) {
+	if (filter_regex.indexIn(dialog.selectedNameFilter()) != -1) {
+	  QString extension = filter_regex.cap(1);
+	  file_name += QLatin1String(".") + extension;
+	}
+      }
+      return file_name;
+    } else {
+      return QString();
+    }
+#endif  // Q_WS_MAC || Q_WS_WIN
+}
 
 namespace KBX {
 
@@ -51,6 +102,9 @@ namespace KBX {
   
   void GLWidget::newGame(){
     this->scene->wipe();
+    delete this->game;
+    // TODO: this is just a dummy for now, please replace by something that makes more sense!
+    this->game = new Game(Config(PlayMode(HUMAN_AI),3,Strategy(1)));
     this->scene->setup();
   }
 
@@ -59,6 +113,8 @@ namespace KBX {
       log("act")
   {
     setMouseTracking(false);
+    // TODO: this is just a dummy for now, please replace by something that makes more sense!
+    this->game = new Game(Config(PlayMode(HUMAN_AI),3,Strategy(1)));
   }
 
   void GLWidget::initializeGL() {
@@ -316,7 +372,21 @@ namespace KBX {
   }
 
   void GLWidget::save(){
-    this->log.info("Save!");
+    QString ofname =  showSaveFileDialog(this,
+					 "Save Game",
+					 QString(), 
+					 "Kubix Savegames (*.kbx)");
+    std::ofstream outfile(ofname.toStdString().c_str());
+    if(!outfile.is_open()){
+      this->log.warning("Error: cannot open file to save. Check filesystem permissions!");
+      return;
+    }
+    if(this->game->write(outfile)){
+      this->log.info("Saved game successfully to file '" + ofname.toStdString() + "'.");
+    } else {
+      this->log.warning("Error saving game!");
+    }
+    outfile.close();
   }
 
 } // end namespace KBX

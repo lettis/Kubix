@@ -37,6 +37,7 @@ namespace KBX {
 
   private:
     Scene* scene;
+    Game* game;
     QPoint mousePos;
     QTimer* updateTimer;
     

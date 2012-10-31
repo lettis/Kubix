@@ -20,6 +20,7 @@
 
 #include <stddef.h>
 #include <list>
+#include <iostream>
 
 //TODO: enums!
 
@@ -61,6 +62,7 @@ namespace KBX {
    public:
     const int coeffDiceRatio;
     Strategy( float coeffDiceRatio );
+    bool write(std::ostream& out) const;
   };
   
   /// configuration settings
@@ -70,6 +72,7 @@ namespace KBX {
   	const size_t cpuLevel;
   	const Strategy strategy;
     Config(PlayMode mode, size_t cpuLevel, Strategy strategy);
+    bool write(std::ostream& out) const;
   };
   
   class RelativeMove{
@@ -80,6 +83,7 @@ namespace KBX {
     RelativeMove();
     RelativeMove(int dx, int dy, bool FIRST_X);
     RelativeMove invert();
+    bool        write(std::ostream& out) const;
   };
 
   class Move {
@@ -88,6 +92,7 @@ namespace KBX {
     RelativeMove rel;
     Move();
     Move(int dieIndex, RelativeMove rel);
+    bool        write(std::ostream& out) const;
   };
   
   /// defines the current state of a die (i.e. position, orientation, value, color, etc.)
@@ -115,6 +120,8 @@ namespace KBX {
     size_t getColor();
     int    x();
     int    y();
+    bool   write(std::ostream& out) const;
+
   };
   
   class Evaluation{
@@ -143,6 +150,7 @@ namespace KBX {
     int         getDieId(size_t x, size_t y);
     float       rate(PlayColor color);
     Evaluation  evaluateMoves(int level, PlayColor color, float alpha, float beta, bool initialCall);
+    bool        write(std::ostream& out) const;
     // rating functions
     float       rateDiceRatio(PlayColor color);
   };
