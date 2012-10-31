@@ -43,6 +43,8 @@ namespace KBX {
    , HUMAN_AI
    , AI_HUMAN
   };
+
+  const static char* const separator = "\n";
   
   enum PlayColor{
      BLACK = -1

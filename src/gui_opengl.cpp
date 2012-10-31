@@ -13,6 +13,12 @@ namespace KBX {
     connect(btn_newGame, SIGNAL( released() ), this, SLOT( newGame() ) );
     btn_newGame->setToolTip("Start a new game\nThe current game state will be lost.");
 
+    QPushButton *btn_save = new QPushButton(QApplication::translate("childwidget", "Save"), this);
+    btn_save->setFocusPolicy( Qt::NoFocus );
+    btn_save->move(200, 0);
+    connect(btn_save, SIGNAL( released() ), this, SLOT( save() ) );
+    btn_save->setToolTip("Save the current game to resume playing later.");
+
     QPushButton *btn_quit = new QPushButton(QApplication::translate("childwidget", "Quit"), this);
     btn_quit->setFocusPolicy( Qt::NoFocus );
     connect(btn_quit, SIGNAL( released() ), this, SLOT( close() ) );
@@ -307,6 +313,10 @@ namespace KBX {
       if(obj) this->log.info("Selecting new object");
       this->scene->select(obj);
     }
+  }
+
+  void GLWidget::save(){
+    this->log.info("Save!");
   }
 
 } // end namespace KBX
