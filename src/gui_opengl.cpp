@@ -257,7 +257,7 @@ namespace KBX {
         }
         break;
       case Qt::Key_Space:
-        this->scene->select();
+        this->scene->selectMarked();
       default:
         event->ignore();
         break;

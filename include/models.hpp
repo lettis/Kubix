@@ -222,7 +222,7 @@ namespace KBX {
     Object* pickObject(QPoint p);
 
     void markNext(Vec delta);
-    void select();
+    void selectMarked();
     void display_picking();
 
     bool picking;

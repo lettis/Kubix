@@ -847,13 +847,12 @@ namespace KBX {
     glReadPixels(p.x(), viewport[3] - p.y(), 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
     size_t id = Color(pixel[0], pixel[1], pixel[2]).id();
     this->idcount = 0;
-    Logger l("Scene::pickObject");
-    l.info(stringprintf("clicked object id: %d",(int)id));
+    messages.info(stringprintf("clicked object id: %d",(int)id));
     Object* obj = this->clicked(id);
     if(obj){
       return obj;
     } else {
-      l.warning(stringprintf("sorry, could not find object matching id %d",(int)id));
+      messages.warning(stringprintf("sorry, could not find object matching id %d",(int)id));
       return NULL;
     }
   }
@@ -899,7 +898,7 @@ namespace KBX {
     this->_board->getTile(this->markX, this->markY)->setMarkedState(true);
   }
 
-  void Scene::select(){
+  void Scene::selectMarked(){
     this->clearStates();
     if(this->_board)
       this->_board->getTile(this->markX, this->markY)->setSelectedState(true);
