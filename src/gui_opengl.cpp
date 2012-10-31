@@ -133,11 +133,9 @@ namespace KBX {
     this->changed();
   }
 
-
   void GLWidget::setRelativeMarking(bool newRelativeMarking){
     this->relativeMarking = newRelativeMarking;
   }
-
   
   void GLWidget::resizeGL(int w, int h) {
     glViewport(0, 0, w, h);
@@ -159,6 +157,10 @@ namespace KBX {
     }
   }
 
+  /// handle a new mouse press event
+  /** 
+      \param event incoming event
+  */
   void GLWidget::mousePressEvent(QMouseEvent *event) {
     Object* obj;
     if (event->button() == Qt::LeftButton){
@@ -173,6 +175,10 @@ namespace KBX {
     this->changed();
   }
 
+  /// handle a new mouse move event
+  /** 
+      \param event incoming event
+  */
   void GLWidget::mouseMoveEvent(QMouseEvent *event) {
     float rotAngle = 0.2;
     if (event->buttons() & Qt::RightButton){
@@ -192,11 +198,19 @@ namespace KBX {
     }
   }
 
+/// handle a new mouse wheel event
+  /** 
+      \param event incoming event
+  */
   void GLWidget::wheelEvent(QWheelEvent *event) {
     this->scene->zoom( 1 - 0.0005 * event->delta() );
     this->changed();
   }
   
+  /// handle a new key event
+  /** 
+      \param event incoming event
+  */
   void GLWidget::keyPressEvent(QKeyEvent* event) {
     float angle = 5.0;
     float zoom  = 0.05;
@@ -262,6 +276,22 @@ namespace KBX {
     this->changed();
   }
 
+
+  /// handle a user selection event
+  /**
+     \param obj object that has been clicked/selected by the user
+
+     userSelect handles is called whenever a user selects a new object
+     either by mouse click, or by keyboard marking.
+
+     this function governs the gameplay!
+     
+     userSelect checks if there is already a selected object, 
+     what kind of object this is
+     and what is the corresponding action, for example
+     move a die, unselect the currently selected object
+     of select a new object and disregard the old selection
+  */
   void GLWidget::userSelect(Object* obj){
     if(!obj) this->log.info("Deselecting");
     Die* selectedDie = dynamic_cast<Die*>(this->scene->getSelected());
