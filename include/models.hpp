@@ -223,6 +223,7 @@ namespace KBX {
 
     void markNext(Vec delta);
     void selectMarked();
+    void select(Object* obj);
     void display_picking();
 
     bool picking;

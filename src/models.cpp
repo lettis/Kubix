@@ -906,4 +906,10 @@ namespace KBX {
       this->messages.warning("Scene::select called without board!");
   }
 
+  void Scene::select(Object* obj){
+    if(obj){
+        obj->setSelectedState(true);
+      }
+  }
+
 } // end namespace KBX

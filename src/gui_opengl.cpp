@@ -165,9 +165,7 @@ namespace KBX {
       // pick object
       scene->clearStates();
       obj = this->scene->pickObject( event->pos() );
-      if(obj){
-        obj->setSelectedState(true);
-      }
+      this->scene->select(obj);
     } else if (event->button() == Qt::RightButton){
       // save mouse position for scene rotation
       this->mousePos = event->pos();
