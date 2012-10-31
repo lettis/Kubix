@@ -21,6 +21,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <math.h>
 
 #include <QtOpenGL/QGLWidget>
 
@@ -62,16 +63,54 @@ namespace KBX {
       void warning(std::string msg);
       void error(std::string msg);
   };
-  
-  /// handles the textures for OpenGL
-  class TextureHandler{
-      GLuint* textures;
-      /// point external keys to internal index of textures array
-      std::map<size_t, size_t> keys;
-  public: 
-      void load(std::map<size_t, std::string> files);
-      GLuint get(size_t key);
+ 
+   /// defines a simple vector in 3d-cartesian coordinates
+  class Vec{
+  public:
+      float x;
+      float y;
+      float z;
+      Vec();
+      Vec(float x, float y, float z);
+      float norm();
+      Vec normalize();
+      Vec scale(float a);
+      Vec add(Vec v);
+      Vec sub(Vec v);
+      Vec rotate(Vec rotAxis, float angle);
+      Vec cross(Vec v);
   };
+  
+  /// defines a color
+  class Color{
+  public:
+      // define some colors fixed
+      static const Color BLACK;
+      static const Color WHITE;
+      static const Color GREY10;
+      static const Color GREY20;
+      static const Color GREY30;
+      static const Color GREY40;
+      static const Color GREY50;
+      static const Color GREY60;
+      static const Color GREY70;
+      static const Color GREY80;
+      static const Color GREY90;
+      static const Color RED;
+      static const Color GREEN;
+      static const Color BLUE;
+      float r;
+      float g;
+      float b;
+      Color();
+      Color(size_t id);
+      Color(unsigned char r, unsigned char g, unsigned char b);
+      Color(int r, int g, int b);
+      Color(float r, float g, float b);
+      size_t id() const;
+      void glColor() const;
+  };
+ 
 
 } // end namespace KBX
 #endif

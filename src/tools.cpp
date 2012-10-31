@@ -188,4 +188,172 @@ namespace KBX {
     va_end (args);      
     return std::string(buf);
   }  
+
+  // define fixed color values
+  const Color Color::BLACK (0.0f, 0.0f, 0.0f);
+  const Color Color::GREY10(0.1f, 0.1f, 0.1f);
+  const Color Color::GREY20(0.2f, 0.2f, 0.2f);
+  const Color Color::GREY30(0.3f, 0.3f, 0.3f);
+  const Color Color::GREY40(0.4f, 0.4f, 0.4f);
+  const Color Color::GREY50(0.5f, 0.5f, 0.5f);
+  const Color Color::GREY60(0.6f, 0.6f, 0.6f);
+  const Color Color::GREY70(0.7f, 0.7f, 0.7f);
+  const Color Color::GREY80(0.8f, 0.8f, 0.8f);
+  const Color Color::GREY90(0.9f, 0.9f, 0.9f);
+  const Color Color::WHITE (1.0f, 1.0f, 1.0f);
+  const Color Color::RED   (1.0f, 0.0f, 0.0f);
+  const Color Color::GREEN (0.0f, 1.0f, 0.0f);
+  const Color Color::BLUE  (0.0f, 0.0f, 1.0f);
+  // define different versions of the Color constructor depending on parameters
+  Color::Color(){
+    this->r = 0;
+    this->g = 0;
+    this->b = 0;
+  }
+  Color::Color(size_t id){
+    this->r = float(id%255)/255;
+    this->g = float((id/255)%255)/255;
+    this->b = float((id/(255*255))%255)/255;
+  }
+  Color::Color(unsigned char r, unsigned char g, unsigned char b){
+    this->r = float(r)/255;
+    this->g = float(g)/255;
+    this->b = float(b)/255;
+  }
+  Color::Color(int r, int g, int b){
+    this->r = float(r)/255;
+    this->g = float(g)/255;
+    this->b = float(b)/255;
+  }
+  Color::Color(float r, float g, float b){
+    this->r = r;
+    this->g = g;
+    this->b = b;
+  }
+  size_t Color::id() const {
+    // this implementation of a (distinct) color id can
+    // lead to pretty large numbers. it is used for the
+    // picking mechanism. every object gets an own color
+    // to distinguish it from the others when a click happens.
+    // therefore, the size of the id-value depends highly
+    // on the number of objects.
+    // additionally, the picking-mechanism starts by 
+    // assigning all shades of red before going over to the
+    // other numbers. we therefore dont expect much trouble here...
+    return this->r*255 + 255*255*this->g + 255*255*255*this->b;
+  }
+  /// call glColor3f with internal values
+  void Color::glColor() const {
+    glColor3f( this->r, this->g, this->b );
+  }
+
+  /// constructor initializing nullvector
+  Vec::Vec(){
+    this->x = 0;
+    this->y = 0;
+    this->z = 0;
+  }
+  /// constructor of the Vec class 
+  /**
+     \param x x-corrdinate (left-right in standard view)
+     \param y y-coordinate (up-down in standard view)
+     \param z z-coordinate (front-back in standard view)
+   */
+  Vec::Vec(float x, float y, float z){
+    this->x = x;
+    this->y = y;
+    this->z = z;
+  }
+  /// calculate the euclidian norm
+  float Vec::norm(){
+    float norm = 0;
+    norm += this->x * this->x;
+    norm += this->y * this->y;
+    norm += this->z * this->z;
+    return sqrt(norm);
+  }
+  /// normalize vector to length=1
+  /*
+      \returns the normalized vector
+  */
+  Vec Vec::normalize(){
+    float norm = this->norm();
+    if (norm != 0){
+      return Vec(   this->x/norm
+                  , this->y/norm
+                  , this->z/norm
+      );
+    }else{
+      throw "div by zero in vector norm";
+    }
+  }
+  /// scale vector by factor
+  /**
+      \param a scaling factor
+      scaling is done by multiplying every element of the vector by the factor a
+  */
+  Vec Vec::scale(float a){
+    return Vec( a*this->x, a*this->y, a*this->z );
+  }
+  /// add vector
+  /**
+      \param v the vector to be added
+  */
+  Vec Vec::add(Vec v){
+    return Vec( this->x + v.x
+               ,this->y + v.y
+               ,this->z + v.z
+    );
+  }
+  /// subtract vector
+  /**
+      \param v the vector to be subtracted
+  */
+  Vec Vec::sub(Vec v){
+    return this->add( v.scale(-1) );
+  }
+  /// rotate vector around given axis
+  /**
+      \param rotAxis the axis around which the vector is to be rotated
+      \param angle angle of rotation, given in degrees
+      \returns the rotated vector
+  */
+  Vec Vec::rotate(Vec rotAxis, float angle){
+    // first normalize rotation axis
+    rotAxis = rotAxis.normalize();
+    float n1=rotAxis.x;
+    float n2=rotAxis.y;
+    float n3=rotAxis.z;
+    // convert angle from degrees to radians
+    angle = angle * 2*M_PI / 360;
+    // calculate cosine, (1-cosine), sine
+    float c=cos(angle);
+    float cc=1-c;
+    float s=sin(angle);
+    // calculate new coordinates by applying rotation matrix
+    float x= this->x*(c+n1*n1*cc)
+            +this->y*(n1*n2*cc-n3*s)
+            +this->z*(n1*n3*cc+n2*s);
+    float y= this->x*(n2*n1*cc+n3*s)
+            +this->y*(c+n2*n2*cc)
+            +this->z*(n2*n3*cc-n1*s); 
+    float z= this->x*(n3*n1*cc-n2*s)
+            +this->y*(n3*n2*cc+n1*s)
+            +this->z*(c+n3*n3*cc);
+    return Vec(x,y,z);
+  }
+  /// calculate the cross product
+  /**
+      \param v the other vector
+      \returns the cross product  (this X v)
+  */
+  Vec Vec::cross(Vec v){
+    Vec result;
+    result.x = this->y*v.z - this->z*v.y;
+    result.y = this->z*v.x - this->x*v.z;
+    result.z = this->x*v.y - this->y*v.x;
+    return result;
+  }
+
+
 } // end namespace
