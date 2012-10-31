@@ -49,6 +49,7 @@ namespace KBX {
   class Scene;
   class Die;
   class Tile;
+  class Board;
 
   // Object
   //  abstract class defining opengl object
@@ -149,6 +150,7 @@ namespace KBX {
     Color basicColor;
     void setColor();
 
+    Board* _board;
     Die* _die;
 
   public:
@@ -159,8 +161,7 @@ namespace KBX {
     void setMarkedState(bool marked);
     void setSelectedState(bool selected);
 
-    Tile(Scene* scene);
-    Tile(Scene* scene, Vec pos, Color color);
+    Tile(Scene* scene, Board* board, Vec pos, Color color);
   };
   
   /// Board

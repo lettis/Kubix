@@ -465,7 +465,7 @@ namespace KBX {
 			                      ,(float)y - (float)(this->_nY)/2 
 			                      ,-0.5
 			                 );
-        this->_tiles[x][y] = new Tile(this->scene, tilePosition, tileColor );
+        this->_tiles[x][y] = new Tile(this->scene, this, tilePosition, tileColor );
       }
     }
   }
@@ -539,10 +539,11 @@ namespace KBX {
   }
  
   /// tile constructor
-  Tile::Tile(Scene* scene, Vec pos, Color color) :
+  Tile::Tile(Scene* scene, Board* board, Vec pos, Color color) :
     Object(scene, pos)
     ,basicColor(color)
     ,_die(NULL)
+    ,_board(board)
   {
   }
 
@@ -907,9 +908,9 @@ namespace KBX {
   }
 
   void Scene::select(Object* obj){
-    if(obj){
-        obj->setSelectedState(true);
-      }
+    if(!obj) throw "Scene::select cannot select NULL object";
+    obj->setSelectedState(true);
+    //    this->selected = obj;
   }
 
 } // end namespace KBX
