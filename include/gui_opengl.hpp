@@ -33,6 +33,7 @@ namespace KBX {
 
     void changed();
     void setAutoUpdate(bool newAutoUpdate);
+    void userSelect(Object* obj);
 
   private:
     Scene* scene;

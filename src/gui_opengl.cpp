@@ -164,10 +164,7 @@ namespace KBX {
     if (event->button() == Qt::LeftButton){
       // pick object
       scene->clearStates();
-      obj = this->scene->pickObject( event->pos() );
-      if(obj){
-	this->scene->select(obj);
-      }
+      this->userSelect(this->scene->pickObject( event->pos() ));
     } else if (event->button() == Qt::RightButton){
       // save mouse position for scene rotation
       this->mousePos = event->pos();
@@ -196,7 +193,6 @@ namespace KBX {
   }
 
   void GLWidget::wheelEvent(QWheelEvent *event) {
-    Logger l("wheel");
     this->scene->zoom( 1 - 0.0005 * event->delta() );
     this->changed();
   }
@@ -205,63 +201,82 @@ namespace KBX {
     float angle = 5.0;
     float zoom  = 0.05;
     switch(event->key()) {
-      case Qt::Key_Escape:
-        // escape unmarks / delects
-        this->scene->clearStates();
-        break;
-      case Qt::Key_A:
-        this->scene->rotate( -angle, Camera::HORIZONTAL );
-        break;
-      case Qt::Key_D:
-        this->scene->rotate(  angle, Camera::HORIZONTAL );
-        break;
-      case Qt::Key_W:
-        this->scene->rotate(  angle, Camera::VERTICAL );
-        break;
-      case Qt::Key_S:
-        this->scene->rotate( -angle, Camera::VERTICAL );
-        break;
-      case Qt::Key_Q:
-        this->scene->zoom( 1.0 + zoom );
-        break;
-      case Qt::Key_E:
-        this->scene->zoom( 1.0 - zoom );
-        break;
-
-      case Qt::Key_Up:
-        if ( this->relativeMarking ){
-          this->scene->markNext( this->scene->getOrientation().rotate(Vec(0,0,1),180) );
-        } else { 
-          this->scene->markNext( Vec(0,1,0) );
-        }
-        break;
-      case Qt::Key_Down:
-        if ( this->relativeMarking ){
-          this->scene->markNext( this->scene->getOrientation().rotate(Vec(0,0,1),0) );
-        } else {
-          this->scene->markNext( Vec(0,-1,0) ); 
-        }
-        break;
-      case Qt::Key_Left:
-        if ( this->relativeMarking ){
-          this->scene->markNext( this->scene->getOrientation().rotate(Vec(0,0,1),-90) );
-        } else {
-          this->scene->markNext( Vec(-1,0,0) ); 
-        }
-        break;
-      case Qt::Key_Right:
-        if ( this->relativeMarking ){
-          this->scene->markNext( this->scene->getOrientation().rotate(Vec(0,0,1),90) );
-        } else { 
-          this->scene->markNext( Vec(1,0,0) ); 
-        }
-        break;
-      case Qt::Key_Space:
-        this->scene->selectMarked();
-      default:
-        event->ignore();
-        break;
+    case Qt::Key_Escape:
+      // escape unmarks / delects
+      this->scene->clearStates();
+      break;
+    case Qt::Key_A:
+      this->scene->rotate( -angle, Camera::HORIZONTAL );
+      break;
+    case Qt::Key_D:
+      this->scene->rotate(  angle, Camera::HORIZONTAL );
+      break;
+    case Qt::Key_W:
+      this->scene->rotate(  angle, Camera::VERTICAL );
+      break;
+    case Qt::Key_S:
+      this->scene->rotate( -angle, Camera::VERTICAL );
+      break;
+    case Qt::Key_Q:
+      this->scene->zoom( 1.0 + zoom );
+      break;
+    case Qt::Key_E:
+      this->scene->zoom( 1.0 - zoom );
+      break;
+      
+    case Qt::Key_Up:
+      if ( this->relativeMarking ){
+	this->scene->markNext( this->scene->getOrientation().rotate(Vec(0,0,1),180) );
+      } else { 
+	this->scene->markNext( Vec(0,1,0) );
+      }
+      break;
+    case Qt::Key_Down:
+      if ( this->relativeMarking ){
+	this->scene->markNext( this->scene->getOrientation().rotate(Vec(0,0,1),0) );
+      } else {
+	this->scene->markNext( Vec(0,-1,0) ); 
+      }
+      break;
+    case Qt::Key_Left:
+      if ( this->relativeMarking ){
+	this->scene->markNext( this->scene->getOrientation().rotate(Vec(0,0,1),-90) );
+      } else {
+	this->scene->markNext( Vec(-1,0,0) ); 
+      }
+      break;
+    case Qt::Key_Right:
+      if ( this->relativeMarking ){
+	this->scene->markNext( this->scene->getOrientation().rotate(Vec(0,0,1),90) );
+      } else { 
+	this->scene->markNext( Vec(1,0,0) ); 
+      }
+      break;
+    case Qt::Key_Space: 
+      this->userSelect(this->scene->getMarked());
+      break;
+    default:
+      event->ignore();
+      break;
     }
     this->changed();
   }
+
+  void GLWidget::userSelect(Object* obj){
+    if(!obj) this->log.info("Deselecting");
+    Die* selectedDie = dynamic_cast<Die*>(this->scene->getSelected());
+    Tile* clickedTile = dynamic_cast<Tile*>(obj);
+    if(!clickedTile){
+      Die* d = dynamic_cast<Die*>(obj);
+      if(d)clickedTile = d->getTile();
+    }
+    if(selectedDie && clickedTile){
+      this->log.info("MOVE!!");
+      this->scene->select(NULL);
+    } else {
+      if(obj) this->log.info("Selecting new object");
+      this->scene->select(obj);
+    }
+  }
+
 } // end namespace KBX

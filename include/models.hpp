@@ -154,14 +154,16 @@ namespace KBX {
     Die* _die;
 
   public:
-
+    const size_t boardX;
+    const size_t boardY;
+    
     Die* getDie();
     void setDie(Die* d);
 
     void setMarkedState(bool marked);
     void setSelectedState(bool selected);
 
-    Tile(Scene* scene, Board* board, Vec pos, Color color);
+    Tile(Scene* scene, Board* board, size_t boardX, size_t boardY, Vec pos, Color color);
   };
   
   /// Board
@@ -199,6 +201,8 @@ namespace KBX {
     Game*  _game;
     Board* _board;
     
+    Object* selected;
+
     Logger messages;
 
     Camera cam;
@@ -223,7 +227,8 @@ namespace KBX {
     Object* pickObject(QPoint p);
 
     void markNext(Vec delta);
-    void selectMarked();
+    Object* getMarked();
+    Object* getSelected();
     void select(Object* obj);
     void display_picking();
 

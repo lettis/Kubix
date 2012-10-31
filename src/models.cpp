@@ -465,7 +465,7 @@ namespace KBX {
 			                      ,(float)y - (float)(this->_nY)/2 
 			                      ,-0.5
 			                 );
-        this->_tiles[x][y] = new Tile(this->scene, this, tilePosition, tileColor );
+        this->_tiles[x][y] = new Tile(this->scene, this, x, y, tilePosition, tileColor );
       }
     }
   }
@@ -539,11 +539,13 @@ namespace KBX {
   }
  
   /// tile constructor
-  Tile::Tile(Scene* scene, Board* board, Vec pos, Color color) :
+  Tile::Tile(Scene* scene, Board* board, size_t boardX, size_t boardY, Vec pos, Color color) :
     Object(scene, pos)
     ,basicColor(color)
     ,_die(NULL)
     ,_board(board)
+    ,boardX(boardX)
+    ,boardY(boardY)
   {
   }
 
@@ -686,7 +688,8 @@ namespace KBX {
     this->add( this->_board );
     this->markX = 4;
     this->markY = 4;
-  
+    this->selected = NULL;
+
     // white dice; w1 is in lower left corner, w8 in lower right
     this->_dice.push_back( new Die(this, Vec(-4,-4, 0), WHITE ) );
     this->_dice.back()->rotate( counterClockwise, 90 );
@@ -899,18 +902,24 @@ namespace KBX {
     this->_board->getTile(this->markX, this->markY)->setMarkedState(true);
   }
 
-  void Scene::selectMarked(){
+  Object* Scene::getMarked(){
     this->clearStates();
-    if(this->_board)
-      this->_board->getTile(this->markX, this->markY)->setSelectedState(true);
-    else 
-      this->messages.warning("Scene::select called without board!");
+    if(! this->_board){
+      throw "Scene::getMarked called without board!";
+    }
+    Tile* t =  this->_board->getTile(this->markX, this->markY);
+    if(t->getDie()) return t->getDie();
+    else return t;
   }
 
   void Scene::select(Object* obj){
-    if(!obj) throw "Scene::select cannot select NULL object";
-    obj->setSelectedState(true);
-    //    this->selected = obj;
+    if(obj){    
+      obj->setSelectedState(true);
+    }
+    this->selected = obj;
   }
 
+  Object* Scene::getSelected(){
+    return this->selected;
+  }
 } // end namespace KBX
