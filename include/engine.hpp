@@ -45,7 +45,7 @@ namespace KBX {
    , AI_HUMAN
   };
 
-  const static char* const separator = "\n";
+  const static char separator = '\n';
   
   enum PlayColor{
      BLACK = -1
@@ -60,19 +60,21 @@ namespace KBX {
   /// defines playing strategy of AI
   class Strategy{
    public:
-    const int coeffDiceRatio;
+    int coeffDiceRatio;
     Strategy( float coeffDiceRatio );
     bool write(std::ostream& out) const;
+    bool        read(std::istream& in);
   };
   
   /// configuration settings
   class Config{
    public:
-  	const PlayMode mode;
-  	const size_t cpuLevel;
-  	const Strategy strategy;
+  	PlayMode mode;
+  	size_t cpuLevel;
+  	Strategy strategy;
     Config(PlayMode mode, size_t cpuLevel, Strategy strategy);
     bool write(std::ostream& out) const;
+    bool        read(std::istream& in);
   };
   
   class RelativeMove{
@@ -84,6 +86,7 @@ namespace KBX {
     RelativeMove(int dx, int dy, bool FIRST_X);
     RelativeMove invert();
     bool        write(std::ostream& out) const;
+    bool        read(std::istream& in);
   };
 
   class Move {
@@ -93,6 +96,7 @@ namespace KBX {
     Move();
     Move(int dieIndex, RelativeMove rel);
     bool        write(std::ostream& out) const;
+    bool        read(std::istream& in);
   };
   
   /// defines the current state of a die (i.e. position, orientation, value, color, etc.)
@@ -121,7 +125,7 @@ namespace KBX {
     int    x();
     int    y();
     bool   write(std::ostream& out) const;
-
+    bool        read(std::istream& in);
   };
   
   class Evaluation{
@@ -151,6 +155,7 @@ namespace KBX {
     float       rate(PlayColor color);
     Evaluation  evaluateMoves(int level, PlayColor color, float alpha, float beta, bool initialCall);
     bool        write(std::ostream& out) const;
+    bool        read(std::istream& in);
     // rating functions
     float       rateDiceRatio(PlayColor color);
   };

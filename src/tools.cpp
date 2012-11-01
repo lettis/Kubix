@@ -61,7 +61,8 @@ namespace KBX {
       a = b;
       b = buf;
   }
-  
+
+
   /// initialize logger and give it a name
   /**
       \param name logger will print this name in the logs

@@ -601,21 +601,82 @@ namespace KBX {
   }
 
 
+
+  /// proceed (read version) 
+  /**
+     walk forward in the stream by one entry
+     usually used after reading one double-terminated blocks
+
+     \param in incoming data stream
+     \return true if entry was empty, false otherwise
+  */
+  bool proceed(std::istream& in){
+    std::string buffer;
+    getline ( in, buffer, KBX::separator );    
+    if(buffer.size() != 0) return false;
+    return true;
+  }
+
+  /// proceed (write version) 
+  /**
+     push an empty entry into the data stream
+
+     \param out outgoing data stream
+     \return true
+  */
+  bool proceed(std::ostream& out){
+    out << KBX::separator;
+    return true;
+  }
+
+  /// read one entry from the stream
+  /** 
+      read one entry from the data stream 
+      and store it at the given address
+      
+      ** capability of casting T to int is mandatory **
+
+      \param in incoming data stream
+      \param t reference to target object
+      \return true if reading was successful, false otherwise
+  */
+  template<class T>
+  bool readEntry(std::istream& in, T& t){
+    std::string buffer;
+    getline ( in, buffer, KBX::separator );    
+    if(buffer.size() == 0) return false;
+    t = (T)atoi(buffer.c_str());
+    return true;
+  }
+
+
+/// write one entry to the stream
+  /** 
+      write one entry to the data stream 
+      
+      \param out outgoing data stream
+      \param t reference to data object
+      \return true 
+  */
+  template<class T>
+  bool writeEntry(std::ostream& out, const T& t){
+    out << t << KBX::separator;
+    return true;
+  }
+
+  /// serializer
   bool Game::write(std::ostream& out) const {
     for(size_t i=0; i<9; i++){
       for(size_t j=0; j<9; j++){
-	out << this->_fields[i][j] << KBX::separator;
+	writeEntry<int>(out, this->_fields[i][j]);
       }
-      out << KBX::separator;
+      proceed(out);
     }
-    out << KBX::separator;
-
+    proceed(out);
     for(size_t i=0; i<18; i++){
       if(!this->_dice[i].write(out)) return false;
     }
-    
     if(!this->_config.write(out)) return false;
-
     size_t mpos = 0;
     size_t i=0;
     for(std::list<Move>::const_iterator m = this->moveList.begin(); m != this->moveList.end(); m++){
@@ -623,52 +684,126 @@ namespace KBX {
       i++;
       if(m == this->lastMove) mpos = i;
     }
-    out << KBX::separator;
-    out << mpos << KBX::separator;
-
-    out << KBX::separator;
+    proceed(out);
+    writeEntry<int>(out,mpos);
+    proceed(out);
     return true;
   }
 
+  /// deserializer
+  bool Game::read(std::istream& in) {
+    for(size_t i=0; i<9; i++){
+      for(size_t j=0; j<9; j++){
+	if(!readEntry<int>(in,this->_fields[i][j])) return false;
+      }
+      if(!proceed(in)) return false;
+    }
+    if(!proceed(in)) return false;
+    for(size_t i=0; i<18; i++){
+      if(!this->_dice[i].read(in)) return false;
+    }
+    if(!this->_config.read(in)) return false;
+    Move m;
+    while(m.read(in)){
+      this->moveList.push_back(m);
+    }
+    int mpos;
+    if (!readEntry<int>(in, mpos)) return false;
+    if(!proceed(in)) return false;
+    this->lastMove = this->moveList.end();
+    for(int i=moveList.size(); i >=mpos; i--){
+      this->lastMove--;
+    }
+    return true;
+  }
 
+  /// serializer
   bool DieState::write(std::ostream& out) const {
-    out << this->_x << KBX::separator;
-    out << this->_y << KBX::separator;
-    out << this->_color << KBX::separator;
-    out << this->_formerState << KBX::separator;
-    out << this->_curState << KBX::separator;
-    out << KBX::separator;
+    writeEntry<int>(out,this->_x);
+    writeEntry<int>(out,this->_y);
+    writeEntry<int>(out,this->_color);
+    writeEntry<int>(out,this->_formerState);
+    writeEntry<int>(out,this->_curState);
+    proceed(out);
     return true;
   }
 
+  /// deserializer
+  bool DieState::read(std::istream& in) {
+    if(!readEntry<int>(in,this->_x)) return false;
+    if(!readEntry<int>(in,this->_y)) return false;
+    if(!readEntry<PlayColor>(in,this->_color)) return false;
+    if(!readEntry<size_t>(in,this->_formerState)) return false;
+    if(!readEntry<size_t>(in,this->_curState)) return false;
+    if(!proceed(in)) return false;
+    return true;
+  }
+
+  /// serializer
   bool Config::write(std::ostream& out) const {
-    out << this->mode << KBX::separator;
-    out << this->cpuLevel << KBX::separator;
+    writeEntry<int>(out,this->mode);
+    writeEntry<int>(out,this->cpuLevel);
     this->strategy.write(out);
-    out << KBX::separator;
+    proceed(out);
     return true;
   }
 
+  /// deserializer
+  bool Config::read(std::istream& in) {
+    if(!readEntry<PlayMode>(in,this->mode)) return false;
+    if(!readEntry<size_t>(in,this->cpuLevel)) return false;
+    this->strategy.read(in);
+    if(!proceed(in)) return false;
+    return true;
+  }
+
+  /// serializer
   bool Strategy::write(std::ostream& out) const {
-    out << this->coeffDiceRatio << KBX::separator;
-    out << KBX::separator;
+    writeEntry<int>(out,this->coeffDiceRatio);
+    proceed(out);
     return true;
   }
 
+  /// deserializer
+  bool Strategy::read(std::istream& in) {
+    if(!readEntry<int>(in,this->coeffDiceRatio)) return false;
+    if(!proceed(in)) return false;
+    return true;
+  }
+
+  /// serializer
   bool RelativeMove::write(std::ostream& out) const {
-    out << this->dx << KBX::separator;
-    out << this->dy << KBX::separator;
-    out << this->FIRST_X << KBX::separator;
-    out << KBX::separator;
+    writeEntry<int>(out,this->dx);
+    writeEntry<int>(out,this->dy);
+    writeEntry<int>(out,this->FIRST_X);
+    proceed(out);
     return true;
   };
 
+  /// deserializer
+  bool RelativeMove::read(std::istream& in) {
+    if(!readEntry<int>(in,this->dx)) return false;
+    if(!readEntry<int>(in,this->dy)) return false;
+    if(!readEntry<bool>(in,this->FIRST_X)) return false;
+    if(!proceed(in)) return false;
+    return true;
+  };
+
+  /// serializer
   bool Move::write(std::ostream& out) const {
-    out << this->dieIndex << KBX::separator;
+    writeEntry<int>(out,this->dieIndex);
     if(!this->rel.write(out)) return false;
+    proceed(out);
     return true;
   };
 
+  /// deserializer
+  bool Move::read(std::istream& in) {
+    if(!readEntry<int>(in,this->dieIndex)) return false;
+    if(!this->rel.read(in)) return false;
+    if(!proceed(in)) return false;
+    return true;
+  };
 
 } // end namespace KBX
 

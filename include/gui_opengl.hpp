@@ -71,6 +71,7 @@ namespace KBX {
   protected slots:
     void newGame();
     void save();
+    void load();
     void setAutoRefresh(bool newAutoRefresh);
     void setRelativeMarking(bool newRelativeMarking);
 

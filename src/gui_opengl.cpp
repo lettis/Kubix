@@ -70,6 +70,13 @@ namespace KBX {
     connect(btn_save, SIGNAL( released() ), this, SLOT( save() ) );
     btn_save->setToolTip("Save the current game to resume playing later.");
 
+
+    QPushButton *btn_load = new QPushButton(QApplication::translate("childwidget", "Load"), this);
+    btn_load->setFocusPolicy( Qt::NoFocus );
+    btn_load->move(300, 0);
+    connect(btn_load, SIGNAL( released() ), this, SLOT( load() ) );
+    btn_load->setToolTip("Load the current game to resume playing later.");
+
     QPushButton *btn_quit = new QPushButton(QApplication::translate("childwidget", "Quit"), this);
     btn_quit->setFocusPolicy( Qt::NoFocus );
     connect(btn_quit, SIGNAL( released() ), this, SLOT( close() ) );
@@ -387,6 +394,24 @@ namespace KBX {
       this->log.warning("Error saving game!");
     }
     outfile.close();
+  }
+
+  void GLWidget::load(){
+    QString ifname = QFileDialog::getOpenFileName(this,
+						  "Load Game",
+						  QString(),
+						  "Kubix Savegames (*.kbx)");
+    std::ifstream infile(ifname.toStdString().c_str());
+    if(!infile.is_open()){
+      this->log.warning("Error: cannot open file for reading...");
+      return;
+    }
+    if(this->game->read(infile)){
+      this->log.info("Loaded game successfully from file '" + ifname.toStdString() + "'.");
+    } else {
+      this->log.warning("Error loading game!");
+    }
+    infile.close();
   }
 
 } // end namespace KBX
