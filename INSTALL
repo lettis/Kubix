@@ -7,8 +7,6 @@ build instructions:
 run kubix via:
   - cd ~KubixRoot
   - ./Kubix
-  attention: kubix currently needs the folder './res' in `pwd`
-             in order to load the textures (for dice, etc).
 
 clean directory:
   - cd ~KubixRoot
