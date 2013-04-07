@@ -99,6 +99,7 @@ namespace KBX {
       static const Color RED;
       static const Color GREEN;
       static const Color BLUE;
+      static const Color YELLOW;
       float r;
       float g;
       float b;
@@ -108,7 +109,7 @@ namespace KBX {
       Color(int r, int g, int b);
       Color(float r, float g, float b);
       size_t id() const;
-      void glColor() const;
+      void setAsGlColor() const;
   };
  
 

@@ -214,10 +214,10 @@ void Object::setHighlightedState(bool highlighted) {
   this->isHighlighted = highlighted;
 }
 Object* Object::clicked(size_t id) {
-  if (this->scene->idcount == id) {
+  if (this->scene->uniqueColorId == id) {
     return this;
   } else {
-    this->scene->idcount++;
+    this->scene->uniqueColorId++;
     return NULL;
   }
 }
@@ -250,10 +250,13 @@ void Object::display() {
 void Object::_setColor() {
   if (!this->scene)
     throw "Cannot display object not belonging to any scene!";
-  if (this->scene->picking) {
-    Color(this->scene->idcount).glColor();
-    this->scene->idcount++;
+  if (this->scene->inObjPickingMode) {
+    // render object with unique color mode for object picking
+    // (click on obj -> click on unique color -> identify object)
+    Color(this->scene->uniqueColorId).setAsGlColor();
+    this->scene->uniqueColorId++;
   } else {
+    // render object with true color (for view)
     this->setColor();
   }
 }
@@ -261,18 +264,18 @@ void Object::_setColor() {
 /// set the object color before rendering
 void Object::setColor() {
   if (this->isSelected) {
-    this->cSelected.glColor();
+    this->cSelected.setAsGlColor();
     return;
   }
   if (this->isHighlighted) {
-    this->cHighlighted.glColor();
+    this->cHighlighted.setAsGlColor();
     return;
   }
   if (this->isMarked) {
-    this->cMarked.glColor();
+    this->cMarked.setAsGlColor();
     return;
   }
-  Color::WHITE.glColor();
+  Color::WHITE.setAsGlColor();
 }
 
 /// inherit parent constructor
@@ -368,10 +371,10 @@ void Die::_render() {
   if (this->_playColor == BLACK) {
     b = 1;
   }
-  if (!this->scene->picking)
+  if (!this->scene->inObjPickingMode)
     glEnable(GL_TEXTURE_2D);
   // face 1
-  if (!this->scene->picking) {
+  if (!this->scene->inObjPickingMode) {
     if (this->IS_KING) {
       glBindTexture(GL_TEXTURE_2D, Die::textures[12 + b]);
     } else {
@@ -389,7 +392,7 @@ void Die::_render() {
   glVertex3f(-0.5, +0.5, -0.5);
   glEnd();
   // face 2
-  if (!this->scene->picking) {
+  if (!this->scene->inObjPickingMode) {
     if (!this->IS_KING) {
       glBindTexture(GL_TEXTURE_2D, Die::textures[2 + b]);
     }
@@ -405,7 +408,7 @@ void Die::_render() {
   glVertex3f(-0.5, -0.5, +0.5);
   glEnd();
   // face 3
-  if (!this->scene->picking) {
+  if (!this->scene->inObjPickingMode) {
     if (!this->IS_KING) {
       glBindTexture(GL_TEXTURE_2D, Die::textures[4 + b]);
     }
@@ -421,7 +424,7 @@ void Die::_render() {
   glVertex3f(-0.5, -0.5, +0.5);
   glEnd();
   // face 4
-  if (!this->scene->picking) {
+  if (!this->scene->inObjPickingMode) {
     if (!this->IS_KING) {
       glBindTexture(GL_TEXTURE_2D, Die::textures[6 + b]);
     }
@@ -437,7 +440,7 @@ void Die::_render() {
   glVertex3f(+0.5, -0.5, +0.5);
   glEnd();
   // face 5
-  if (!this->scene->picking) {
+  if (!this->scene->inObjPickingMode) {
     if (!this->IS_KING) {
       glBindTexture(GL_TEXTURE_2D, Die::textures[8 + b]);
     }
@@ -453,7 +456,7 @@ void Die::_render() {
   glVertex3f(-0.5, +0.5, +0.5);
   glEnd();
   // face 6
-  if (!this->scene->picking) {
+  if (!this->scene->inObjPickingMode) {
     if (!this->IS_KING) {
       glBindTexture(GL_TEXTURE_2D, Die::textures[10 + b]);
     }
@@ -472,14 +475,30 @@ void Die::_render() {
 }
 
 Path::Path(Scene* scene, Vec posFrom, RelativeMove relMove)
-    : Object(scene),
-      _posFrom(posFrom),
-      _relMove(relMove) {
-  //TODO: finish this
+    : Object(scene, posFrom),
+      _relMove(relMove),
+      _isMainPath(false){
+}
+
+Path::Path(Scene* scene, Vec posFrom, RelativeMove relMove, bool isMainPath)
+    : Object(scene, posFrom),
+      _relMove(relMove),
+      _isMainPath(isMainPath){
 }
 
 void Path::_render() {
   //TODO: finish this
+  glBegin(GL_QUADS);
+   //TODO: draw quad for straight line
+  glEnd();
+}
+
+void Path::setAsMainPath() {
+  this->_isMainPath = true;
+}
+
+void Path::setAsNormalPath() {
+  this->_isMainPath = false;
 }
 
 /// board constructor
@@ -625,18 +644,18 @@ void Tile::_render() {
 /// set the tile color before rendering
 void Tile::setColor() {
   if (this->isSelected) {
-    this->cSelected.glColor();
+    this->cSelected.setAsGlColor();
     return;
   }
   if (this->isHighlighted) {
-    this->cHighlighted.glColor();
+    this->cHighlighted.setAsGlColor();
     return;
   }
   if (this->isMarked) {
-    this->cMarked.glColor();
+    this->cMarked.setAsGlColor();
     return;
   }
-  this->basicColor.glColor();
+  this->basicColor.setAsGlColor();
 }
 
 void Tile::setMarkedState(bool marked) {
@@ -696,8 +715,8 @@ Scene::Scene(GameWidget* act)
       markX(4),
       markY(4),
       selected(NULL),
-      picking(false),
-      idcount(0),
+      inObjPickingMode(false),
+      uniqueColorId(0),
       act(act),
       _board(NULL),
       cam(Vec(0, -100, 20), Vec(0, 0, 0)),
@@ -869,11 +888,11 @@ void Scene::zoom(float factor) {
  by the color of the pixel clicked.
  */
 void Scene::display_picking() {
-  this->idcount = 0;
-  this->picking = true;
+  this->uniqueColorId = 0;
+  this->inObjPickingMode = true;
   glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
   this->display();
-  picking = false;
+  inObjPickingMode = false;
 }
 
 /// pick Object at given mouse coordinates
@@ -891,7 +910,7 @@ Object* Scene::pickObject(QPoint p) {
   // Important: gl (0,0) is bottom left but window coords (0,0) are top left -> have to subtract y from height
   glReadPixels(p.x(), viewport[3] - p.y(), 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
   size_t id = Color(pixel[0], pixel[1], pixel[2]).id();
-  this->idcount = 0;
+  this->uniqueColorId = 0;
   this->messages.info(stringprintf("clicked object id: %d", (int) id));
   Object* obj = this->clicked(id);
   if (obj) {

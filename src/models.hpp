@@ -145,11 +145,16 @@ namespace KBX {
   /// Path
   ///  draw a path of possible moves for a die
   class Path: public Object{
-    Vec _posFrom;
+    static const Color MAIN_COLOR = Color::GREEN;
+    static const Color NORMAL_COLOR = Color::YELLOW;
     RelativeMove _relMove;
+    bool _isMainPath;
     void _render();
   public:
     Path(Scene* scene, Vec posFrom, RelativeMove relMove);
+    Path(Scene* scene, Vec posFrom, RelativeMove relMove, bool isMainPath);
+    void setAsMainPath();
+    void setAsNormalPath();
   };
 
 
@@ -246,8 +251,8 @@ namespace KBX {
     void setSelected(Object* obj);
     void display_picking();
 
-    bool picking;
-    size_t idcount;
+    bool inObjPickingMode;
+    size_t uniqueColorId;
   };
 
 } // end namespace KBX

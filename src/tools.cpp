@@ -205,6 +205,7 @@ namespace KBX {
   const Color Color::RED   (1.0f, 0.0f, 0.0f);
   const Color Color::GREEN (0.0f, 1.0f, 0.0f);
   const Color Color::BLUE  (0.0f, 0.0f, 1.0f);
+  const Color Color::YELLOW(1.0f, 1.0f, 0.0f);
   // define different versions of the Color constructor depending on parameters
   Color::Color(){
     this->r = 0;
@@ -244,7 +245,7 @@ namespace KBX {
     return this->r*255 + 255*255*this->g + 255*255*255*this->b;
   }
   /// call glColor3f with internal values
-  void Color::glColor() const {
+  void Color::setAsGlColor() const {
     glColor3f( this->r, this->g, this->b );
   }
 
