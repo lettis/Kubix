@@ -21,7 +21,7 @@
 #include <vector>
 
 // forward declaration for KBX::Scene
-namespace KBX { class GLWidget; }
+namespace KBX { class GameWidget; }
 
 // engine is needed for PlayColor definition
 #include "engine.hpp"
@@ -58,8 +58,6 @@ namespace KBX {
     std::vector<float>   _angle;
     std::vector<Vec> _rotAxis;
     bool    _isVisible;
-    size_t markX;
-    size_t markY;
     Scene* scene;
     bool isSelected;
     bool isHighlighted;
@@ -81,6 +79,7 @@ namespace KBX {
     // constructor
     Object(Scene* scene);
     Object(Scene* scene, Vec pos);
+    virtual ~Object();
     virtual Object* clicked(size_t id);
     virtual void clearStates();
     void setMarkedState(bool marked);
@@ -99,15 +98,15 @@ namespace KBX {
   //  abstract class defining opengl object with animation support
   class AnimObject : public Object {
   protected:
-      float _angleOrig;
-      float _angleDest;
-      float _rotStep;
-      Vec _posOrig;
-      Vec _posDest;
-      float   _transStep;
-      //TODO: overload _rotate, _translate
-      void _animRotate(Vec axis, float angle);
-      void _animTranslate(Vec direction);
+    float _angleOrig;
+    float _angleDest;
+    float _rotStep;
+    Vec _posOrig;
+    Vec _posDest;
+    float   _transStep;
+    //TODO: overload _rotate, _translate
+    void _animRotate(Vec axis, float angle);
+    void _animTranslate(Vec direction);
   public:
     AnimObject(Scene* scene);
     AnimObject(Scene* scene, Vec pos);
@@ -143,6 +142,17 @@ namespace KBX {
     Die(Scene* scene, Vec pos, PlayColor color, bool IS_KING);
   };
   
+  /// Path
+  ///  draw a path of possible moves for a die
+  class Path: public Object{
+    Vec _posFrom;
+    RelativeMove _relMove;
+    void _render();
+  public:
+    Path(Scene* scene, Vec posFrom, RelativeMove relMove);
+  };
+
+
   /// Board Tile
   ///  defines game board tile
   class Tile: public Object{
@@ -194,13 +204,16 @@ namespace KBX {
   */
   class Scene: public Object{
   protected:
-    GLWidget* act;
+    GameWidget* act;
     
     std::vector<Object*> objList;
     
-    Game*  _game;
+    //Game*  _game;
     Board* _board;
     
+    size_t markX;
+    size_t markY;
+
     Object* selected;
 
     Logger messages;
@@ -212,7 +225,7 @@ namespace KBX {
     std::vector<Die*> _dice;
 
   public:
-    Scene(GLWidget* act);
+    Scene(GameWidget* act);
     ~Scene();
     Vec getOrientation();
     void add(Object* obj);
@@ -224,12 +237,13 @@ namespace KBX {
     void zoom(float factor);
     void clearStates();
     Object* clicked(size_t id);
+    //TODO: write specialized versions: Object* pick(...); Die* pick(...); Tile* pick(...)
     Object* pickObject(QPoint p);
 
     void markNext(Vec delta);
     Object* getMarked();
     Object* getSelected();
-    void select(Object* obj);
+    void setSelected(Object* obj);
     void display_picking();
 
     bool picking;

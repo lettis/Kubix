@@ -20,7 +20,7 @@
 #include <QApplication>
 
 #include "tools.hpp"
-#include "gui_opengl.hpp"
+#include "game_widget.hpp"
 
 int main(int argc, char** argv){
   // load Qt-Resources
@@ -39,7 +39,7 @@ int main(int argc, char** argv){
     //Config config( HUMAN_AI, 4, KBX_Strategy(1.0) );
     QApplication app(argc, argv);
 
-    KBX::GLWidget window;
+    KBX::GameWidget window;
     window.resize(800,600);
     window.initializeGUI();
     window.show();
