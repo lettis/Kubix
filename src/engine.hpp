@@ -82,7 +82,7 @@ class RelativeMove {
 public:
   int dx;
   int dy;
-  bool FIRST_X;
+  bool firstX;
   RelativeMove();
   RelativeMove(int dx, int dy, bool FIRST_X);
   RelativeMove invert();

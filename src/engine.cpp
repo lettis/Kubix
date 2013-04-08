@@ -53,16 +53,16 @@ Config::Config(PlayMode mode, size_t cpuLevel, Strategy strategy)
 RelativeMove::RelativeMove()
     : dx(0),
       dy(0),
-      FIRST_X(false) {
+      firstX(false) {
 }
 RelativeMove::RelativeMove(int dx, int dy, bool FIRST_X)
     : dx(dx),
       dy(dy),
-      FIRST_X(FIRST_X) {
+      firstX(FIRST_X) {
 }
 /// invert the move (ie move back and reset to former position/orientation)
 RelativeMove RelativeMove::invert() {
-  return RelativeMove(-dx, -dy, !this->FIRST_X);
+  return RelativeMove(-dx, -dy, !this->firstX);
 }
 
 Move::Move()
@@ -309,7 +309,7 @@ void Game::makeMove(Move move, bool storeMove = true) {
   int stepsSec = abs(move.rel.dx);
   int directionSec = directionX;
   // swap values if move goes in x direction first
-  if (move.rel.FIRST_X) {
+  if (move.rel.firstX) {
     swap(stepsFirst, stepsSec);
     swap(directionFirst, directionSec);
   }
@@ -372,7 +372,7 @@ bool Game::moveIsValid(Move move) {
     return false;
   }
   // check, if there are dice on the way, that cannot be crossed
-  if (move.rel.FIRST_X) {
+  if (move.rel.firstX) {
     // iterate over x-values (before y-iteration)
     size_t end = fabs(move.rel.dx);
     if (move.rel.dy == 0) {
@@ -790,7 +790,7 @@ bool Strategy::read(std::istream& in) {
 bool RelativeMove::write(std::ostream& out) const {
   writeEntry< int >(out, this->dx);
   writeEntry< int >(out, this->dy);
-  writeEntry< int >(out, this->FIRST_X);
+  writeEntry< int >(out, this->firstX);
   proceed(out);
   return true;
 }
@@ -802,7 +802,7 @@ bool RelativeMove::read(std::istream& in) {
     return false;
   if (!readEntry< int >(in, this->dy))
     return false;
-  if (!readEntry< bool >(in, this->FIRST_X))
+  if (!readEntry< bool >(in, this->firstX))
     return false;
   if (!proceed(in))
     return false;
