@@ -49,8 +49,8 @@ Camera::Camera(Vec pos, Vec target) {
 /// update the OpenGL camera perspective
 void Camera::updateView() {
   // set OpenGL camera
-  gluLookAt(this->position.x, this->position.y, this->position.z, this->target.x, this->target.y,
-      this->target.z, 0, 0, 1);
+  gluLookAt(this->position.x, this->position.y, this->position.z, this->target.x, this->target.y, this->target.z, 0, 0,
+      1);
 }
 
 /// get orientation of camera
@@ -128,8 +128,7 @@ void Object::loadTexture(QString filename, GLuint* textures, size_t nTexture) {
   QImage tex, img = QImage(filename);
   tex = QGLWidget::convertToGLFormat(img);
   glBindTexture(GL_TEXTURE_2D, textures[nTexture]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width(), tex.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-      tex.bits());
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width(), tex.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, tex.bits());
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
@@ -198,9 +197,9 @@ void Object::rotate(Vec axis, float angle) {
   // push axis to list of succ. rotations by converting it
   // to the local frame of reference
   // (this is needed, since the OpenGL coordinate system rotates with the objects)
-  if (!this->_rotAxis.empty()) {
+  if ( !this->_rotAxis.empty()) {
     size_t last = this->_rotAxis.size() - 1;
-    axis = axis.rotate(this->_rotAxis[last].scale(-1), this->_angle[last]);
+    axis = axis.rotate(this->_rotAxis[last].scale( -1), this->_angle[last]);
   }
   this->_rotAxis.push_back(axis);
 }
@@ -248,7 +247,7 @@ void Object::display() {
   glPopMatrix();
 }
 void Object::_setColor() {
-  if (!this->scene)
+  if ( !this->scene)
     throw "Cannot display object not belonging to any scene!";
   if (this->scene->inObjPickingMode) {
     // render object with unique color mode for object picking
@@ -321,7 +320,7 @@ Die::Die(Scene* scene, Vec pos, PlayColor color, bool IS_KING)
  load textures for models
  */
 void Die::loadTextures() {
-  if (!Die::texturesLoaded) {
+  if ( !Die::texturesLoaded) {
     glGenTextures(14, Die::textures);
     for (size_t i = 1; i < 7; i++) {
       Die::loadTexture(QString(":res/side%1.png").arg(i), Die::textures, 2 * (i - 1));
@@ -363,7 +362,7 @@ Tile* Die::getTile() {
 
 /// render the die
 void Die::_render() {
-  // setting the color is neccessary in order to ensure that the texture is drawn 'as-is'
+  // setting the color is necessary in order to ensure that the texture is drawn 'as-is'
   // leaving this out might cause the texture to be drawn with 'shaded' colors
   // because all texture-pixel rgb values are multiplied with the corresponding values
   // of the current color before being drawn!
@@ -371,10 +370,11 @@ void Die::_render() {
   if (this->_playColor == BLACK) {
     b = 1;
   }
-  if (!this->scene->inObjPickingMode)
+  if ( !this->scene->inObjPickingMode) {
     glEnable(GL_TEXTURE_2D);
+  }
   // face 1
-  if (!this->scene->inObjPickingMode) {
+  if ( !this->scene->inObjPickingMode) {
     if (this->IS_KING) {
       glBindTexture(GL_TEXTURE_2D, Die::textures[12 + b]);
     } else {
@@ -383,113 +383,126 @@ void Die::_render() {
   }
   glBegin(GL_QUADS);
   glTexCoord2f(0.0, 1.0);
-  glVertex3f(-0.5, -0.5, -0.5);
+  glVertex3f( -0.5, -0.5, -0.5);
   glTexCoord2f(1.0, 1.0);
-  glVertex3f(+0.5, -0.5, -0.5);
+  glVertex3f( +0.5, -0.5, -0.5);
   glTexCoord2f(1.0, 0.0);
-  glVertex3f(+0.5, +0.5, -0.5);
+  glVertex3f( +0.5, +0.5, -0.5);
   glTexCoord2f(0.0, 0.0);
-  glVertex3f(-0.5, +0.5, -0.5);
+  glVertex3f( -0.5, +0.5, -0.5);
   glEnd();
   // face 2
-  if (!this->scene->inObjPickingMode) {
-    if (!this->IS_KING) {
-      glBindTexture(GL_TEXTURE_2D, Die::textures[2 + b]);
-    }
+  if ( !(this->scene->inObjPickingMode || this->IS_KING)) {
+    glBindTexture(GL_TEXTURE_2D, Die::textures[2 + b]);
   }
   glBegin(GL_QUADS);
   glTexCoord2f(0.0, 1.0);
-  glVertex3f(-0.5, -0.5, -0.5);
+  glVertex3f( -0.5, -0.5, -0.5);
   glTexCoord2f(1.0, 1.0);
-  glVertex3f(+0.5, -0.5, -0.5);
+  glVertex3f( +0.5, -0.5, -0.5);
   glTexCoord2f(1.0, 0.0);
-  glVertex3f(+0.5, -0.5, +0.5);
+  glVertex3f( +0.5, -0.5, +0.5);
   glTexCoord2f(0.0, 0.0);
-  glVertex3f(-0.5, -0.5, +0.5);
+  glVertex3f( -0.5, -0.5, +0.5);
   glEnd();
   // face 3
-  if (!this->scene->inObjPickingMode) {
-    if (!this->IS_KING) {
-      glBindTexture(GL_TEXTURE_2D, Die::textures[4 + b]);
-    }
+  if ( !(this->scene->inObjPickingMode || this->IS_KING)) {
+    glBindTexture(GL_TEXTURE_2D, Die::textures[4 + b]);
   }
   glBegin(GL_QUADS);
   glTexCoord2f(0.0, 1.0);
-  glVertex3f(-0.5, -0.5, -0.5);
+  glVertex3f( -0.5, -0.5, -0.5);
   glTexCoord2f(1.0, 1.0);
-  glVertex3f(-0.5, +0.5, -0.5);
+  glVertex3f( -0.5, +0.5, -0.5);
   glTexCoord2f(1.0, 0.0);
-  glVertex3f(-0.5, +0.5, +0.5);
+  glVertex3f( -0.5, +0.5, +0.5);
   glTexCoord2f(0.0, 0.0);
-  glVertex3f(-0.5, -0.5, +0.5);
+  glVertex3f( -0.5, -0.5, +0.5);
   glEnd();
   // face 4
-  if (!this->scene->inObjPickingMode) {
-    if (!this->IS_KING) {
-      glBindTexture(GL_TEXTURE_2D, Die::textures[6 + b]);
-    }
+  if ( !(this->scene->inObjPickingMode || this->IS_KING)) {
+    glBindTexture(GL_TEXTURE_2D, Die::textures[6 + b]);
+
   }
   glBegin(GL_QUADS);
   glTexCoord2f(0.0, 1.0);
-  glVertex3f(+0.5, -0.5, -0.5);
+  glVertex3f( +0.5, -0.5, -0.5);
   glTexCoord2f(1.0, 1.0);
-  glVertex3f(+0.5, +0.5, -0.5);
+  glVertex3f( +0.5, +0.5, -0.5);
   glTexCoord2f(1.0, 0.0);
-  glVertex3f(+0.5, +0.5, +0.5);
+  glVertex3f( +0.5, +0.5, +0.5);
   glTexCoord2f(0.0, 0.0);
-  glVertex3f(+0.5, -0.5, +0.5);
+  glVertex3f( +0.5, -0.5, +0.5);
   glEnd();
   // face 5
-  if (!this->scene->inObjPickingMode) {
-    if (!this->IS_KING) {
-      glBindTexture(GL_TEXTURE_2D, Die::textures[8 + b]);
-    }
+  if ( !(this->scene->inObjPickingMode || this->IS_KING)) {
+    glBindTexture(GL_TEXTURE_2D, Die::textures[8 + b]);
   }
   glBegin(GL_QUADS);
   glTexCoord2f(0.0, 1.0);
-  glVertex3f(-0.5, +0.5, -0.5);
+  glVertex3f( -0.5, +0.5, -0.5);
   glTexCoord2f(1.0, 1.0);
-  glVertex3f(+0.5, +0.5, -0.5);
+  glVertex3f( +0.5, +0.5, -0.5);
   glTexCoord2f(1.0, 0.0);
-  glVertex3f(+0.5, +0.5, +0.5);
+  glVertex3f( +0.5, +0.5, +0.5);
   glTexCoord2f(0.0, 0.0);
-  glVertex3f(-0.5, +0.5, +0.5);
+  glVertex3f( -0.5, +0.5, +0.5);
   glEnd();
   // face 6
-  if (!this->scene->inObjPickingMode) {
-    if (!this->IS_KING) {
-      glBindTexture(GL_TEXTURE_2D, Die::textures[10 + b]);
-    }
+  if ( !(this->scene->inObjPickingMode || this->IS_KING)) {
+    glBindTexture(GL_TEXTURE_2D, Die::textures[10 + b]);
   }
   glBegin(GL_QUADS);
   glTexCoord2f(0.0, 1.0);
-  glVertex3f(-0.5, -0.5, +0.5);
+  glVertex3f( -0.5, -0.5, +0.5);
   glTexCoord2f(1.0, 1.0);
-  glVertex3f(+0.5, -0.5, +0.5);
+  glVertex3f( +0.5, -0.5, +0.5);
   glTexCoord2f(1.0, 0.0);
-  glVertex3f(+0.5, +0.5, +0.5);
+  glVertex3f( +0.5, +0.5, +0.5);
   glTexCoord2f(0.0, 0.0);
-  glVertex3f(-0.5, +0.5, +0.5);
+  glVertex3f( -0.5, +0.5, +0.5);
   glEnd();
   glDisable(GL_TEXTURE_2D);
 }
 
+const Color Path::MAIN_COLOR = Color::GREEN;
+const Color Path::NORMAL_COLOR = Color::YELLOW;
+
 Path::Path(Scene* scene, Vec posFrom, RelativeMove relMove)
     : Object(scene, posFrom),
       _relMove(relMove),
-      _isMainPath(false){
+      _isMainPath(false) {
 }
 
 Path::Path(Scene* scene, Vec posFrom, RelativeMove relMove, bool isMainPath)
     : Object(scene, posFrom),
       _relMove(relMove),
-      _isMainPath(isMainPath){
+      _isMainPath(isMainPath) {
 }
 
 void Path::_render() {
-  //TODO: finish this
+  Vec goal(float(this->_relMove.dx), float(this->_relMove.dy));
+  if (goal == Vec(0, 0)) {
+    // path points to origin; abort
+    return;
+  }
+  Vec turningPoint;
+  if ((goal.x != 0) && (goal.y != 0)) {
+    // set turning point
+    if (this->_relMove.firstX) {
+      turningPoint.x = goal.x;
+    } else {
+      turningPoint.y = goal.y;
+    }
+  }
+  if (this->_isMainPath) {
+    Path::MAIN_COLOR.setAsGlColor();
+  } else {
+    Path::NORMAL_COLOR.setAsGlColor();
+  }
+
   glBegin(GL_QUADS);
-   //TODO: draw quad for straight line
+  //TODO: draw quad for straight line
   glEnd();
 }
 
@@ -516,8 +529,7 @@ Board::Board(Scene* scene, size_t nX, size_t nY)
   for (size_t x = 0; x < this->_nX; x++) {
     for (size_t y = 0; y < this->_nY; y++) {
       tileColor = ((x % 2 + y % 2) % 2 == 0) ? dark : bright;
-      tilePosition = Vec((float) x - (float) (this->_nX) / 2, (float) y - (float) (this->_nY) / 2,
-          -0.5);
+      tilePosition = Vec((float) x - (float) (this->_nX) / 2 + 0.5, (float) y - (float) (this->_nY) / 2 + 0.5, -0.5);
       this->_tiles[x][y] = new Tile(this->scene, this, x, y, tilePosition, tileColor);
     }
   }
@@ -609,35 +621,35 @@ void Tile::_render() {
   Logger log("Tile::_render");
   glBegin(GL_QUADS);
   // upper face
-  glVertex3f(0.0, 0.0, 0.0);
-  glVertex3f(1.0, 0.0, 0.0);
-  glVertex3f(1.0, 1.0, 0.0);
-  glVertex3f(0.0, 1.0, 0.0);
+  glVertex3f( -0.5, -0.5, 0.0);
+  glVertex3f(0.5, -0.5, 0.0);
+  glVertex3f(0.5, 0.5, 0.0);
+  glVertex3f( -0.5, 0.5, 0.0);
   // lower face
-  glVertex3f(0.0, 0.0, -0.1);
-  glVertex3f(1.0, 0.0, -0.1);
-  glVertex3f(1.0, 1.0, -0.1);
-  glVertex3f(0.0, 1.0, -0.1);
+  glVertex3f(-0.5, -0.5, -0.1);
+  glVertex3f(0.5, -0.5, -0.1);
+  glVertex3f(0.5, 0.5, -0.1);
+  glVertex3f(-0.5, 0.5, -0.1);
   // sides
-  glVertex3f(0.0, 0.0, 0.0);
-  glVertex3f(1.0, 0.0, 0.0);
-  glVertex3f(1.0, 0.0, -0.1);
-  glVertex3f(0.0, 0.0, -0.1);
+  glVertex3f(-0.5, -0.5, 0.0);
+  glVertex3f(0.5, -0.5, 0.0);
+  glVertex3f(0.5, -0.5, -0.1);
+  glVertex3f(-0.5, -0.5, -0.1);
 
-  glVertex3f(0.0, 1.0, 0.0);
-  glVertex3f(1.0, 1.0, 0.0);
-  glVertex3f(1.0, 1.0, -0.1);
-  glVertex3f(0.0, 1.0, -0.1);
+  glVertex3f(-0.5, 0.5, 0.0);
+  glVertex3f(0.5, 0.5, 0.0);
+  glVertex3f(0.5, 0.5, -0.1);
+  glVertex3f(-0.5, 0.5, -0.1);
 
-  glVertex3f(0.0, 0.0, 0.0);
-  glVertex3f(0.0, 1.0, 0.0);
-  glVertex3f(0.0, 1.0, -0.1);
-  glVertex3f(0.0, 0.0, -0.1);
+  glVertex3f(-0.5, -0.5, 0.0);
+  glVertex3f(-0.5, 0.5, 0.0);
+  glVertex3f(-0.5, 0.5, -0.1);
+  glVertex3f(-0.5, -0.5, -0.1);
 
-  glVertex3f(1.0, 0.0, 0.0);
-  glVertex3f(1.0, 1.0, 0.0);
-  glVertex3f(1.0, 1.0, -0.1);
-  glVertex3f(1.0, 0.0, -0.1);
+  glVertex3f(0.5, -0.5, 0.0);
+  glVertex3f(0.5, 0.5, 0.0);
+  glVertex3f(0.5, 0.5, -0.1);
+  glVertex3f(0.5, -0.5, -0.1);
   glEnd();
 }
 
@@ -700,8 +712,7 @@ void Scene::clearStates() {
 
 /// wipe all objects from the scene
 void Scene::wipe() {
-  for (std::vector< Object* >::iterator obj = this->objList.begin(); obj != this->objList.end();
-      obj++) {
+  for (std::vector< Object* >::iterator obj = this->objList.begin(); obj != this->objList.end(); obj++) {
     delete *obj;
   }
   this->_dice.clear();
@@ -726,7 +737,7 @@ Scene::Scene(GameWidget* act)
 
 void Scene::setup() {
   // define rotation axes
-  Vec toFront(-1.0, 0.0, 0.0);
+  Vec toFront( -1.0, 0.0, 0.0);
   Vec toBack(1.0, 0.0, 0.0);
   Vec toLeft(0.0, 1.0, 0.0);
   Vec toRight(0.0, -1.0, 0.0);
@@ -751,18 +762,18 @@ void Scene::setup() {
   this->selected = NULL;
 
   // white dice; w1 is in lower left corner, w8 in lower right
-  this->_dice.push_back(new Die(this, Vec(-4, -4, 0), WHITE));
+  this->_dice.push_back(new Die(this, Vec( -4, -4, 0), WHITE));
   this->_dice.back()->rotate(counterClockwise, 90);
   this->_dice.back()->setTile(this->_board->getTile(0, 0));
-  this->_dice.push_back(new Die(this, Vec(-3, -4, 0), WHITE));
+  this->_dice.push_back(new Die(this, Vec( -3, -4, 0), WHITE));
   this->_dice.back()->rotate(toBack, 90);
   this->_dice.back()->rotate(counterClockwise, 90);
   this->_dice.back()->setTile(this->_board->getTile(1, 0));
-  this->_dice.push_back(new Die(this, Vec(-2, -4, 0), WHITE));
+  this->_dice.push_back(new Die(this, Vec( -2, -4, 0), WHITE));
   this->_dice.back()->rotate(toBack, 180);
   this->_dice.back()->rotate(counterClockwise, 90);
   this->_dice.back()->setTile(this->_board->getTile(2, 0));
-  this->_dice.push_back(new Die(this, Vec(-1, -4, 0), WHITE));
+  this->_dice.push_back(new Die(this, Vec( -1, -4, 0), WHITE));
   this->_dice.back()->rotate(toFront, 90);
   this->_dice.back()->rotate(counterClockwise, 90);
   this->_dice.back()->setTile(this->_board->getTile(3, 0));
@@ -785,18 +796,18 @@ void Scene::setup() {
   this->_dice.back()->setTile(this->_board->getTile(8, 0));
 
   // black dice; b1 is in upper left corner, b8 in upper right
-  this->_dice.push_back(new Die(this, Vec(-4, 4, 0), BLACK));
+  this->_dice.push_back(new Die(this, Vec( -4, 4, 0), BLACK));
   this->_dice.back()->rotate(clockwise, 90);
   this->_dice.back()->setTile(this->_board->getTile(0, 8));
-  this->_dice.push_back(new Die(this, Vec(-3, 4, 0), BLACK));
+  this->_dice.push_back(new Die(this, Vec( -3, 4, 0), BLACK));
   this->_dice.back()->rotate(toBack, 90);
   this->_dice.back()->rotate(clockwise, 90);
   this->_dice.back()->setTile(this->_board->getTile(1, 8));
-  this->_dice.push_back(new Die(this, Vec(-2, 4, 0), BLACK));
+  this->_dice.push_back(new Die(this, Vec( -2, 4, 0), BLACK));
   this->_dice.back()->rotate(toBack, 180);
   this->_dice.back()->rotate(clockwise, 90);
   this->_dice.back()->setTile(this->_board->getTile(2, 8));
-  this->_dice.push_back(new Die(this, Vec(-1, 4, 0), BLACK));
+  this->_dice.push_back(new Die(this, Vec( -1, 4, 0), BLACK));
   this->_dice.back()->rotate(toFront, 90);
   this->_dice.back()->rotate(clockwise, 90);
   this->_dice.back()->setTile(this->_board->getTile(3, 8));
@@ -945,7 +956,7 @@ Object* Scene::clicked(size_t id) {
  if there is no object marked, automatically mark the field in the middle.
  */
 void Scene::markNext(Vec delta) {
-  if (!this->_board) {
+  if ( !this->_board) {
     this->messages.warning("Scene::markNext called without board!");
     return;
   }
@@ -967,7 +978,7 @@ void Scene::markNext(Vec delta) {
 
 Object* Scene::getMarked() {
   this->clearStates();
-  if (!this->_board) {
+  if ( !this->_board) {
     throw "Scene::getMarked called without board!";
   }
   Tile* t = this->_board->getTile(this->markX, this->markY);
