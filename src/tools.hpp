@@ -90,22 +90,6 @@ public:
 /// defines a color
 class Color {
 public:
-  // define some colors fixed
-  static const Color BLACK;
-  static const Color WHITE;
-  static const Color GREY10;
-  static const Color GREY20;
-  static const Color GREY30;
-  static const Color GREY40;
-  static const Color GREY50;
-  static const Color GREY60;
-  static const Color GREY70;
-  static const Color GREY80;
-  static const Color GREY90;
-  static const Color RED;
-  static const Color GREEN;
-  static const Color BLUE;
-  static const Color YELLOW;
   float r;
   float g;
   float b;
@@ -117,6 +101,25 @@ public:
   size_t id() const;
   void setAsGlColor() const;
 };
+
+namespace ColorTable {
+  const Color BLACK(0.0f, 0.0f, 0.0f);
+  const Color WHITE(1.0f, 1.0f, 1.0f);
+  const Color GREY10(0.1f, 0.1f, 0.1f);
+  const Color GREY20(0.2f, 0.2f, 0.2f);
+  const Color GREY30(0.3f, 0.3f, 0.3f);
+  const Color GREY40(0.4f, 0.4f, 0.4f);
+  const Color GREY50(0.5f, 0.5f, 0.5f);
+  const Color GREY60(0.6f, 0.6f, 0.6f);
+  const Color GREY70(0.7f, 0.7f, 0.7f);
+  const Color GREY80(0.8f, 0.8f, 0.8f);
+  const Color GREY90(0.9f, 0.9f, 0.9f);
+  const Color RED(1.0f, 0.0f, 0.0f);
+  const Color GREEN(0.0f, 1.0f, 0.0f);
+  const Color BLUE(0.0f, 0.0f, 1.0f);
+  const Color YELLOW(1.0f, 1.0f, 0.0f);
+}
+
 
 } // end namespace KBX
 #endif

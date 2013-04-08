@@ -152,6 +152,8 @@ class Path: public Object {
   RelativeMove _relMove;
   bool _isMainPath;
   void _render();
+  // overwrite general color setting
+  void setColor(){}
 public:
   Path(Scene* scene, Vec posFrom, RelativeMove relMove);
   Path(Scene* scene, Vec posFrom, RelativeMove relMove, bool isMainPath);

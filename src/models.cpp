@@ -274,7 +274,7 @@ void Object::setColor() {
     this->cMarked.setAsGlColor();
     return;
   }
-  Color::WHITE.setAsGlColor();
+  ColorTable::WHITE.setAsGlColor();
 }
 
 /// get position of object
@@ -470,8 +470,8 @@ void Die::_render() {
   glDisable(GL_TEXTURE_2D);
 }
 
-const Color Path::MAIN_COLOR = Color::GREEN;
-const Color Path::NORMAL_COLOR = Color::YELLOW;
+const Color Path::MAIN_COLOR = ColorTable::GREEN;
+const Color Path::NORMAL_COLOR = ColorTable::YELLOW;
 
 Path::Path(Scene* scene, Vec posFrom, RelativeMove relMove)
     : Object(scene, posFrom),
@@ -488,33 +488,36 @@ Path::Path(Scene* scene, Vec posFrom, RelativeMove relMove, bool isMainPath)
 void Path::_render() {
   // width of path
   float w = 0.3f;
+  // height over board
+  float h = 0.2f;
   Vec goal(float(this->_relMove.dx), float(this->_relMove.dy));
   if (goal == Vec(0.0f, 0.0f)) {
     // path points to origin; abort
     return;
   }
   // set correct color
-  if (this->_isMainPath) {
-    Path::MAIN_COLOR.setAsGlColor();
-  } else {
-    Path::NORMAL_COLOR.setAsGlColor();
-  }
+//  if (this->_isMainPath) {
+//    Path::MAIN_COLOR.setAsGlColor();
+//  } else {
+//    Path::NORMAL_COLOR.setAsGlColor();
+//  }
+  Path::NORMAL_COLOR.setAsGlColor();
   if (this->_relMove.firstX){
     if (fabs(goal.x) > 1.0f){
       glBegin(GL_QUADS);
-      glVertex3f(sgn(goal.x)*0.5f, w, 0.0f );
-      glVertex3f(sgn(goal.x)*0.5f, -w, 0.0f);
-      glVertex3f(goal.x - sgn(goal.x)*0.5f, -w, 0.0f);
-      glVertex3f(goal.x - sgn(goal.x)*0.5f, w, 0.0f);
+      glVertex3f(sgn(goal.x)*0.5f, w, h );
+      glVertex3f(sgn(goal.x)*0.5f, -w, h);
+      glVertex3f(goal.x - sgn(goal.x)*0.5f, -w, h);
+      glVertex3f(goal.x - sgn(goal.x)*0.5f, w, h);
       glEnd();
     }
   } else {
     if (fabs(goal.y) > 1.0f){
       glBegin(GL_QUADS);
-      glVertex3f(-w, sgn(goal.y)*0.5f, 0.0f );
-      glVertex3f(w, sgn(goal.y)*0.5f, 0.0f);
-      glVertex3f(w, goal.y - sgn(goal.y)*0.5f, 0.0f);
-      glVertex3f(-w, goal.y - sgn(goal.y)*0.5f, 0.0f);
+      glVertex3f(-w, sgn(goal.y)*0.5f, h );
+      glVertex3f(w, sgn(goal.y)*0.5f, h);
+      glVertex3f(w, goal.y - sgn(goal.y)*0.5f, h);
+      glVertex3f(-w, goal.y - sgn(goal.y)*0.5f, h);
       glEnd();
     }
   }
@@ -535,8 +538,8 @@ Board::Board(Scene* scene, size_t nX, size_t nY)
       _nY(nY),
       _tiles(_nX, std::vector< Tile* >(_nY)) {
   // define tile colors
-  Color dark = Color::GREY40;
-  Color bright = Color::GREY60;
+  Color dark = ColorTable::GREY40;
+  Color bright = ColorTable::GREY60;
   Color tileColor;
   Vec tilePosition;
   // setup tiles to form a checkered layout
@@ -879,10 +882,9 @@ void Scene::_setColor(){
 /// add object to the scene
 /**
  \param obj pointer to a Object to be added to the scene
+ \returns unique object id
  \throws string exception, if trying to add null-reference to scene
  */
-
-//TODO: return object id
 size_t Scene::add(Object* obj) {
   if (obj) {
     this->objList.push_back(obj);

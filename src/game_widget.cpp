@@ -113,7 +113,7 @@ void GameWidget::newGame() {
 GameWidget::GameWidget(QWidget *parent)
     : QGLWidget(parent),
       log("act"),
-      bgColor(Color::GREY20),
+      bgColor(ColorTable::GREY20),
       scene(NULL),
       autoRefresh(false),
       autoUpdate(false),

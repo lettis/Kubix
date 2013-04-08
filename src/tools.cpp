@@ -170,7 +170,7 @@ void checkGLError() {
 /**
  \param str pattern to be printed to
  \return resulting string
- The function interally calles sprintf, but converts the result to a c++ string and returns that one.
+ The function internally calls sprintf, but converts the result to a c++ string and returns that one.
  Problems of memory allocation are taken care of automatically.
  */
 std::string stringprintf(std::string str, ...) {
@@ -186,22 +186,6 @@ std::string stringprintf(std::string str, ...) {
   return std::string(buf);
 }
 
-// define fixed color values
-const Color Color::BLACK(0.0f, 0.0f, 0.0f);
-const Color Color::GREY10(0.1f, 0.1f, 0.1f);
-const Color Color::GREY20(0.2f, 0.2f, 0.2f);
-const Color Color::GREY30(0.3f, 0.3f, 0.3f);
-const Color Color::GREY40(0.4f, 0.4f, 0.4f);
-const Color Color::GREY50(0.5f, 0.5f, 0.5f);
-const Color Color::GREY60(0.6f, 0.6f, 0.6f);
-const Color Color::GREY70(0.7f, 0.7f, 0.7f);
-const Color Color::GREY80(0.8f, 0.8f, 0.8f);
-const Color Color::GREY90(0.9f, 0.9f, 0.9f);
-const Color Color::WHITE(1.0f, 1.0f, 1.0f);
-const Color Color::RED(1.0f, 0.0f, 0.0f);
-const Color Color::GREEN(0.0f, 1.0f, 0.0f);
-const Color Color::BLUE(0.0f, 0.0f, 1.0f);
-const Color Color::YELLOW(1.0f, 1.0f, 0.0f);
 // define different versions of the Color constructor depending on parameters
 Color::Color() {
   this->r = 0;
