@@ -364,17 +364,27 @@ void GameWidget::userSelect(Object* obj) {
       clickedTile = d->getTile();
     }
   }
-  if (selectedDie && clickedTile) {
-    //TODO: check if clicked move is valid
 
-    this->log.info("MOVE!!");
-    this->scene->setSelected(NULL);
-  } else {
-    if (obj) {
-      this->log.info("Selecting new object");
-      this->scene->setSelected(obj);
-    }
+  // FIXME dummy path for testing purposes
+  if (clickedTile){
+    RelativeMove relM(2,3,false);
+    Vec tilePos = clickedTile->getPosition();
+    //TODO: how to delete path afterwards?
+    this->scene->add(new Path(this->scene, tilePos, relM));
   }
+
+
+//  if (selectedDie && clickedTile) {
+//    //TODO: check if clicked move is valid
+//
+//    this->log.info("MOVE!!");
+//    this->scene->setSelected(NULL);
+//  } else {
+//    if (obj) {
+//      this->log.info("Selecting new object");
+//      this->scene->setSelected(obj);
+//    }
+//  }
 }
 
 void GameWidget::save() {

@@ -93,6 +93,8 @@ public:
   void translate(Vec direction);
   // render the object and perform translation / rotation
   void display();
+  // return position
+  Vec getPosition();
 };
 
 // AnimObject
@@ -168,16 +170,13 @@ class Tile: public Object {
   Die* _die;
 
 public:
-  const size_t boardX;
-  const size_t boardY;
-
   Die* getDie();
   void setDie(Die* d);
 
   void setMarkedState(bool marked);
   void setSelectedState(bool selected);
 
-  Tile(Scene* scene, Board* board, size_t boardX, size_t boardY, Vec pos, Color color);
+  Tile(Scene* scene, Board* board, Vec pos, Color color);
 };
 
 /// Board
@@ -226,17 +225,15 @@ protected:
 
   Camera cam;
   void _render();
-  void _setColor() {
-  }
-  ;
-
+  void _setColor();
   std::vector< Die* > _dice;
 
 public:
   Scene(GameWidget* act);
   ~Scene();
   Vec getOrientation();
-  void add(Object* obj);
+  size_t add(Object* obj);
+  void remove(size_t objId);
 
   void wipe();
   void setup();

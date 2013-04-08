@@ -277,6 +277,11 @@ void Object::setColor() {
   Color::WHITE.setAsGlColor();
 }
 
+/// get position of object
+Vec Object::getPosition(){
+  return this->_pos;
+}
+
 /// inherit parent constructor
 AnimObject::AnimObject(Scene* scene)
     : _angleOrig(0),
@@ -481,29 +486,38 @@ Path::Path(Scene* scene, Vec posFrom, RelativeMove relMove, bool isMainPath)
 }
 
 void Path::_render() {
+  // width of path
+  float w = 0.3f;
   Vec goal(float(this->_relMove.dx), float(this->_relMove.dy));
-  if (goal == Vec(0, 0)) {
+  if (goal == Vec(0.0f, 0.0f)) {
     // path points to origin; abort
     return;
   }
-  Vec turningPoint;
-  if ((goal.x != 0) && (goal.y != 0)) {
-    // set turning point
-    if (this->_relMove.firstX) {
-      turningPoint.x = goal.x;
-    } else {
-      turningPoint.y = goal.y;
-    }
-  }
+  // set correct color
   if (this->_isMainPath) {
     Path::MAIN_COLOR.setAsGlColor();
   } else {
     Path::NORMAL_COLOR.setAsGlColor();
   }
-
-  glBegin(GL_QUADS);
-  //TODO: draw quad for straight line
-  glEnd();
+  if (this->_relMove.firstX){
+    if (fabs(goal.x) > 1.0f){
+      glBegin(GL_QUADS);
+      glVertex3f(sgn(goal.x)*0.5f, w, 0.0f );
+      glVertex3f(sgn(goal.x)*0.5f, -w, 0.0f);
+      glVertex3f(goal.x - sgn(goal.x)*0.5f, -w, 0.0f);
+      glVertex3f(goal.x - sgn(goal.x)*0.5f, w, 0.0f);
+      glEnd();
+    }
+  } else {
+    if (fabs(goal.y) > 1.0f){
+      glBegin(GL_QUADS);
+      glVertex3f(-w, sgn(goal.y)*0.5f, 0.0f );
+      glVertex3f(w, sgn(goal.y)*0.5f, 0.0f);
+      glVertex3f(w, goal.y - sgn(goal.y)*0.5f, 0.0f);
+      glVertex3f(-w, goal.y - sgn(goal.y)*0.5f, 0.0f);
+      glEnd();
+    }
+  }
 }
 
 void Path::setAsMainPath() {
@@ -530,7 +544,7 @@ Board::Board(Scene* scene, size_t nX, size_t nY)
     for (size_t y = 0; y < this->_nY; y++) {
       tileColor = ((x % 2 + y % 2) % 2 == 0) ? dark : bright;
       tilePosition = Vec((float) x - (float) (this->_nX) / 2 + 0.5, (float) y - (float) (this->_nY) / 2 + 0.5, -0.5);
-      this->_tiles[x][y] = new Tile(this->scene, this, x, y, tilePosition, tileColor);
+      this->_tiles[x][y] = new Tile(this->scene, this, tilePosition, tileColor);
     }
   }
 }
@@ -607,13 +621,11 @@ void Board::clearStates() {
 }
 
 /// tile constructor
-Tile::Tile(Scene* scene, Board* board, size_t boardX, size_t boardY, Vec pos, Color color)
+Tile::Tile(Scene* scene, Board* board, Vec pos, Color color)
     : Object(scene, pos),
       basicColor(color),
       _die(NULL),
-      _board(board),
-      boardX(boardX),
-      boardY(boardY) {
+      _board(board) {
 }
 
 /// render the tile
@@ -706,7 +718,9 @@ Die* Tile::getDie() {
  */
 void Scene::clearStates() {
   for (size_t id = 0; id < objList.size(); id++) {
-    objList[id]->clearStates();
+    if(objList[id]){
+      objList[id]->clearStates();
+    }
   }
 }
 
@@ -853,23 +867,36 @@ void Scene::_render() {
   // call every object's display method to draw
   // the object to the scene
   for (size_t i = 0; i < this->objList.size(); i++) {
-    // TODO: test if the following line can (maybe?) be deleted
-    glLoadName(i);
-    this->objList[i]->display();
+    if(this->objList[i]){
+      this->objList[i]->display();
+    }
   }
 }
+
+void Scene::_setColor(){
+}
+
 /// add object to the scene
 /**
  \param obj pointer to a Object to be added to the scene
  \throws string exception, if trying to add null-reference to scene
  */
-void Scene::add(Object* obj) {
+
+//TODO: return object id
+size_t Scene::add(Object* obj) {
   if (obj) {
     this->objList.push_back(obj);
+    return this->objList.size()-1;
   } else {
     throw "unable to add object to scene (null-reference)";
   }
 }
+
+void Scene::remove(size_t objId){
+  delete this->objList[objId];
+  this->objList[objId] = NULL;
+}
+
 /// rotate the scene
 /**
  \param angle the angle around which the scene should be rotated
@@ -939,9 +966,11 @@ Object* Scene::pickObject(QPoint p) {
  */
 Object* Scene::clicked(size_t id) {
   for (size_t i = 0; i < this->objList.size(); i++) {
-    Object* obj = this->objList[i]->clicked(id);
-    if (obj) {
-      return obj;
+    if(this->objList[i]){
+      Object* obj = this->objList[i]->clicked(id);
+      if (obj) {
+        return obj;
+      }
     }
   }
   return NULL;
