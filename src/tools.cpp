@@ -334,7 +334,7 @@ bool Vec::operator==(Vec v) {
  */
 Vec Vec::rotate(Vec rotAxis, float angle) {
   if (angle == 0.0f){
-    return Vec(this);
+    return Vec(*this);
   }
   // first normalize rotation axis
   rotAxis = rotAxis.normalize();
