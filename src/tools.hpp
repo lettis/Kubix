@@ -71,6 +71,7 @@ public:
   float y;
   float z;
   Vec();
+  Vec(const Vec& other);
   Vec(float x, float y);
   Vec(float x, float y, float z);
   float norm();
@@ -85,7 +86,17 @@ public:
   bool operator==(Vec v);
   Vec rotate(Vec rotAxis, float angle);
   Vec cross(Vec v);
+  void setAsGlVertex3f();
 };
+
+namespace NormalVectors {
+  const Vec Null = Vec(0.0f, 0.0f, 0.0f);
+  const Vec X = Vec(1.0f, 0.0f, 0.0f);
+  const Vec Y = Vec(0.0f, 1.0f, 0.0f);
+  const Vec Z = Vec(0.0f, 0.0f, 1.0f);
+}
+
+
 
 /// defines a color
 class Color {

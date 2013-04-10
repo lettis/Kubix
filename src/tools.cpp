@@ -236,6 +236,13 @@ Vec::Vec()
       z(0) {
 }
 
+/// copy constructor
+Vec::Vec(const Vec& other)
+    : x(other.x),
+      y(other.y),
+      z(other.z) {
+}
+
 /// constructor initializing 2D vector
 Vec::Vec(float x, float y)
     : x(x),
@@ -326,6 +333,9 @@ bool Vec::operator==(Vec v) {
  \returns the rotated vector
  */
 Vec Vec::rotate(Vec rotAxis, float angle) {
+  if (angle == 0.0f){
+    return Vec(this);
+  }
   // first normalize rotation axis
   rotAxis = rotAxis.normalize();
   float n1 = rotAxis.x;
@@ -354,6 +364,10 @@ Vec Vec::cross(Vec v) {
   result.y = this->z * v.x - this->x * v.z;
   result.z = this->x * v.y - this->y * v.x;
   return result;
+}
+
+void Vec::setAsGlVertex3f(){
+  glVertex3f(this->x, this->y, this->z);
 }
 
 } // end namespace
