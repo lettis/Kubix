@@ -113,7 +113,7 @@ void GameWidget::newGame() {
 GameWidget::GameWidget(QWidget *parent)
     : QGLWidget(parent),
       log("act"),
-      bgColor(ColorTable::GREY20),
+      bgColor(ColorTable::GREY10),
       scene(NULL),
       autoRefresh(false),
       autoUpdate(false),
@@ -365,11 +365,18 @@ void GameWidget::userSelect(Object* obj) {
     }
   }
 
-  // FIXME dummy path for testing purposes
+  // FIXME dummy paths for testing purposes
   if (clickedTile){
-    RelativeMove relM(2,3,false);
     Vec tilePos = clickedTile->getPosition();
     //TODO: how to delete path afterwards?
+    bool x=true;
+    RelativeMove relM(2,3,x);
+    this->scene->add(new Path(this->scene, tilePos, relM));
+    relM = RelativeMove(-2,3,x);
+    this->scene->add(new Path(this->scene, tilePos, relM));
+    relM = RelativeMove(2,-3,x);
+    this->scene->add(new Path(this->scene, tilePos, relM));
+    relM = RelativeMove(-2,-3,x);
     this->scene->add(new Path(this->scene, tilePos, relM));
   }
 

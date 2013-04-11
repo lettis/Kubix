@@ -278,7 +278,7 @@ void Object::setColor() {
 }
 
 /// get position of object
-Vec Object::getPosition(){
+Vec Object::getPosition() {
   return this->_pos;
 }
 
@@ -485,41 +485,122 @@ Path::Path(Scene* scene, Vec posFrom, RelativeMove relMove, bool isMainPath)
       _isMainPath(isMainPath) {
 }
 
+void Path::setColor() {
+  // set correct color
+  if (this->_isMainPath) {
+    Path::MAIN_COLOR.setAsGlColor();
+  } else {
+    Path::NORMAL_COLOR.setAsGlColor();
+  }
+}
+
 void Path::_render() {
-  // width of path
-  float w = 0.3f;
-  // height over board
-  float h = 0.2f;
-  Vec goal(float(this->_relMove.dx), float(this->_relMove.dy));
-  if (goal == Vec(0.0f, 0.0f)) {
+  if ((this->_relMove.dx == 0) && (this->_relMove.dy == 0)) {
     // path points to origin; abort
     return;
   }
-  // set correct color
-//  if (this->_isMainPath) {
-//    Path::MAIN_COLOR.setAsGlColor();
-//  } else {
-//    Path::NORMAL_COLOR.setAsGlColor();
-//  }
-  Path::NORMAL_COLOR.setAsGlColor();
-  if (this->_relMove.firstX){
-    if (fabs(goal.x) > 1.0f){
-      glBegin(GL_QUADS);
-      glVertex3f(sgn(goal.x)*0.5f, w, h );
-      glVertex3f(sgn(goal.x)*0.5f, -w, h);
-      glVertex3f(goal.x - sgn(goal.x)*0.5f, -w, h);
-      glVertex3f(goal.x - sgn(goal.x)*0.5f, w, h);
-      glEnd();
+
+  // no of edges per 1/4 circle (curve)
+  int curveResolution = 2;
+  // (half) width of path (in units of 0.5*tile width)
+  float w = 0.2f;
+  // height over board (should be higher than dice!)
+  float h = 1.1f;
+  // spacer width
+  float wSpacer = 0.5f - w;
+  // incremental angle to draw curves
+  float incrementalAngle = 90.0f / curveResolution;
+
+  // distances in 1. and 2. move direction
+  float dx = this->_relMove.dx;
+  float dy = this->_relMove.dy;
+  // use symmetry to draw with same algorithm if
+  // move is first in y-direction. i.e. draw inverse move
+  // as if it were in x-direction first, then translate appropriately.
+  if (this->_relMove.firstX == false) {
+    dx *= -1;
+    dy *= -1;
+    glTranslatef( -dx, -dy, 0.0f);
+  }
+  // and signs of first and second move direction
+  float sgnX = sgn(dx);
+  float sgnY = sgn(dy);
+
+  Vec a(sgnX * w, sgnY * w, h);
+  Vec r(0.0f, sgnY * ( -2.0f * w), 0.0f);
+  // draw first straight path (to curve or goal)
+  if (fabs(dx) > 1.0f) {
+    glBegin(GL_QUADS);
+    Vec(sgnX * 0.5f, w, h).setAsGlVertex3f();
+    Vec(sgnX * 0.5f, -w, h).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, -w, h).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, w, h).setAsGlVertex3f();
+    glEnd();
+  }
+  // draw curve if necessary
+  if (fabs(dy) > 0.0f) {
+    a = Vec(dx - sgnX * 0.5f, sgnY * w, h);
+
+    glBegin(GL_QUADS);
+    a.setAsGlVertex3f();
+    (a + r).setAsGlVertex3f();
+    a = a + Vec(sgnX * wSpacer, 0.0f, 0.0f);
+    (a + r).setAsGlVertex3f();
+    a.setAsGlVertex3f();
+    glEnd();
+
+    glBegin(GL_TRIANGLE_FAN);
+    a.setAsGlVertex3f();
+    for (int i = 0; i <= curveResolution; i++) {
+      (a + r).setAsGlVertex3f();
+      r = r.rotate(NormalVectors::Z, sgnX * sgnY * incrementalAngle);
     }
+    glEnd();
+
+    glBegin(GL_QUADS);
+    a.setAsGlVertex3f();
+    r = Vec(sgnX * 2.0f * w, 0.0f, 0.0f);
+    (a + r).setAsGlVertex3f();
+    a = a + Vec(0.0f, sgnY * wSpacer, 0.0f);
+    (a + r).setAsGlVertex3f();
+    a.setAsGlVertex3f();
+    glEnd();
+  }
+
+  // draw second straight line (if necessary)
+  if (fabs(dy) > 1.0f) {
+    a = Vec(dx - sgnX * w, sgnY * 0.5f, h);
+    glBegin(GL_QUADS);
+    a.setAsGlVertex3f();
+    (a + Vec(sgnX * 2.0f * w, 0.0f, 0.0f)).setAsGlVertex3f();
+    a = a + Vec(0.0f, sgnY * (fabs(dy) - 1.0f), 0.0f);
+    (a + Vec(sgnX * 2.0f * w, 0.0f, 0.0f)).setAsGlVertex3f();
+    a.setAsGlVertex3f();
+    glEnd();
+  }
+
+  // draw arrow head (with reverted symmetry operation)
+  if (this->_relMove.firstX == false) {
+    dx *= -1;
+    dy *= -1;
+    sgnX *= -1;
+    sgnY *= -1;
+    glTranslatef( -dx, -dy, 0.0f);
+  }
+  if (this->_relMove.firstX) {
+    a = Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h);
+    glBegin(GL_TRIANGLES);
+    a.setAsGlVertex3f();
+    (a + Vec(sgnX, 0.0f, 0.0f)).setAsGlVertex3f();
+    (a + Vec(0.5f * sgnX, 0.2f * sgnY, 0.0f)).setAsGlVertex3f();
+    glEnd();
   } else {
-    if (fabs(goal.y) > 1.0f){
-      glBegin(GL_QUADS);
-      glVertex3f(-w, sgn(goal.y)*0.5f, h );
-      glVertex3f(w, sgn(goal.y)*0.5f, h);
-      glVertex3f(w, goal.y - sgn(goal.y)*0.5f, h);
-      glVertex3f(-w, goal.y - sgn(goal.y)*0.5f, h);
-      glEnd();
-    }
+    a = Vec(dx - sgnX * 0.5f, dy + sgnY * 0.5f, h);
+    glBegin(GL_TRIANGLES);
+    a.setAsGlVertex3f();
+    (a + Vec(0.0f, -sgnY, 0.0f)).setAsGlVertex3f();
+    (a + Vec(0.2f * sgnX, -0.5f * sgnY, 0.0f)).setAsGlVertex3f();
+    glEnd();
   }
 }
 
@@ -641,25 +722,25 @@ void Tile::_render() {
   glVertex3f(0.5, 0.5, 0.0);
   glVertex3f( -0.5, 0.5, 0.0);
   // lower face
-  glVertex3f(-0.5, -0.5, -0.1);
+  glVertex3f( -0.5, -0.5, -0.1);
   glVertex3f(0.5, -0.5, -0.1);
   glVertex3f(0.5, 0.5, -0.1);
-  glVertex3f(-0.5, 0.5, -0.1);
+  glVertex3f( -0.5, 0.5, -0.1);
   // sides
-  glVertex3f(-0.5, -0.5, 0.0);
+  glVertex3f( -0.5, -0.5, 0.0);
   glVertex3f(0.5, -0.5, 0.0);
   glVertex3f(0.5, -0.5, -0.1);
-  glVertex3f(-0.5, -0.5, -0.1);
+  glVertex3f( -0.5, -0.5, -0.1);
 
-  glVertex3f(-0.5, 0.5, 0.0);
+  glVertex3f( -0.5, 0.5, 0.0);
   glVertex3f(0.5, 0.5, 0.0);
   glVertex3f(0.5, 0.5, -0.1);
-  glVertex3f(-0.5, 0.5, -0.1);
+  glVertex3f( -0.5, 0.5, -0.1);
 
-  glVertex3f(-0.5, -0.5, 0.0);
-  glVertex3f(-0.5, 0.5, 0.0);
-  glVertex3f(-0.5, 0.5, -0.1);
-  glVertex3f(-0.5, -0.5, -0.1);
+  glVertex3f( -0.5, -0.5, 0.0);
+  glVertex3f( -0.5, 0.5, 0.0);
+  glVertex3f( -0.5, 0.5, -0.1);
+  glVertex3f( -0.5, -0.5, -0.1);
 
   glVertex3f(0.5, -0.5, 0.0);
   glVertex3f(0.5, 0.5, 0.0);
@@ -721,7 +802,7 @@ Die* Tile::getDie() {
  */
 void Scene::clearStates() {
   for (size_t id = 0; id < objList.size(); id++) {
-    if(objList[id]){
+    if (objList[id]) {
       objList[id]->clearStates();
     }
   }
@@ -747,7 +828,7 @@ Scene::Scene(GameWidget* act)
       uniqueColorId(0),
       act(act),
       _board(NULL),
-      cam(Vec(0, -100, 20), Vec(0, 0, 0)),
+      cam(Vec(0, -50, 70), Vec(0, 0, 0)),
       messages("Scene") {
   this->setup();
 }
@@ -870,13 +951,13 @@ void Scene::_render() {
   // call every object's display method to draw
   // the object to the scene
   for (size_t i = 0; i < this->objList.size(); i++) {
-    if(this->objList[i]){
+    if (this->objList[i]) {
       this->objList[i]->display();
     }
   }
 }
 
-void Scene::_setColor(){
+void Scene::_setColor() {
 }
 
 /// add object to the scene
@@ -888,13 +969,13 @@ void Scene::_setColor(){
 size_t Scene::add(Object* obj) {
   if (obj) {
     this->objList.push_back(obj);
-    return this->objList.size()-1;
+    return this->objList.size() - 1;
   } else {
     throw "unable to add object to scene (null-reference)";
   }
 }
 
-void Scene::remove(size_t objId){
+void Scene::remove(size_t objId) {
   delete this->objList[objId];
   this->objList[objId] = NULL;
 }
@@ -968,7 +1049,7 @@ Object* Scene::pickObject(QPoint p) {
  */
 Object* Scene::clicked(size_t id) {
   for (size_t i = 0; i < this->objList.size(); i++) {
-    if(this->objList[i]){
+    if (this->objList[i]) {
       Object* obj = this->objList[i]->clicked(id);
       if (obj) {
         return obj;
