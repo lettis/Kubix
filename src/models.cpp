@@ -674,6 +674,23 @@ size_t Board::getNX() {
   return this->_nX;
 }
 
+/// return object by clicked color id
+/**
+ \param id id of color clicked
+ \return associated object
+ */
+Object* Board::clicked(size_t id) {
+  for (size_t x = 0; x < this->_nX; x++) {
+    for (size_t y = 0; y < this->_nY; y++) {
+      Object* obj = this->_tiles[x][y]->clicked(id);
+      if (obj) {
+        return obj;
+      }
+    }
+  }
+  return NULL;
+}
+
 /// clear all tile states
 /**
  set all tiles isSelected, isMarked and isHighlighted state to false

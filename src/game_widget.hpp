@@ -27,59 +27,59 @@
 
 namespace KBX {
 class GameWidget: public QGLWidget {
-Q_OBJECT // must include this if you use Qt signals/slots
-public:
-  Color bgColor;
+  Q_OBJECT // must include this if you use Qt signals/slots
+  public:
+    Color bgColor;
 
-  void changed();
-  void setAutoUpdate(bool newAutoUpdate);
-  void userSelect(Object* obj);
+    void changed();
+    void setAutoUpdate(bool newAutoUpdate);
+    void userSelect(Object* obj);
 
-private:
-  Scene* scene;
-  Game* game;
-  QPoint mousePos;
-  QTimer* updateTimer;
+  private:
+    Scene* _scene;
+    Game* _game;
+    QPoint _mousePos;
+    QTimer* _updateTimer;
 
-  bool autoRefresh;
-  bool autoUpdate;
+    bool _autoRefresh;
+    bool _autoUpdate;
 
-  int nBuffers;
-  // bfChange keeps track of the changes of the scene
-  // bfChange  > 0: perform a redraw for the next bfChange frames
-  // bfChange == 0: do not perform redraws
-  // bfChange  < 0: permanently perform redraws
-  int bfChange;
-  void updated();
-  bool needUpdate();
+    int _nBuffers;
+    // _bfChange keeps track of the changes of the scene
+    // _bfChange  > 0: perform a redraw for the next bfChange frames
+    // _bfChange == 0: do not perform redraws
+    // _bfChange  < 0: permanently perform redraws
+    int _bfChange;
+    void _updated();
+    bool _needUpdate();
 
-  Object* pickObject(QPoint p);
+    Object* _pickObject(QPoint p);
 
-  bool relativeMarking;
+    bool _relativeMarking;
 
-  Logger log;
+    Logger _log;
 
-protected:
-  void initializeGL();
-  void resizeGL(int w, int h);
-  void paintGL();
-  void mousePressEvent(QMouseEvent *event);
-  void mouseMoveEvent(QMouseEvent *event);
-  void wheelEvent(QWheelEvent *event);
-  void keyPressEvent(QKeyEvent *event);
+  protected:
+    void initializeGL();
+    void resizeGL(int w, int h);
+    void paintGL();
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
+    void keyPressEvent(QKeyEvent *event);
 
-protected slots:
-  void newGame();
-  void save();
-  void load();
-  void setAutoRefresh(bool newAutoRefresh);
-  void setRelativeMarking(bool newRelativeMarking);
+  protected slots:
+    void newGame();
+    void save();
+    void load();
+    void setAutoRefresh(bool newAutoRefresh);
+    void setRelativeMarking(bool newRelativeMarking);
 
-public:
-  GameWidget(QWidget *parent = NULL);
-  ~GameWidget() {
-  }
-  void initializeGUI();
+  public:
+    GameWidget(QWidget *parent = NULL);
+    ~GameWidget() {
+    }
+    void initializeGUI();
 };
 
 } // end namespace KBX

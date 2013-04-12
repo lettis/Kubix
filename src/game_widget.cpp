@@ -16,8 +16,7 @@
  courtesy to Dave Mateer for this piece of code
  http://stackoverflow.com/questions/9822177/is-there-a-way-to-automatically-add-extensions-to-a-file-using-qfiledialog-on-li
  */
-QString showSaveFileDialog(QWidget *parent, const QString &title, const QString &directory,
-    const QString &filter) {
+QString showSaveFileDialog(QWidget *parent, const QString &title, const QString &directory, const QString &filter) {
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC)
   return QFileDialog::getSaveFileName(parent,
       title,
@@ -30,7 +29,7 @@ QString showSaveFileDialog(QWidget *parent, const QString &title, const QString 
   }
   QRegExp filter_regex(QLatin1String("(?:^\\*\\.(?!.*\\()|\\(\\*\\.)(\\w+)"));
   QStringList filters = filter.split(QLatin1String(";;"));
-  if (!filters.isEmpty()) {
+  if ( !filters.isEmpty()) {
     dialog.setNameFilter(filters.first());
     if (filter_regex.indexIn(filters.first()) != -1) {
       dialog.setDefaultSuffix(filter_regex.cap(1));
@@ -56,8 +55,7 @@ QString showSaveFileDialog(QWidget *parent, const QString &title, const QString 
 namespace KBX {
 
 void GameWidget::initializeGUI() {
-  QPushButton *btn_newGame = new QPushButton(QApplication::translate("childwidget", "New Game"),
-      this);
+  QPushButton *btn_newGame = new QPushButton(QApplication::translate("childwidget", "New Game"), this);
   btn_newGame->setFocusPolicy(Qt::NoFocus);
   connect(btn_newGame, SIGNAL( released() ), this, SLOT( newGame() ));
   btn_newGame->setToolTip("Start a new game\nThe current game state will be lost.");
@@ -80,8 +78,7 @@ void GameWidget::initializeGUI() {
   btn_quit->setToolTip("Quit Kubix");
   btn_quit->move(700, 0);
 
-  QCheckBox* chbx_autoRefresh = new QCheckBox(
-      QApplication::translate("childwidget", "Auto-Refresh"), this);
+  QCheckBox* chbx_autoRefresh = new QCheckBox(QApplication::translate("childwidget", "Auto-Refresh"), this);
   connect(chbx_autoRefresh, SIGNAL( toggled(bool) ), this, SLOT(setAutoRefresh(bool)));
   chbx_autoRefresh->move(400, 0);
   chbx_autoRefresh->setToolTip("Auto-Refresh will cause the scene to be redrawn regularly,"
@@ -92,8 +89,7 @@ void GameWidget::initializeGUI() {
   chbx_autoRefresh->setFocusPolicy(Qt::NoFocus);
   this->setAutoRefresh(false);
 
-  QCheckBox* chbx_relativeMarking = new QCheckBox(
-      QApplication::translate("childwidget", "relative Marking"), this);
+  QCheckBox* chbx_relativeMarking = new QCheckBox(QApplication::translate("childwidget", "relative Marking"), this);
   connect(chbx_relativeMarking, SIGNAL( toggled(bool) ), this, SLOT(setRelativeMarking(bool)));
   chbx_relativeMarking->move(550, 0);
   chbx_relativeMarking->setToolTip("Relative Marking will cause the keyboard controls for marking"
@@ -103,38 +99,38 @@ void GameWidget::initializeGUI() {
 }
 
 void GameWidget::newGame() {
-  this->scene->wipe();
-  delete this->game;
+  this->_scene->wipe();
+  delete this->_game;
   // TODO: this is just a dummy for now, please replace by something that makes more sense!
-  this->game = new Game(Config(PlayMode(HUMAN_AI), 3, Strategy(1)));
-  this->scene->setup();
+  this->_game = new Game(Config(PlayMode(HUMAN_AI), 3, Strategy(1)));
+  this->_scene->setup();
 }
 
 GameWidget::GameWidget(QWidget *parent)
     : QGLWidget(parent),
-      log("act"),
+      _log("act"),
       bgColor(ColorTable::GREY10),
-      scene(NULL),
-      autoRefresh(false),
-      autoUpdate(false),
-      updateTimer(NULL),
-      relativeMarking(false),
-      nBuffers(2),
-      bfChange(0) {
+      _scene(NULL),
+      _autoRefresh(false),
+      _autoUpdate(false),
+      _updateTimer(NULL),
+      _relativeMarking(false),
+      _nBuffers(2),
+      _bfChange(0) {
   setMouseTracking(false);
   // TODO: this is just a dummy for now, please replace by something that makes more sense!
-  this->game = new Game(Config(PlayMode(HUMAN_AI), 3, Strategy(1)));
+  this->_game = new Game(Config(PlayMode(HUMAN_AI), 3, Strategy(1)));
 }
 
 void GameWidget::initializeGL() {
   glEnable(GL_DEPTH_TEST);
   //this->bgColor = Color::GREY20;
   glClearColor(bgColor.r, bgColor.g, bgColor.b, 0.0f);
-  this->scene = new Scene(this);
+  this->_scene = new Scene(this);
   // setup timer for graphics refresh
-  this->updateTimer = new QTimer(this);
-  connect(this->updateTimer, SIGNAL(timeout()), this, SLOT(update()));
-  this->updateTimer->start(30);
+  this->_updateTimer = new QTimer(this);
+  connect(this->_updateTimer, SIGNAL(timeout()), this, SLOT(update()));
+  this->_updateTimer->start(30);
   //this->nBuffers = 2;
   this->setAutoRefresh(false);
   this->changed();
@@ -142,17 +138,17 @@ void GameWidget::initializeGL() {
 
 /// notify the GLWidget that the scene has changed
 void GameWidget::changed() {
-  if (this->autoUpdate || this->autoRefresh) {
-    this->bfChange = -1;
+  if (this->_autoUpdate || this->_autoRefresh) {
+    this->_bfChange = -1;
   } else {
-    this->bfChange = this->nBuffers;
+    this->_bfChange = this->_nBuffers;
   }
 }
 
 /// notify the GLWidget that the scene has been updated
-void GameWidget::updated() {
-  if (!this->bfChange == 0) {
-    this->bfChange--;
+void GameWidget::_updated() {
+  if ( !this->_bfChange == 0) {
+    this->_bfChange--;
   }
 }
 
@@ -160,8 +156,8 @@ void GameWidget::updated() {
 /*
  \return true if the scene needs to be redrawn, false otherwise
  */
-bool GameWidget::needUpdate() {
-  if (this->bfChange == 0) {
+bool GameWidget::_needUpdate() {
+  if (this->_bfChange == 0) {
     return false;
   } else {
     return true;
@@ -178,7 +174,7 @@ bool GameWidget::needUpdate() {
  such as animated motions of objects
  */
 void GameWidget::setAutoUpdate(bool newAutoUpdate) {
-  this->autoUpdate = newAutoUpdate;
+  this->_autoUpdate = newAutoUpdate;
   this->changed();
 }
 
@@ -196,12 +192,12 @@ void GameWidget::setAutoUpdate(bool newAutoUpdate) {
  only set to true if there are problems with the graphics
  */
 void GameWidget::setAutoRefresh(bool newAutoRefresh) {
-  this->autoRefresh = newAutoRefresh;
+  this->_autoRefresh = newAutoRefresh;
   this->changed();
 }
 
 void GameWidget::setRelativeMarking(bool newRelativeMarking) {
-  this->relativeMarking = newRelativeMarking;
+  this->_relativeMarking = newRelativeMarking;
 }
 
 void GameWidget::resizeGL(int w, int h) {
@@ -217,12 +213,12 @@ void GameWidget::resizeGL(int w, int h) {
 }
 
 void GameWidget::paintGL() {
-  if (this->needUpdate()) {
+  if (this->_needUpdate()) {
     glClearColor(this->bgColor.r, this->bgColor.g, this->bgColor.b, 0.0f);
     // if you want to debug the color-picking, use the this->scene->display_picking() instead
-    this->scene->display();
+    this->_scene->display();
     // set update flag to redraw scene
-    this->updated();
+    this->_updated();
   }
 }
 
@@ -234,11 +230,11 @@ void GameWidget::mousePressEvent(QMouseEvent *event) {
   Object* obj;
   if (event->button() == Qt::LeftButton) {
     // pick object
-    scene->clearStates();
-    this->userSelect(this->scene->pickObject(event->pos()));
+    _scene->clearStates();
+    this->userSelect(this->_scene->pickObject(event->pos()));
   } else if (event->button() == Qt::RightButton) {
     // save mouse position for scene rotation
-    this->mousePos = event->pos();
+    this->_mousePos = event->pos();
   }
   event->ignore();
   this->changed();
@@ -251,10 +247,10 @@ void GameWidget::mousePressEvent(QMouseEvent *event) {
 void GameWidget::mouseMoveEvent(QMouseEvent *event) {
   float rotAngle = 0.2;
   if (event->buttons() & Qt::RightButton) {
-    QPoint delta = event->pos() - this->mousePos;
-    this->mousePos = event->pos();
-    this->scene->rotate(-1 * delta.x() * rotAngle, Camera::HORIZONTAL);
-    this->scene->rotate(delta.y() * rotAngle, Camera::VERTICAL);
+    QPoint delta = event->pos() - this->_mousePos;
+    this->_mousePos = event->pos();
+    this->_scene->rotate( -1 * delta.x() * rotAngle, Camera::HORIZONTAL);
+    this->_scene->rotate(delta.y() * rotAngle, Camera::VERTICAL);
     this->changed();
   } else {
     event->ignore();
@@ -266,7 +262,7 @@ void GameWidget::mouseMoveEvent(QMouseEvent *event) {
  \param event incoming event
  */
 void GameWidget::wheelEvent(QWheelEvent *event) {
-  this->scene->zoom(1 - 0.0005 * event->delta());
+  this->_scene->zoom(1 - 0.0005 * event->delta());
   this->changed();
 }
 
@@ -280,57 +276,57 @@ void GameWidget::keyPressEvent(QKeyEvent* event) {
   switch (event->key()) {
     case Qt::Key_Escape:
       // escape unmarks / delects
-      this->scene->clearStates();
+      this->_scene->clearStates();
       break;
     case Qt::Key_A:
-      this->scene->rotate(-angle, Camera::HORIZONTAL);
+      this->_scene->rotate( -angle, Camera::HORIZONTAL);
       break;
     case Qt::Key_D:
-      this->scene->rotate(angle, Camera::HORIZONTAL);
+      this->_scene->rotate(angle, Camera::HORIZONTAL);
       break;
     case Qt::Key_W:
-      this->scene->rotate(angle, Camera::VERTICAL);
+      this->_scene->rotate(angle, Camera::VERTICAL);
       break;
     case Qt::Key_S:
-      this->scene->rotate(-angle, Camera::VERTICAL);
+      this->_scene->rotate( -angle, Camera::VERTICAL);
       break;
     case Qt::Key_Q:
-      this->scene->zoom(1.0 + zoom);
+      this->_scene->zoom(1.0 + zoom);
       break;
     case Qt::Key_E:
-      this->scene->zoom(1.0 - zoom);
+      this->_scene->zoom(1.0 - zoom);
       break;
 
     case Qt::Key_Up:
-      if (this->relativeMarking) {
-        this->scene->markNext(this->scene->getOrientation().rotate(Vec(0, 0, 1), 180));
+      if (this->_relativeMarking) {
+        this->_scene->markNext(this->_scene->getOrientation().rotate(Vec(0, 0, 1), 180));
       } else {
-        this->scene->markNext(Vec(0, 1, 0));
+        this->_scene->markNext(Vec(0, 1, 0));
       }
       break;
     case Qt::Key_Down:
-      if (this->relativeMarking) {
-        this->scene->markNext(this->scene->getOrientation().rotate(Vec(0, 0, 1), 0));
+      if (this->_relativeMarking) {
+        this->_scene->markNext(this->_scene->getOrientation().rotate(Vec(0, 0, 1), 0));
       } else {
-        this->scene->markNext(Vec(0, -1, 0));
+        this->_scene->markNext(Vec(0, -1, 0));
       }
       break;
     case Qt::Key_Left:
-      if (this->relativeMarking) {
-        this->scene->markNext(this->scene->getOrientation().rotate(Vec(0, 0, 1), -90));
+      if (this->_relativeMarking) {
+        this->_scene->markNext(this->_scene->getOrientation().rotate(Vec(0, 0, 1), -90));
       } else {
-        this->scene->markNext(Vec(-1, 0, 0));
+        this->_scene->markNext(Vec( -1, 0, 0));
       }
       break;
     case Qt::Key_Right:
-      if (this->relativeMarking) {
-        this->scene->markNext(this->scene->getOrientation().rotate(Vec(0, 0, 1), 90));
+      if (this->_relativeMarking) {
+        this->_scene->markNext(this->_scene->getOrientation().rotate(Vec(0, 0, 1), 90));
       } else {
-        this->scene->markNext(Vec(1, 0, 0));
+        this->_scene->markNext(Vec(1, 0, 0));
       }
       break;
     case Qt::Key_Space:
-      this->userSelect(this->scene->getMarked());
+      this->userSelect(this->_scene->getMarked());
       break;
     default:
       event->ignore();
@@ -351,16 +347,16 @@ void GameWidget::keyPressEvent(QKeyEvent* event) {
  userSelect checks if there is already a selected object,
  what kind of object this is
  and what is the corresponding action, for example
- move a die, unselect the currently selected object
+ move a die, deselect the currently selected object
  of select a new object and disregard the old selection
  */
 void GameWidget::userSelect(Object* obj) {
-  if (!obj) {
-    this->log.info("deselecting");
+  if ( !obj) {
+    this->_log.info("deselecting");
   }
-  Die* selectedDie = dynamic_cast< Die* >(this->scene->getSelected());
+  Die* selectedDie = dynamic_cast< Die* >(this->_scene->getSelected());
   Tile* clickedTile = dynamic_cast< Tile* >(obj);
-  if (!clickedTile) {
+  if ( !clickedTile) {
     Die* d = dynamic_cast< Die* >(obj);
     if (d) {
       clickedTile = d->getTile();
@@ -368,20 +364,19 @@ void GameWidget::userSelect(Object* obj) {
   }
 
   // FIXME dummy paths for testing purposes
-  if (clickedTile){
+  if (clickedTile) {
     Vec tilePos = clickedTile->getPosition();
     //TODO: how to delete path afterwards?
-    bool x=true;
-    RelativeMove relM(2,3,x);
-    this->scene->add(new Path(this->scene, tilePos, relM));
-    relM = RelativeMove(-2,3,x);
-    this->scene->add(new Path(this->scene, tilePos, relM));
-    relM = RelativeMove(2,-3,x);
-    this->scene->add(new Path(this->scene, tilePos, relM));
-    relM = RelativeMove(-2,-3,x);
-    this->scene->add(new Path(this->scene, tilePos, relM));
+    bool x = true;
+    RelativeMove relM(2, 3, x);
+    this->_scene->add(new Path(this->_scene, tilePos, relM));
+    relM = RelativeMove( -2, 3, x);
+    this->_scene->add(new Path(this->_scene, tilePos, relM));
+    relM = RelativeMove(2, -3, x);
+    this->_scene->add(new Path(this->_scene, tilePos, relM));
+    relM = RelativeMove( -2, -3, x);
+    this->_scene->add(new Path(this->_scene, tilePos, relM));
   }
-
 
 //  if (selectedDie && clickedTile) {
 //    //TODO: check if clicked move is valid
@@ -399,30 +394,29 @@ void GameWidget::userSelect(Object* obj) {
 void GameWidget::save() {
   QString ofname = showSaveFileDialog(this, "Save Game", QString(), "Kubix Savegames (*.kbx)");
   std::ofstream outfile(ofname.toStdString().c_str());
-  if (!outfile.is_open()) {
-    this->log.warning("Error: cannot open file to save. Check filesystem permissions!");
+  if ( !outfile.is_open()) {
+    this->_log.warning("Error: cannot open file to save. Check filesystem permissions!");
     return;
   }
-  if (this->game->write(outfile)) {
-    this->log.info("Saved game successfully to file '" + ofname.toStdString() + "'.");
+  if (this->_game->write(outfile)) {
+    this->_log.info("Saved game successfully to file '" + ofname.toStdString() + "'.");
   } else {
-    this->log.warning("Error saving game!");
+    this->_log.warning("Error saving game!");
   }
   outfile.close();
 }
 
 void GameWidget::load() {
-  QString ifname = QFileDialog::getOpenFileName(this, "Load Game", QString(),
-      "Kubix Savegames (*.kbx)");
+  QString ifname = QFileDialog::getOpenFileName(this, "Load Game", QString(), "Kubix Savegames (*.kbx)");
   std::ifstream infile(ifname.toStdString().c_str());
-  if (!infile.is_open()) {
-    this->log.warning("Error: cannot open file for reading...");
+  if ( !infile.is_open()) {
+    this->_log.warning("Error: cannot open file for reading...");
     return;
   }
-  if (this->game->read(infile)) {
-    this->log.info("Loaded game successfully from file '" + ifname.toStdString() + "'.");
+  if (this->_game->read(infile)) {
+    this->_log.info("Loaded game successfully from file '" + ifname.toStdString() + "'.");
   } else {
-    this->log.warning("Error loading game!");
+    this->_log.warning("Error loading game!");
   }
   infile.close();
 }

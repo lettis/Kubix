@@ -333,8 +333,8 @@ bool Vec::operator==(Vec v) {
  \returns the rotated vector
  */
 Vec Vec::rotate(Vec rotAxis, float angle) {
-  if (angle == 0.0f){
-    return Vec(*this);
+  if (angle == 0.0f) {
+    return Vec( *this);
   }
   // first normalize rotation axis
   rotAxis = rotAxis.normalize();
@@ -366,7 +366,7 @@ Vec Vec::cross(Vec v) {
   return result;
 }
 
-void Vec::setAsGlVertex3f(){
+void Vec::setAsGlVertex3f() {
   glVertex3f(this->x, this->y, this->z);
 }
 

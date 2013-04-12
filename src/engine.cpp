@@ -164,7 +164,7 @@ const size_t DieState::_state[26][5] = {
     , {0, 25, 25, 25, 25} // state == die got killed
 };
 /// set state to the one you get, when moving in given direction
-void DieState::move(size_t direction) {
+void DieState::moveOneStep(size_t direction) {
   this->_curState = this->_state[this->_curState][direction];
   switch (direction) {
     case NORTH:
@@ -315,11 +315,11 @@ void Game::makeMove(Move move, bool storeMove = true) {
   // traverse through dice states
   for (size_t i = stepsFirst; i > 0; i--) {
     // rotate in first direction
-    dieState.move(directionFirst);
+    dieState.moveOneStep(directionFirst);
   }
   for (size_t i = stepsSec; i > 0; i--) {
     // rotate in second direction
-    dieState.move(directionFirst);
+    dieState.moveOneStep(directionFirst);
   }
   // delete old die on this position before moving new die to it
   int keyOldDie = this->_fields[dieState.x()][dieState.y()];

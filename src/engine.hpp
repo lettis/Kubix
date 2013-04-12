@@ -59,105 +59,105 @@ PlayColor inverse(PlayColor color);
 
 /// defines playing strategy of AI
 class Strategy {
-public:
-  int coeffDiceRatio;
-  Strategy(float coeffDiceRatio);
-  bool write(std::ostream& out) const;
-  bool read(std::istream& in);
+  public:
+    int coeffDiceRatio;
+    Strategy(float coeffDiceRatio);
+    bool write(std::ostream& out) const;
+    bool read(std::istream& in);
 };
 
 /// configuration settings
 class Config {
-public:
-  PlayMode mode;
-  size_t cpuLevel;
-  Strategy strategy;
-  Config(PlayMode mode, size_t cpuLevel, Strategy strategy);
-  bool write(std::ostream& out) const;
-  bool read(std::istream& in);
+  public:
+    PlayMode mode;
+    size_t cpuLevel;
+    Strategy strategy;
+    Config(PlayMode mode, size_t cpuLevel, Strategy strategy);
+    bool write(std::ostream& out) const;
+    bool read(std::istream& in);
 };
 
 class RelativeMove {
-public:
-  int dx;
-  int dy;
-  bool firstX;
-  RelativeMove();
-  RelativeMove(int dx, int dy, bool FIRST_X);
-  RelativeMove invert();
-  bool write(std::ostream& out) const;
-  bool read(std::istream& in);
+  public:
+    int dx;
+    int dy;
+    bool firstX;
+    RelativeMove();
+    RelativeMove(int dx, int dy, bool FIRST_X);
+    RelativeMove invert();
+    bool write(std::ostream& out) const;
+    bool read(std::istream& in);
 };
 
 class Move {
-public:
-  int dieIndex;
-  RelativeMove rel;
-  Move();
-  Move(int dieIndex, RelativeMove rel);
-  bool write(std::ostream& out) const;
-  bool read(std::istream& in);
+  public:
+    int dieIndex;
+    RelativeMove rel;
+    Move();
+    Move(int dieIndex, RelativeMove rel);
+    bool write(std::ostream& out) const;
+    bool read(std::istream& in);
 };
 
 /// defines the current state of a die (i.e. position, orientation, value, color, etc.)
 class DieState {
-  static const size_t _state[26][5];
-  int _x;
-  int _y;
-  PlayColor _color;
-  size_t _formerState;
-  size_t _curState;
-public:
-  static const size_t nPossibleMoves[7];
-  // list of possible (relative) moves for a die
-  static const std::vector< std::vector< RelativeMove > > possibleMoves;
-  static const std::vector< std::vector< RelativeMove > > initPossibleMoves();
+    static const size_t _state[26][5];
+    int _x;
+    int _y;
+    PlayColor _color;
+    size_t _formerState;
+    size_t _curState;
+  public:
+    static const size_t nPossibleMoves[7];
+    // list of possible (relative) moves for a die
+    static const std::vector< std::vector< RelativeMove > > possibleMoves;
+    static const std::vector< std::vector< RelativeMove > > initPossibleMoves();
 
-  DieState();
-  DieState(int x, int y, PlayColor color, size_t state);
+    DieState();
+    DieState(int x, int y, PlayColor color, size_t state);
 
-  void move(size_t direction);
-  void kill();
-  void revive();
-  bool gotKilled();
-  size_t getValue();
-  size_t getColor();
-  int x();
-  int y();
-  bool write(std::ostream& out) const;
-  bool read(std::istream& in);
+    void moveOneStep(size_t direction);
+    void kill();
+    void revive();
+    bool gotKilled();
+    size_t getValue();
+    size_t getColor();
+    int x();
+    int y();
+    bool write(std::ostream& out) const;
+    bool read(std::istream& in);
 };
 
 class Evaluation {
-public:
-  Evaluation(float rating);
-  Evaluation(float rating, Move move);
-  float rating;
-  Move move;
+  public:
+    Evaluation(float rating);
+    Evaluation(float rating, Move move);
+    float rating;
+    Move move;
 };
 
 class Game {
-  int _fields[9][9];
-  DieState _dice[18];
-  Config _config;
-  std::list< Move > _moveList;
-  std::list< Move >::iterator _lastMove;
-public:
-  Game(Config config);
-  bool moveIsValid(Move move);
-  void makeMove(Move move, bool storeMove);
-  Move undoMove();
-  Move redoMove();
-  PlayColor getWinner();
-  DieState* getDie(size_t id);
-  DieState* getDie(size_t x, size_t y);
-  int getDieId(size_t x, size_t y);
-  float rate(PlayColor color);
-  Evaluation evaluateMoves(int level, PlayColor color, float alpha, float beta, bool initialCall);
-  bool write(std::ostream& out) const;
-  bool read(std::istream& in);
-  // rating functions
-  float rateDiceRatio(PlayColor color);
+    int _fields[9][9];
+    DieState _dice[18];
+    Config _config;
+    std::list< Move > _moveList;
+    std::list< Move >::iterator _lastMove;
+  public:
+    Game(Config config);
+    bool moveIsValid(Move move);
+    void makeMove(Move move, bool storeMove);
+    Move undoMove();
+    Move redoMove();
+    PlayColor getWinner();
+    DieState* getDie(size_t id);
+    DieState* getDie(size_t x, size_t y);
+    int getDieId(size_t x, size_t y);
+    float rate(PlayColor color);
+    Evaluation evaluateMoves(int level, PlayColor color, float alpha, float beta, bool initialCall);
+    bool write(std::ostream& out) const;
+    bool read(std::istream& in);
+    // rating functions
+    float rateDiceRatio(PlayColor color);
 };
 
 } // end namespace KBX
