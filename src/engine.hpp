@@ -22,7 +22,6 @@
 #include <list>
 #include <iostream>
 
-
 namespace KBX {
 
 enum StateValue {
@@ -141,8 +140,8 @@ class Game {
   int _fields[9][9];
   DieState _dice[18];
   Config _config;
-  std::list< Move > moveList;
-  std::list< Move >::iterator lastMove;
+  std::list< Move > _moveList;
+  std::list< Move >::iterator _lastMove;
 public:
   Game(Config config);
   bool moveIsValid(Move move);

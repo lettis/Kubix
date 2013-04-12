@@ -674,24 +674,6 @@ size_t Board::getNX() {
   return this->_nX;
 }
 
-/// return object by clicked color id
-/**
- \param id id of color clicked
- \return associated object
- */
-Object* Board::clicked(size_t id) {
-  Object* obj;
-  for (size_t x = 0; x < this->_nX; x++) {
-    for (size_t y = 0; y < this->_nY; y++) {
-      obj = this->_tiles[x][y]->clicked(id);
-      if (obj) {
-        return obj;
-      }
-    }
-  }
-  return NULL;
-}
-
 /// clear all tile states
 /**
  set all tiles isSelected, isMarked and isHighlighted state to false
@@ -801,20 +783,21 @@ Die* Tile::getDie() {
  set all objects isSelected, isMarked and isHighlighted state to false
  */
 void Scene::clearStates() {
-  for (size_t id = 0; id < objList.size(); id++) {
-    if (objList[id]) {
-      objList[id]->clearStates();
+  for (size_t id = 0; id < _objList.size(); id++) {
+    if (_objList[id]) {
+      _objList[id]->clearStates();
     }
   }
 }
 
 /// wipe all objects from the scene
 void Scene::wipe() {
-  for (std::vector< Object* >::iterator obj = this->objList.begin(); obj != this->objList.end(); obj++) {
+  for (std::vector< Object* >::iterator obj = this->_objList.begin(); obj != this->_objList.end(); obj++) {
     delete *obj;
   }
   this->_dice.clear();
-  this->objList.clear();
+  this->_objId2Die.clear();
+  this->_objList.clear();
   this->_board = NULL;
 }
 
@@ -826,7 +809,7 @@ Scene::Scene(GameWidget* act)
       selected(NULL),
       inObjPickingMode(false),
       uniqueColorId(0),
-      act(act),
+      _act(act),
       _board(NULL),
       cam(Vec(0, -50, 70), Vec(0, 0, 0)),
       messages("Scene") {
@@ -858,6 +841,9 @@ void Scene::setup() {
   this->markX = 4;
   this->markY = 4;
   this->selected = NULL;
+
+  // die setup.
+  // attention: order has to be kept as is to have same die ids as in engine!
 
   // white dice; w1 is in lower left corner, w8 in lower right
   this->_dice.push_back(new Die(this, Vec( -4, -4, 0), WHITE));
@@ -929,7 +915,8 @@ void Scene::setup() {
 
   // add dice to scene
   for (size_t i = 0; i < this->_dice.size(); i++) {
-    this->add(this->_dice[i]);
+    size_t objId = this->add(this->_dice[i]);
+    this->_objId2Die[objId] = i;
   }
 }
 
@@ -950,9 +937,9 @@ void Scene::_render() {
   this->cam.updateView();
   // call every object's display method to draw
   // the object to the scene
-  for (size_t i = 0; i < this->objList.size(); i++) {
-    if (this->objList[i]) {
-      this->objList[i]->display();
+  for (size_t i = 0; i < this->_objList.size(); i++) {
+    if (this->_objList[i]) {
+      this->_objList[i]->display();
     }
   }
 }
@@ -968,16 +955,16 @@ void Scene::_setColor() {
  */
 size_t Scene::add(Object* obj) {
   if (obj) {
-    this->objList.push_back(obj);
-    return this->objList.size() - 1;
+    this->_objList.push_back(obj);
+    return this->_objList.size() - 1;
   } else {
     throw "unable to add object to scene (null-reference)";
   }
 }
 
 void Scene::remove(size_t objId) {
-  delete this->objList[objId];
-  this->objList[objId] = NULL;
+  delete this->_objList[objId];
+  this->_objList[objId] = NULL;
 }
 
 /// rotate the scene
@@ -1048,9 +1035,9 @@ Object* Scene::pickObject(QPoint p) {
  \return associated object
  */
 Object* Scene::clicked(size_t id) {
-  for (size_t i = 0; i < this->objList.size(); i++) {
-    if (this->objList[i]) {
-      Object* obj = this->objList[i]->clicked(id);
+  for (size_t i = 0; i < this->_objList.size(); i++) {
+    if (this->_objList[i]) {
+      Object* obj = this->_objList[i]->clicked(id);
       if (obj) {
         return obj;
       }

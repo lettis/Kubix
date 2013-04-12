@@ -19,6 +19,7 @@
 #define MODELS__HPP
 
 #include <vector>
+#include <map>
 
 // forward declaration for KBX::Scene
 namespace KBX {
@@ -190,17 +191,13 @@ class Board: public Object {
   void _render();
   void _setColor() {
   }
-  ;
 public:
   size_t getNX();
   size_t getNY();
   Board(Scene* scene, size_t rows, size_t cols);
   ~Board();
-  Object* clicked(size_t id);
   void clearStates();
-  Die* getDie(size_t x, size_t y);
   Tile* getTile(size_t x, size_t y);
-
 };
 
 /// Defines the whole scene.
@@ -211,11 +208,10 @@ public:
  */
 class Scene: public Object {
 protected:
-  GameWidget* act;
+  GameWidget* _act;
 
-  std::vector< Object* > objList;
+  std::vector< Object* > _objList;
 
-  //Game*  _game;
   Board* _board;
 
   size_t markX;
@@ -229,6 +225,7 @@ protected:
   void _render();
   void _setColor();
   std::vector< Die* > _dice;
+  std::map< size_t, size_t > _objId2Die;
 
 public:
   Scene(GameWidget* act);
@@ -244,7 +241,6 @@ public:
   void zoom(float factor);
   void clearStates();
   Object* clicked(size_t id);
-  //TODO: write specialized versions: Object* pick(...); Die* pick(...); Tile* pick(...)
   Object* pickObject(QPoint p);
 
   void markNext(Vec delta);

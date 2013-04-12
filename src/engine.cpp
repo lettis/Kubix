@@ -62,11 +62,11 @@ RelativeMove::RelativeMove(int dx, int dy, bool FIRST_X)
 }
 /// invert the move (ie move back and reset to former position/orientation)
 RelativeMove RelativeMove::invert() {
-  return RelativeMove(-dx, -dy, !this->firstX);
+  return RelativeMove( -dx, -dy, !this->firstX);
 }
 
 Move::Move()
-    : dieIndex(-1),
+    : dieIndex( -1),
       rel(RelativeMove()) {
 }
 
@@ -77,17 +77,17 @@ Move::Move(int dieIndex, RelativeMove rel)
 
 /// initialize a die's state
 DieState::DieState()
-    : _x(-1),
-      _y(-1),
+    : _x( -1),
+      _y( -1),
       _color(NONE_OF_BOTH),
-      _formerState(-1),
-      _curState(-1) {
+      _formerState( -1),
+      _curState( -1) {
 }
 DieState::DieState(int x, int y, PlayColor color, size_t state)
     : _x(x),
       _y(y),
       _color(color),
-      _formerState(-1),
+      _formerState( -1),
       _curState(state) {
 }
 /// save the number of possible moves per die value
@@ -107,7 +107,7 @@ const std::vector< std::vector< RelativeMove > > DieState::initPossibleMoves() {
     std::vector< RelativeMove >& moveList = possibleMoves.back();
     // moves in all four directions without turning
     moveList.push_back(RelativeMove(val, 0, true));
-    moveList.push_back(RelativeMove(-val, 0, true));
+    moveList.push_back(RelativeMove( -val, 0, true));
     moveList.push_back(RelativeMove(0, val, false));
     moveList.push_back(RelativeMove(0, -val, false));
     // moves in all directions with turning
@@ -115,19 +115,19 @@ const std::vector< std::vector< RelativeMove > > DieState::initPossibleMoves() {
       /* +x,+y first x */
       moveList.push_back(RelativeMove(i, val - i, true));
       /* -x,+y first x */
-      moveList.push_back(RelativeMove(-i, val - i, true));
+      moveList.push_back(RelativeMove( -i, val - i, true));
       /* +x,+y first y */
       moveList.push_back(RelativeMove(i, val - i, false));
       /* -x,+y first y */
-      moveList.push_back(RelativeMove(-i, val - i, false));
+      moveList.push_back(RelativeMove( -i, val - i, false));
       /* +x,-y first x */
       moveList.push_back(RelativeMove(i, -(val - i), true));
       /* -x,-y first x */
-      moveList.push_back(RelativeMove(-i, -(val - i), true));
+      moveList.push_back(RelativeMove( -i, -(val - i), true));
       /* +x,-y first y */
       moveList.push_back(RelativeMove(i, -(val - i), false));
       /* -x,-y first y */
-      moveList.push_back(RelativeMove(-i, -(val - i), false));
+      moveList.push_back(RelativeMove( -i, -(val - i), false));
     }
   }
   return possibleMoves;
@@ -156,12 +156,11 @@ const std::vector< std::vector< RelativeMove > > DieState::initPossibleMoves() {
  */
 const size_t DieState::_state[26][5] = {
     //indices define: value, north, south, east, west
-    {1, 4, 16, 12, 8}, {1, 9, 14, 5, 19}, {1, 18, 6, 11, 15}, {1, 13, 10, 17, 7}, {2, 20, 0, 13, 9},
-    {2, 11, 12, 22, 1}, {2, 2, 21, 10, 14}, {2, 15, 8, 3, 23}, {3, 7, 19, 0, 21}, {3, 23, 1, 4, 18},
-    {3, 3, 22, 16, 6}, {3, 17, 5, 20, 2}, {4, 5, 17, 21, 0}, {4, 22, 3, 18, 4}, {4, 1, 23, 6, 16}, {
-        4, 19, 7, 2, 20}, {5, 0, 20, 14, 10}, {5, 12, 11, 23, 3}, {5, 21, 2, 9, 13}, {5, 8, 15, 1,
-        22}, {6, 16, 4, 15, 11}, {6, 6, 18, 8, 12}, {6, 10, 13, 19, 5}, {6, 14, 9, 7, 17}, {1, 24,
-        24, 24, 24} // king's die
+    {1, 4, 16, 12, 8}, {1, 9, 14, 5, 19}, {1, 18, 6, 11, 15}, {1, 13, 10, 17, 7}, {2, 20, 0, 13, 9}, {2, 11, 12, 22, 1},
+    {2, 2, 21, 10, 14}, {2, 15, 8, 3, 23}, {3, 7, 19, 0, 21}, {3, 23, 1, 4, 18}, {3, 3, 22, 16, 6}, {3, 17, 5, 20, 2}, {
+        4, 5, 17, 21, 0}, {4, 22, 3, 18, 4}, {4, 1, 23, 6, 16}, {4, 19, 7, 2, 20}, {5, 0, 20, 14, 10},
+    {5, 12, 11, 23, 3}, {5, 21, 2, 9, 13}, {5, 8, 15, 1, 22}, {6, 16, 4, 15, 11}, {6, 6, 18, 8, 12}, {6, 10, 13, 19, 5},
+    {6, 14, 9, 7, 17}, {1, 24, 24, 24, 24} // king's die
     , {0, 25, 25, 25, 25} // state == die got killed
 };
 /// set state to the one you get, when moving in given direction
@@ -265,26 +264,26 @@ Game::Game(Config config)
     this->_fields[x][8] = x + 9;
   }
   // initialize last-move iterator
-  this->lastMove = this->moveList.begin();
+  this->_lastMove = this->_moveList.begin();
 }
 /// move die over board
 void Game::makeMove(Move move, bool storeMove = true) {
   if (storeMove) {
     // delete moves in list form here to end if lastMove != moveList.end()
-    if (this->lastMove != this->moveList.end()) {
-      this->moveList.erase(this->lastMove, this->moveList.end());
-      if (this->moveList.empty()) {
+    if (this->_lastMove != this->_moveList.end()) {
+      this->_moveList.erase(this->_lastMove, this->_moveList.end());
+      if (this->_moveList.empty()) {
         // point to begin
-        this->lastMove = this->moveList.begin();
+        this->_lastMove = this->_moveList.begin();
       } else {
         // point to last element
-        this->lastMove = this->moveList.end();
-        this->lastMove--;
+        this->_lastMove = this->_moveList.end();
+        this->_lastMove--;
       }
     }
     // store move in move list and increase last-move pointer
-    this->moveList.push_back(move);
-    this->lastMove++;
+    this->_moveList.push_back(move);
+    this->_lastMove++;
   }
   //// perform move
   DieState& dieState = this->_dice[move.dieIndex];
@@ -333,11 +332,11 @@ void Game::makeMove(Move move, bool storeMove = true) {
 
 Move Game::undoMove() {
   //TODO: untested
-  if (this->lastMove != this->moveList.begin()) {
-    Move backMove = *this->lastMove;
+  if (this->_lastMove != this->_moveList.begin()) {
+    Move backMove = *this->_lastMove;
     backMove.rel = backMove.rel.invert();
     this->makeMove(backMove, false);
-    this->lastMove--;
+    this->_lastMove--;
     return backMove;
   } else {
     return Move();
@@ -346,9 +345,9 @@ Move Game::undoMove() {
 
 Move Game::redoMove() {
   //TODO: untested
-  if (this->lastMove != this->moveList.end()) {
-    this->lastMove++;
-    Move forwardMove = *this->lastMove;
+  if (this->_lastMove != this->_moveList.end()) {
+    this->_lastMove++;
+    Move forwardMove = *this->_lastMove;
     this->makeMove(forwardMove, false);
     return forwardMove;
   } else {
@@ -367,8 +366,8 @@ bool Game::moveIsValid(Move move) {
     return false;
   }
   // check, if move goes off the board
-  if (dieState.x() + move.rel.dx < 0 || dieState.x() + move.rel.dx > 8
-      || dieState.y() + move.rel.dy < 0 || dieState.y() + move.rel.dy > 8) {
+  if (dieState.x() + move.rel.dx < 0 || dieState.x() + move.rel.dx > 8 || dieState.y() + move.rel.dy < 0
+      || dieState.y() + move.rel.dy > 8) {
     return false;
   }
   // check, if there are dice on the way, that cannot be crossed
@@ -431,14 +430,17 @@ PlayColor Game::getWinner() {
   DieState& kingW = this->_dice[KING_WHITE];
   DieState& kingB = this->_dice[KING_BLACK];
   // check if king dice gets killed
-  if (kingW.gotKilled()){
+  if (kingW.gotKilled()) {
     return BLACK;
-  } if (kingB.gotKilled()){
+  }
+  if (kingB.gotKilled()) {
     return WHITE;
-  // winning by conquering opponents king field
-  } if ((kingW.x() == 8) && (kingW.y() == 4)){
+    // winning by conquering opponents king field
+  }
+  if ((kingW.x() == 8) && (kingW.y() == 4)) {
     return WHITE;
-  } if ((kingB.x() == 0) && (kingB.y() == 4)){
+  }
+  if ((kingB.x() == 0) && (kingB.y() == 4)) {
     return BLACK;
   }
   // nobody has won yet
@@ -494,8 +496,7 @@ float Game::rate(PlayColor color) {
  TODO: document return value
  this is done recursively by a form of the NegaMax algorithm with alpha-beta pruning
  */
-Evaluation Game::evaluateMoves(int level, PlayColor color, float alpha, float beta,
-    bool initialCall) {
+Evaluation Game::evaluateMoves(int level, PlayColor color, float alpha, float beta, bool initialCall) {
   // container for best move candidates
   std::vector< Evaluation > bestCandidates;
   // limit indices to significant color
@@ -520,8 +521,7 @@ Evaluation Game::evaluateMoves(int level, PlayColor color, float alpha, float be
         // store all data to undo move later
         RelativeMove moveBack = move.invert();
         // kill the die lying on the target field
-        int idDieOnTarget =
-            this->_fields[this->_dice[d].x() + move.dx][this->_dice[d].y() + move.dy];
+        int idDieOnTarget = this->_fields[this->_dice[d].x() + move.dx][this->_dice[d].y() + move.dy];
         if (idDieOnTarget != CLEAR) {
           this->_dice[idDieOnTarget].kill();
         }
@@ -666,19 +666,18 @@ bool Game::write(std::ostream& out) const {
   }
   proceed(out);
   for (size_t i = 0; i < 18; i++) {
-    if (!this->_dice[i].write(out))
+    if ( !this->_dice[i].write(out))
       return false;
   }
-  if (!this->_config.write(out))
+  if ( !this->_config.write(out))
     return false;
   size_t mpos = 0;
   size_t i = 0;
-  for (std::list< Move >::const_iterator m = this->moveList.begin(); m != this->moveList.end();
-      m++) {
-    if (!m->write(out))
+  for (std::list< Move >::const_iterator m = this->_moveList.begin(); m != this->_moveList.end(); m++) {
+    if ( !m->write(out))
       return false;
     i++;
-    if (m == this->lastMove)
+    if (m == this->_lastMove)
       mpos = i;
   }
   proceed(out);
@@ -691,32 +690,32 @@ bool Game::write(std::ostream& out) const {
 bool Game::read(std::istream& in) {
   for (size_t i = 0; i < 9; i++) {
     for (size_t j = 0; j < 9; j++) {
-      if (!readEntry< int >(in, this->_fields[i][j]))
+      if ( !readEntry< int >(in, this->_fields[i][j]))
         return false;
     }
-    if (!proceed(in))
+    if ( !proceed(in))
       return false;
   }
-  if (!proceed(in))
+  if ( !proceed(in))
     return false;
   for (size_t i = 0; i < 18; i++) {
-    if (!this->_dice[i].read(in))
+    if ( !this->_dice[i].read(in))
       return false;
   }
-  if (!this->_config.read(in))
+  if ( !this->_config.read(in))
     return false;
   Move m;
   while (m.read(in)) {
-    this->moveList.push_back(m);
+    this->_moveList.push_back(m);
   }
   int mpos;
-  if (!readEntry< int >(in, mpos))
+  if ( !readEntry< int >(in, mpos))
     return false;
-  if (!proceed(in))
+  if ( !proceed(in))
     return false;
-  this->lastMove = this->moveList.end();
-  for (int i = moveList.size(); i >= mpos; i--) {
-    this->lastMove--;
+  this->_lastMove = this->_moveList.end();
+  for (int i = _moveList.size(); i >= mpos; i--) {
+    this->_lastMove--;
   }
   return true;
 }
@@ -734,17 +733,17 @@ bool DieState::write(std::ostream& out) const {
 
 /// deserializer
 bool DieState::read(std::istream& in) {
-  if (!readEntry< int >(in, this->_x))
+  if ( !readEntry< int >(in, this->_x))
     return false;
-  if (!readEntry< int >(in, this->_y))
+  if ( !readEntry< int >(in, this->_y))
     return false;
-  if (!readEntry< PlayColor >(in, this->_color))
+  if ( !readEntry< PlayColor >(in, this->_color))
     return false;
-  if (!readEntry< size_t >(in, this->_formerState))
+  if ( !readEntry< size_t >(in, this->_formerState))
     return false;
-  if (!readEntry< size_t >(in, this->_curState))
+  if ( !readEntry< size_t >(in, this->_curState))
     return false;
-  if (!proceed(in))
+  if ( !proceed(in))
     return false;
   return true;
 }
@@ -760,12 +759,12 @@ bool Config::write(std::ostream& out) const {
 
 /// deserializer
 bool Config::read(std::istream& in) {
-  if (!readEntry< PlayMode >(in, this->mode))
+  if ( !readEntry< PlayMode >(in, this->mode))
     return false;
-  if (!readEntry< size_t >(in, this->cpuLevel))
+  if ( !readEntry< size_t >(in, this->cpuLevel))
     return false;
   this->strategy.read(in);
-  if (!proceed(in))
+  if ( !proceed(in))
     return false;
   return true;
 }
@@ -779,9 +778,9 @@ bool Strategy::write(std::ostream& out) const {
 
 /// deserializer
 bool Strategy::read(std::istream& in) {
-  if (!readEntry< int >(in, this->coeffDiceRatio))
+  if ( !readEntry< int >(in, this->coeffDiceRatio))
     return false;
-  if (!proceed(in))
+  if ( !proceed(in))
     return false;
   return true;
 }
@@ -798,13 +797,13 @@ bool RelativeMove::write(std::ostream& out) const {
 
 /// deserializer
 bool RelativeMove::read(std::istream& in) {
-  if (!readEntry< int >(in, this->dx))
+  if ( !readEntry< int >(in, this->dx))
     return false;
-  if (!readEntry< int >(in, this->dy))
+  if ( !readEntry< int >(in, this->dy))
     return false;
-  if (!readEntry< bool >(in, this->firstX))
+  if ( !readEntry< bool >(in, this->firstX))
     return false;
-  if (!proceed(in))
+  if ( !proceed(in))
     return false;
   return true;
 }
@@ -813,7 +812,7 @@ bool RelativeMove::read(std::istream& in) {
 /// serializer
 bool Move::write(std::ostream& out) const {
   writeEntry< int >(out, this->dieIndex);
-  if (!this->rel.write(out))
+  if ( !this->rel.write(out))
     return false;
   proceed(out);
   return true;
@@ -822,11 +821,11 @@ bool Move::write(std::ostream& out) const {
 
 /// deserializer
 bool Move::read(std::istream& in) {
-  if (!readEntry< int >(in, this->dieIndex))
+  if ( !readEntry< int >(in, this->dieIndex))
     return false;
-  if (!this->rel.read(in))
+  if ( !this->rel.read(in))
     return false;
-  if (!proceed(in))
+  if ( !proceed(in))
     return false;
   return true;
 }

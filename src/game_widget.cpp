@@ -213,13 +213,15 @@ void GameWidget::resizeGL(int w, int h) {
       aspectRatio, // the width-to-height ratio
       1.0,         // the near z clipping coordinate
       1024.0);     // the far z clipping coordinate
+  this->changed();
 }
 
 void GameWidget::paintGL() {
   if (this->needUpdate()) {
     glClearColor(this->bgColor.r, this->bgColor.g, this->bgColor.b, 0.0f);
-    this->scene->display();
     // if you want to debug the color-picking, use the this->scene->display_picking() instead
+    this->scene->display();
+    // set update flag to redraw scene
     this->updated();
   }
 }
@@ -354,7 +356,7 @@ void GameWidget::keyPressEvent(QKeyEvent* event) {
  */
 void GameWidget::userSelect(Object* obj) {
   if (!obj) {
-    this->log.info("Deselecting");
+    this->log.info("deselecting");
   }
   Die* selectedDie = dynamic_cast< Die* >(this->scene->getSelected());
   Tile* clickedTile = dynamic_cast< Tile* >(obj);
