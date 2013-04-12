@@ -70,7 +70,7 @@ Move::Move()
       rel(RelativeMove()) {
 }
 
-Move::Move(int dieIndex, RelativeMove rel)
+Move::Move(size_t dieIndex, RelativeMove rel)
     : dieIndex(dieIndex),
       rel(rel) {
 }
@@ -230,7 +230,8 @@ Evaluation::Evaluation(float rating, Move move)
 
 /// initialize game
 Game::Game(Config config)
-    : _config(config) {
+    : _config(config),
+      _nextPlayer(WHITE) {
   // initialize white dice
   this->_dice[0] = DieState(0, 0, WHITE, 19);
   this->_dice[1] = DieState(1, 0, WHITE, 1);
@@ -328,6 +329,7 @@ void Game::makeMove(Move move, bool storeMove = true) {
   }
   // move die to new position
   this->_fields[dieState.x()][dieState.y()] = move.dieIndex;
+  this->_nextPlayer = inverse(this->_nextPlayer);
 }
 
 Move Game::undoMove() {
@@ -360,6 +362,8 @@ Move Game::redoMove() {
  \returns true, if the move is valid, else false
  */
 bool Game::moveIsValid(Move move) {
+
+
   DieState dieState = this->_dice[move.dieIndex];
   // check, if move is farer than die value allows
   if (dieState.getValue() != fabs(move.rel.dx) + fabs(move.rel.dy)) {
@@ -491,17 +495,29 @@ float Game::rate(PlayColor color) {
   rating += this->_config.strategy.coeffDiceRatio * this->rateDiceRatio(color);
   return rating;
 }
+/// return list of all possible moves of selected die in current game situation
+std::list< Move > Game::possibleMoves(size_t dieId) {
+  std::list< Move > moves;
+  //TODO: implement
+  return moves;
+}
+/// return next evaluated move
+Move Game::evaluateNext(int level) {
+  Move bestMove;
+  //TODO: implement
+  return bestMove;
+}
 /// evaluate best possible move up to a certain level
 /**
  TODO: document return value
  this is done recursively by a form of the NegaMax algorithm with alpha-beta pruning
  */
-Evaluation Game::evaluateMoves(int level, PlayColor color, float alpha, float beta, bool initialCall) {
+Evaluation Game::evaluateMoves(int level, float alpha, float beta, bool initialCall) {
   // container for best move candidates
   std::vector< Evaluation > bestCandidates;
   // limit indices to significant color
   size_t from, to;
-  if (color == WHITE) {
+  if (this->_nextPlayer == WHITE) {
     from = 0;
     to = 8;
   } else {
@@ -531,10 +547,10 @@ Evaluation Game::evaluateMoves(int level, PlayColor color, float alpha, float be
         // or by recursive call
         float rating;
         if (level == 1) {
-          rating = this->rate(color);
+          rating = this->rate(this->_nextPlayer);
         } else {
           // recursive call for next step (negative weighting, since it is opponent's turn)
-          rating = -this->evaluateMoves(level - 1, inverse(color), -beta, -alpha, false).rating;
+          rating = -this->evaluateMoves(level - 1, -beta, -alpha, false).rating;
         }
         // undo move
         this->makeMove(Move(d, moveBack));
@@ -604,8 +620,9 @@ float Game::rateDiceRatio(PlayColor color) {
 bool proceed(std::istream& in) {
   std::string buffer;
   getline(in, buffer, KBX::separator);
-  if (buffer.size() != 0)
+  if (buffer.size() != 0){
     return false;
+  }
   return true;
 }
 
@@ -636,8 +653,9 @@ template< class T >
 bool readEntry(std::istream& in, T& t) {
   std::string buffer;
   getline(in, buffer, KBX::separator);
-  if (buffer.size() == 0)
+  if (buffer.size() == 0){
     return false;
+  }
   t = (T) atoi(buffer.c_str());
   return true;
 }
@@ -666,19 +684,23 @@ bool Game::write(std::ostream& out) const {
   }
   proceed(out);
   for (size_t i = 0; i < 18; i++) {
-    if ( !this->_dice[i].write(out))
+    if ( !this->_dice[i].write(out)){
       return false;
+    }
   }
-  if ( !this->_config.write(out))
+  if ( !this->_config.write(out)){
     return false;
+  }
   size_t mpos = 0;
   size_t i = 0;
   for (std::list< Move >::const_iterator m = this->_moveList.begin(); m != this->_moveList.end(); m++) {
-    if ( !m->write(out))
+    if ( !m->write(out)){
       return false;
+    }
     i++;
-    if (m == this->_lastMove)
+    if (m == this->_lastMove){
       mpos = i;
+    }
   }
   proceed(out);
   writeEntry< int >(out, mpos);
@@ -690,29 +712,36 @@ bool Game::write(std::ostream& out) const {
 bool Game::read(std::istream& in) {
   for (size_t i = 0; i < 9; i++) {
     for (size_t j = 0; j < 9; j++) {
-      if ( !readEntry< int >(in, this->_fields[i][j]))
+      if ( !readEntry< int >(in, this->_fields[i][j])){
         return false;
+      }
     }
-    if ( !proceed(in))
+    if ( !proceed(in)){
       return false;
+    }
   }
-  if ( !proceed(in))
+  if ( !proceed(in)){
     return false;
+  }
   for (size_t i = 0; i < 18; i++) {
-    if ( !this->_dice[i].read(in))
+    if ( !this->_dice[i].read(in)){
       return false;
+    }
   }
-  if ( !this->_config.read(in))
+  if ( !this->_config.read(in)){
     return false;
+  }
   Move m;
   while (m.read(in)) {
     this->_moveList.push_back(m);
   }
   int mpos;
-  if ( !readEntry< int >(in, mpos))
+  if ( !readEntry< int >(in, mpos)){
     return false;
-  if ( !proceed(in))
+  }
+  if ( !proceed(in)){
     return false;
+  }
   this->_lastMove = this->_moveList.end();
   for (int i = _moveList.size(); i >= mpos; i--) {
     this->_lastMove--;
@@ -733,18 +762,24 @@ bool DieState::write(std::ostream& out) const {
 
 /// deserializer
 bool DieState::read(std::istream& in) {
-  if ( !readEntry< int >(in, this->_x))
+  if ( !readEntry< int >(in, this->_x)){
     return false;
-  if ( !readEntry< int >(in, this->_y))
+  }
+  if ( !readEntry< int >(in, this->_y)){
     return false;
-  if ( !readEntry< PlayColor >(in, this->_color))
+  }
+  if ( !readEntry< PlayColor >(in, this->_color)){
     return false;
-  if ( !readEntry< size_t >(in, this->_formerState))
+  }
+  if ( !readEntry< size_t >(in, this->_formerState)){
     return false;
-  if ( !readEntry< size_t >(in, this->_curState))
+  }
+  if ( !readEntry< size_t >(in, this->_curState)){
     return false;
-  if ( !proceed(in))
+  }
+  if ( !proceed(in)){
     return false;
+  }
   return true;
 }
 
@@ -797,14 +832,18 @@ bool RelativeMove::write(std::ostream& out) const {
 
 /// deserializer
 bool RelativeMove::read(std::istream& in) {
-  if ( !readEntry< int >(in, this->dx))
+  if ( !readEntry< int >(in, this->dx)){
     return false;
-  if ( !readEntry< int >(in, this->dy))
+  }
+  if ( !readEntry< int >(in, this->dy)){
     return false;
-  if ( !readEntry< bool >(in, this->firstX))
+  }
+  if ( !readEntry< bool >(in, this->firstX)){
     return false;
-  if ( !proceed(in))
+  }
+  if ( !proceed(in)){
     return false;
+  }
   return true;
 }
 ;
@@ -812,8 +851,9 @@ bool RelativeMove::read(std::istream& in) {
 /// serializer
 bool Move::write(std::ostream& out) const {
   writeEntry< int >(out, this->dieIndex);
-  if ( !this->rel.write(out))
+  if ( !this->rel.write(out)){
     return false;
+  }
   proceed(out);
   return true;
 }
@@ -821,12 +861,15 @@ bool Move::write(std::ostream& out) const {
 
 /// deserializer
 bool Move::read(std::istream& in) {
-  if ( !readEntry< int >(in, this->dieIndex))
+  if ( !readEntry< size_t >(in, this->dieIndex)){
     return false;
-  if ( !this->rel.read(in))
+  }
+  if ( !this->rel.read(in)){
     return false;
-  if ( !proceed(in))
+  }
+  if ( !proceed(in)){
     return false;
+  }
   return true;
 }
 ;

@@ -91,10 +91,10 @@ class RelativeMove {
 
 class Move {
   public:
-    int dieIndex;
+    size_t dieIndex;
     RelativeMove rel;
     Move();
-    Move(int dieIndex, RelativeMove rel);
+    Move(size_t dieIndex, RelativeMove rel);
     bool write(std::ostream& out) const;
     bool read(std::istream& in);
 };
@@ -142,6 +142,7 @@ class Game {
     Config _config;
     std::list< Move > _moveList;
     std::list< Move >::iterator _lastMove;
+    PlayColor _nextPlayer;
   public:
     Game(Config config);
     bool moveIsValid(Move move);
@@ -153,7 +154,10 @@ class Game {
     DieState* getDie(size_t x, size_t y);
     int getDieId(size_t x, size_t y);
     float rate(PlayColor color);
-    Evaluation evaluateMoves(int level, PlayColor color, float alpha, float beta, bool initialCall);
+    std::list< Move > possibleMoves(size_t dieId);
+    //TODO: implement
+    Move evaluateNext(int level);
+    Evaluation evaluateMoves(int level, float alpha, float beta, bool initialCall);
     bool write(std::ostream& out) const;
     bool read(std::istream& in);
     // rating functions
