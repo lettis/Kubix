@@ -124,7 +124,7 @@ void Camera::zoom(float factor) {
 /*
  TODO: documentation
  */
-void Object::loadTexture(QString filename, GLuint* textures, size_t nTexture) {
+void Model::loadTexture(QString filename, GLuint* textures, size_t nTexture) {
   QImage tex, img = QImage(filename);
   tex = QGLWidget::convertToGLFormat(img);
   glBindTexture(GL_TEXTURE_2D, textures[nTexture]);
@@ -137,19 +137,19 @@ void Object::loadTexture(QString filename, GLuint* textures, size_t nTexture) {
 /*
  set isSelected, isMarked and isHighlighted to false
  */
-void Object::clearStates() {
+void Model::clearStates() {
   this->setSelectedState(false);
   this->setMarkedState(false);
   this->setHighlightedState(false);
 }
 
 // standard colors for marked, selected and highlighted states
-Color Object::cSelected = Color(0, 0, 255);
-Color Object::cMarked = Color(255, 0, 0);
-Color Object::cHighlighted = Color(0, 255, 255);
+Color Model::cSelected = Color(0, 0, 255);
+Color Model::cMarked = Color(255, 0, 0);
+Color Model::cHighlighted = Color(0, 255, 255);
 
 /// default constructor
-Object::Object(Scene* scene)
+Model::Model(Scene* scene)
     : _angle(0),
       _isVisible(true),
       _pos(Vec(0, 0, 0)),
@@ -164,7 +164,7 @@ Object::Object(Scene* scene)
 }
 
 /// constructor setting the object's position
-Object::Object(Scene* scene, Vec pos)
+Model::Model(Scene* scene, Vec pos)
     : _angle(0),
       _isVisible(true),
       _pos(pos),
@@ -175,7 +175,7 @@ Object::Object(Scene* scene, Vec pos)
 }
 
 /// default destructor
-Object::~Object() {
+Model::~Model() {
 }
 
 /// set object rotation (accumulatively)
@@ -191,7 +191,7 @@ Object::~Object() {
  This is done by rotating the rotation axis inversely around the last rotation.
  Thus the reference frame is always the same.
  */
-void Object::rotate(Vec axis, float angle) {
+void Model::rotate(Vec axis, float angle) {
   // push angle to list of successive rotations
   this->_angle.push_back(angle);
   // push axis to list of succ. rotations by converting it
@@ -203,16 +203,16 @@ void Object::rotate(Vec axis, float angle) {
   }
   this->_rotAxis.push_back(axis);
 }
-void Object::setSelectedState(bool selected) {
+void Model::setSelectedState(bool selected) {
   this->isSelected = selected;
 }
-void Object::setMarkedState(bool marked) {
+void Model::setMarkedState(bool marked) {
   this->isMarked = marked;
 }
-void Object::setHighlightedState(bool highlighted) {
+void Model::setHighlightedState(bool highlighted) {
   this->isHighlighted = highlighted;
 }
-Object* Object::clicked(size_t id) {
+Model* Model::clicked(size_t id) {
   if (this->scene->uniqueColorId == id) {
     return this;
   } else {
@@ -222,21 +222,21 @@ Object* Object::clicked(size_t id) {
 }
 
 /// set object translation
-void Object::translate(Vec direction) {
+void Model::translate(Vec direction) {
   this->_pos = direction;
 }
 /// actually rotate object (private, only called by 'display')
-void Object::_rotate() {
+void Model::_rotate() {
   for (size_t i = 0; i < this->_angle.size(); i++) {
     glRotatef(this->_angle[i], this->_rotAxis[i].x, this->_rotAxis[i].y, this->_rotAxis[i].z);
   }
 }
 /// actually translate object (private, only called by 'display')
-void Object::_translate() {
+void Model::_translate() {
   glTranslatef(this->_pos.x, this->_pos.y, this->_pos.z);
 }
 /// display the object
-void Object::display() {
+void Model::display() {
   // save transformations done before
   glPushMatrix();
   this->_setColor();
@@ -246,7 +246,7 @@ void Object::display() {
   // reload transformations done before
   glPopMatrix();
 }
-void Object::_setColor() {
+void Model::_setColor() {
   if ( !this->scene)
     throw "Cannot display object not belonging to any scene!";
   if (this->scene->inObjPickingMode) {
@@ -261,7 +261,7 @@ void Object::_setColor() {
 }
 
 /// set the object color before rendering
-void Object::setColor() {
+void Model::setColor() {
   if (this->isSelected) {
     this->cSelected.setAsGlColor();
     return;
@@ -278,25 +278,25 @@ void Object::setColor() {
 }
 
 /// get position of object
-Vec Object::getPosition() {
+Vec Model::getPosition() {
   return this->_pos;
 }
 
 /// inherit parent constructor
-AnimObject::AnimObject(Scene* scene)
+AnimatedModel::AnimatedModel(Scene* scene)
     : _angleOrig(0),
       _rotStep(0),
       _transStep(0),
       _angleDest(0),
-      Object(scene) {
+      Model(scene) {
 }
 /// inherit parent constructor
-AnimObject::AnimObject(Scene* scene, Vec pos)
+AnimatedModel::AnimatedModel(Scene* scene, Vec pos)
     : _angleOrig(0),
       _rotStep(0),
       _transStep(0),
       _angleDest(0),
-      Object(scene, pos) {
+      Model(scene, pos) {
 }
 
 // set texture loading flag to false initially
@@ -305,7 +305,7 @@ GLuint Die::textures[14];
 
 /// inherit parent constructor and set color
 Die::Die(Scene* scene, Vec pos, PlayColor color)
-    : AnimObject(scene, pos),
+    : AnimatedModel(scene, pos),
       _playColor(color),
       IS_KING(false),
       _tile(NULL) {
@@ -314,7 +314,7 @@ Die::Die(Scene* scene, Vec pos, PlayColor color)
 
 /// inherit parent constructor and set color
 Die::Die(Scene* scene, Vec pos, PlayColor color, bool IS_KING)
-    : AnimObject(scene, pos),
+    : AnimatedModel(scene, pos),
       _playColor(color),
       IS_KING(IS_KING),
       _tile(NULL) {
@@ -474,13 +474,13 @@ const Color Path::MAIN_COLOR = ColorTable::GREEN;
 const Color Path::NORMAL_COLOR = ColorTable::YELLOW;
 
 Path::Path(Scene* scene, Vec posFrom, RelativeMove relMove)
-    : Object(scene, posFrom),
+    : Model(scene, posFrom),
       _relMove(relMove),
       _isMainPath(false) {
 }
 
 Path::Path(Scene* scene, Vec posFrom, RelativeMove relMove, bool isMainPath)
-    : Object(scene, posFrom),
+    : Model(scene, posFrom),
       _relMove(relMove),
       _isMainPath(isMainPath) {
 }
@@ -614,7 +614,7 @@ void Path::setAsNormalPath() {
 
 /// board constructor
 Board::Board(Scene* scene, size_t nX, size_t nY)
-    : Object(scene),
+    : Model(scene),
       _nX(nX),
       _nY(nY),
       _tiles(_nX, std::vector< Tile* >(_nY)) {
@@ -679,10 +679,10 @@ size_t Board::getNX() {
  \param id id of color clicked
  \return associated object
  */
-Object* Board::clicked(size_t id) {
+Model* Board::clicked(size_t id) {
   for (size_t x = 0; x < this->_nX; x++) {
     for (size_t y = 0; y < this->_nY; y++) {
-      Object* obj = this->_tiles[x][y]->clicked(id);
+      Model* obj = this->_tiles[x][y]->clicked(id);
       if (obj) {
         return obj;
       }
@@ -705,7 +705,7 @@ void Board::clearStates() {
 
 /// tile constructor
 Tile::Tile(Scene* scene, Board* board, Vec pos, Color color)
-    : Object(scene, pos),
+    : Model(scene, pos),
       basicColor(color),
       _die(NULL),
       _board(board) {
@@ -809,7 +809,7 @@ void Scene::clearStates() {
 
 /// wipe all objects from the scene
 void Scene::wipe() {
-  for (std::vector< Object* >::iterator obj = this->_objList.begin(); obj != this->_objList.end(); obj++) {
+  for (std::vector< Model* >::iterator obj = this->_objList.begin(); obj != this->_objList.end(); obj++) {
     delete *obj;
   }
   this->_dice.clear();
@@ -820,7 +820,7 @@ void Scene::wipe() {
 
 /// scene constructor
 Scene::Scene(GameWidget* act)
-    : Object(this),
+    : Model(this),
       markX(4),
       markY(4),
       selected(NULL),
@@ -970,7 +970,7 @@ void Scene::_setColor() {
  \returns unique object id
  \throws string exception, if trying to add null-reference to scene
  */
-size_t Scene::add(Object* obj) {
+size_t Scene::add(Model* obj) {
   if (obj) {
     this->_objList.push_back(obj);
     return this->_objList.size() - 1;
@@ -1025,7 +1025,7 @@ void Scene::display_picking() {
  \param p mouse coordinates
  \returns Object* to object under mouse cursor
  */
-Object* Scene::pickObject(QPoint p) {
+Model* Scene::pickObject(QPoint p) {
   // get resolution from settings
   GLint viewport[4];
   glGetIntegerv(GL_VIEWPORT, viewport);
@@ -1037,7 +1037,7 @@ Object* Scene::pickObject(QPoint p) {
   size_t id = Color(pixel[0], pixel[1], pixel[2]).id();
   this->uniqueColorId = 0;
   this->messages.info(stringprintf("clicked object id: %d", (int) id));
-  Object* obj = this->clicked(id);
+  Model* obj = this->clicked(id);
   if (obj) {
     return obj;
   } else {
@@ -1051,10 +1051,10 @@ Object* Scene::pickObject(QPoint p) {
  \param id id of color clicked
  \return associated object
  */
-Object* Scene::clicked(size_t id) {
+Model* Scene::clicked(size_t id) {
   for (size_t i = 0; i < this->_objList.size(); i++) {
     if (this->_objList[i]) {
-      Object* obj = this->_objList[i]->clicked(id);
+      Model* obj = this->_objList[i]->clicked(id);
       if (obj) {
         return obj;
       }
@@ -1092,7 +1092,7 @@ void Scene::markNext(Vec delta) {
   this->_board->getTile(this->markX, this->markY)->setMarkedState(true);
 }
 
-Object* Scene::getMarked() {
+Model* Scene::getMarked() {
   this->clearStates();
   if ( !this->_board) {
     throw "Scene::getMarked called without board!";
@@ -1104,14 +1104,14 @@ Object* Scene::getMarked() {
     return t;
 }
 
-void Scene::setSelected(Object* obj) {
+void Scene::setSelected(Model* obj) {
   if (obj) {
     obj->setSelectedState(true);
   }
   this->selected = obj;
 }
 
-Object* Scene::getSelected() {
+Model* Scene::getSelected() {
   return this->selected;
 }
 } // end namespace KBX

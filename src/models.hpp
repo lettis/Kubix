@@ -54,9 +54,9 @@ class Die;
 class Tile;
 class Board;
 
-// Object
+// Model
 //  abstract class defining opengl object
-class Object {
+class Model {
   protected:
     std::vector< float > _angle;
     std::vector< Vec > _rotAxis;
@@ -80,10 +80,10 @@ class Object {
     static Color cHighlighted;
     static Color cMarked;
     // constructor
-    Object(Scene* scene);
-    Object(Scene* scene, Vec pos);
-    virtual ~Object();
-    virtual Object* clicked(size_t id);
+    Model(Scene* scene);
+    Model(Scene* scene, Vec pos);
+    virtual ~Model();
+    virtual Model* clicked(size_t id);
     virtual void clearStates();
     void setMarkedState(bool marked);
     void setSelectedState(bool selected);
@@ -98,9 +98,9 @@ class Object {
     Vec getPosition();
 };
 
-// AnimObject
+// AnimatedModel
 //  abstract class defining opengl object with animation support
-class AnimObject: public Object {
+class AnimatedModel: public Model {
   protected:
     float _angleOrig;
     float _angleDest;
@@ -112,10 +112,10 @@ class AnimObject: public Object {
     void _animRotate(Vec axis, float angle);
     void _animTranslate(Vec direction);
   public:
-    AnimObject(Scene* scene);
-    AnimObject(Scene* scene, Vec pos);
+    AnimatedModel(Scene* scene);
+    AnimatedModel(Scene* scene, Vec pos);
     void rotate(Vec axis, float angle) {
-      Object::rotate(axis, angle);
+      Model::rotate(axis, angle);
     }
     // sets angle and axis to define a rotation
     void rotate(Vec axis, float angle, float step);
@@ -126,7 +126,7 @@ class AnimObject: public Object {
 
 /// Die
 ///  defines a die
-class Die: public AnimObject {
+class Die: public AnimatedModel {
     static GLuint textures[];
     static bool texturesLoaded;
     static void loadTextures();
@@ -147,7 +147,7 @@ class Die: public AnimObject {
 
 /// Path
 ///  draw a path of possible moves for a die
-class Path: public Object {
+class Path: public Model {
     static const Color MAIN_COLOR;
     static const Color NORMAL_COLOR;
     RelativeMove _relMove;
@@ -164,7 +164,7 @@ class Path: public Object {
 
 /// Board Tile
 ///  defines game board tile
-class Tile: public Object {
+class Tile: public Model {
     void _render();
     Color basicColor;
     void setColor();
@@ -184,7 +184,7 @@ class Tile: public Object {
 
 /// Board
 ///  defines game board
-class Board: public Object {
+class Board: public Model {
     size_t _nX;
     size_t _nY;
     std::vector< std::vector< Tile* > > _tiles;
@@ -198,7 +198,7 @@ class Board: public Object {
     ~Board();
 
     void clearStates();
-    Object* clicked(size_t id);
+    Model* clicked(size_t id);
 
     Tile* getTile(size_t x, size_t y);
 };
@@ -209,18 +209,18 @@ class Board: public Object {
  Every object added to the scene will be rendered,
  when the scene is rendered.
  */
-class Scene: public Object {
+class Scene: public Model {
   protected:
     GameWidget* _act;
 
-    std::vector< Object* > _objList;
+    std::vector< Model* > _objList;
 
     Board* _board;
 
     size_t markX;
     size_t markY;
 
-    Object* selected;
+    Model* selected;
 
     Logger messages;
 
@@ -234,7 +234,7 @@ class Scene: public Object {
     Scene(GameWidget* act);
     ~Scene();
     Vec getOrientation();
-    size_t add(Object* obj);
+    size_t add(Model* obj);
     void remove(size_t objId);
 
     void wipe();
@@ -243,13 +243,13 @@ class Scene: public Object {
     void rotate(float angle, size_t direction);
     void zoom(float factor);
     void clearStates();
-    Object* clicked(size_t id);
-    Object* pickObject(QPoint p);
+    Model* clicked(size_t id);
+    Model* pickObject(QPoint p);
 
     void markNext(Vec delta);
-    Object* getMarked();
-    Object* getSelected();
-    void setSelected(Object* obj);
+    Model* getMarked();
+    Model* getSelected();
+    void setSelected(Model* obj);
     void display_picking();
 
     bool inObjPickingMode;
