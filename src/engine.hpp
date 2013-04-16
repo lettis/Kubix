@@ -143,18 +143,24 @@ class Game {
     std::list< Move > _moveList;
     std::list< Move >::iterator _lastMove;
     PlayColor _nextPlayer;
+    void _setup();
   public:
     Game(Config config);
+
     bool moveIsValid(Move move);
     void makeMove(Move move, bool storeMove);
     Move undoMove();
     Move redoMove();
+    //TODO: implement
+    std::list< Move > possibleMoves(size_t dieId);
+
     PlayColor getWinner();
+    void reset();
+
     DieState* getDie(size_t id);
     DieState* getDie(size_t x, size_t y);
     int getDieId(size_t x, size_t y);
     float rate(PlayColor color);
-    std::list< Move > possibleMoves(size_t dieId);
     //TODO: implement
     Move evaluateNext(int level);
     Evaluation evaluateMoves(int level, float alpha, float beta, bool initialCall);

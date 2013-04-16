@@ -232,6 +232,11 @@ Evaluation::Evaluation(float rating, Move move)
 Game::Game(Config config)
     : _config(config),
       _nextPlayer(WHITE) {
+  this->_setup();
+}
+/// setup board to starting conditions
+void Game::_setup(){
+  this->_nextPlayer = WHITE;
   // initialize white dice
   this->_dice[0] = DieState(0, 0, WHITE, 19);
   this->_dice[1] = DieState(1, 0, WHITE, 1);
@@ -362,8 +367,6 @@ Move Game::redoMove() {
  \returns true, if the move is valid, else false
  */
 bool Game::moveIsValid(Move move) {
-
-
   DieState dieState = this->_dice[move.dieIndex];
   // check, if move is farer than die value allows
   if (dieState.getValue() != fabs(move.rel.dx) + fabs(move.rel.dy)) {
@@ -495,10 +498,16 @@ float Game::rate(PlayColor color) {
   rating += this->_config.strategy.coeffDiceRatio * this->rateDiceRatio(color);
   return rating;
 }
-/// return list of all possible moves of selected die in current game situation
+/// return list of all possible moves of selected die in current board setting
 std::list< Move > Game::possibleMoves(size_t dieId) {
   std::list< Move > moves;
-  //TODO: implement
+  int val = this->_dice[dieId].getValue();
+  for (size_t i=1; i <= DieState::nPossibleMoves[val]; i++){
+    Move mv = Move(dieId, DieState::possibleMoves[val][i]);
+    if (this->moveIsValid(mv)){
+      moves.push_back(mv);
+    }
+  }
   return moves;
 }
 /// return next evaluated move
@@ -582,6 +591,12 @@ Evaluation Game::evaluateMoves(int level, float alpha, float beta, bool initialC
     return bestCandidates[0];
   }
   return Evaluation(alpha);
+}
+
+/// reset the game
+void Game::reset() {
+  this->_moveList.clear();
+  this->_setup();
 }
 
 /// rate dice ratio
