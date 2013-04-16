@@ -126,14 +126,18 @@ class AnimatedModel: public Model {
 
 /// Die
 ///  defines a die
+///  dieIds are same as in engine; i.e. 0-8 white dice (4 == king), 9-17 black dice (13 == king)
 class Die: public AnimatedModel {
+  private:
     static GLuint textures[];
     static bool texturesLoaded;
     static void loadTextures();
 
+    void _render();
+
     Tile* _tile;
 
-    void _render();
+    size_t _dieId;
     PlayColor _playColor;
   public:
     const bool IS_KING;
@@ -141,8 +145,8 @@ class Die: public AnimatedModel {
     void setTile(Tile* t);
     Tile* getTile();
 
-    Die(Scene* scene, Vec pos, PlayColor color);
-    Die(Scene* scene, Vec pos, PlayColor color, bool IS_KING);
+    Die(Scene* scene, Vec pos, size_t dieId);
+    size_t getId();
 };
 
 /// Path
@@ -228,7 +232,7 @@ class Scene: public Model {
     void _render();
     void _setColor();
     std::vector< Die* > _dice;
-    std::map< size_t, size_t > _objId2Die;
+//    std::map< size_t, size_t > _objId2Die;
 
   public:
     Scene(GameWidget* act);

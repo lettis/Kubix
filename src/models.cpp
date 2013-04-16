@@ -303,22 +303,25 @@ AnimatedModel::AnimatedModel(Scene* scene, Vec pos)
 bool Die::texturesLoaded = false;
 GLuint Die::textures[14];
 
-/// inherit parent constructor and set color
-Die::Die(Scene* scene, Vec pos, PlayColor color)
+/// inherit parent constructor and set dieId (same as in engine)
+Die::Die(Scene* scene, Vec pos, size_t dieId)
     : AnimatedModel(scene, pos),
-      _playColor(color),
-      IS_KING(false),
-      _tile(NULL) {
+      _dieId(dieId),
+      _tile(NULL),
+      IS_KING( (dieId==4) || (dieId==13) ) {
   Die::loadTextures();
+  if (this->_dieId < 9){
+    this->_playColor = WHITE;
+  } else if (this->_dieId < 18){
+    this->_playColor = BLACK;
+  } else {
+    throw "die index must be between 0 and 17.";
+  }
 }
 
-/// inherit parent constructor and set color
-Die::Die(Scene* scene, Vec pos, PlayColor color, bool IS_KING)
-    : AnimatedModel(scene, pos),
-      _playColor(color),
-      IS_KING(IS_KING),
-      _tile(NULL) {
-  Die::loadTextures();
+/// return die index
+size_t Die::getId(){
+  return this->_dieId;
 }
 
 /**
@@ -495,6 +498,10 @@ void Path::setColor() {
 }
 
 void Path::_render() {
+
+  //FIXME: still some errors here!
+
+
   if ((this->_relMove.dx == 0) && (this->_relMove.dy == 0)) {
     // path points to origin; abort
     return;
@@ -813,7 +820,7 @@ void Scene::wipe() {
     delete *obj;
   }
   this->_dice.clear();
-  this->_objId2Die.clear();
+//  this->_objId2Die.clear();
   this->_objList.clear();
   this->_board = NULL;
 }
@@ -863,77 +870,76 @@ void Scene::setup() {
   // attention: order has to be kept as is to have same die ids as in engine!
 
   // white dice; w1 is in lower left corner, w8 in lower right
-  this->_dice.push_back(new Die(this, Vec( -4, -4, 0), WHITE));
-  this->_dice.back()->rotate(counterClockwise, 90);
+  this->_dice.push_back(new Die(this, Vec( -4, -4, 0), 0));
+  this->_dice.back()->rotate(toBack, 90); //
+  this->_dice.back()->rotate(counterClockwise, 90); // 5
   this->_dice.back()->setTile(this->_board->getTile(0, 0));
-  this->_dice.push_back(new Die(this, Vec( -3, -4, 0), WHITE));
-  this->_dice.back()->rotate(toBack, 90);
-  this->_dice.back()->rotate(counterClockwise, 90);
+  this->_dice.push_back(new Die(this, Vec( -3, -4, 0), 1));
+  this->_dice.back()->rotate(toBack, 180); //
+  this->_dice.back()->rotate(counterClockwise, 90); // 1
   this->_dice.back()->setTile(this->_board->getTile(1, 0));
-  this->_dice.push_back(new Die(this, Vec( -2, -4, 0), WHITE));
-  this->_dice.back()->rotate(toBack, 180);
-  this->_dice.back()->rotate(counterClockwise, 90);
+  this->_dice.push_back(new Die(this, Vec( -2, -4, 0), 2));
+  this->_dice.back()->rotate(toFront, 90); //
+  this->_dice.back()->rotate(counterClockwise, 90); // 2
   this->_dice.back()->setTile(this->_board->getTile(2, 0));
-  this->_dice.push_back(new Die(this, Vec( -1, -4, 0), WHITE));
-  this->_dice.back()->rotate(toFront, 90);
-  this->_dice.back()->rotate(counterClockwise, 90);
+  this->_dice.push_back(new Die(this, Vec( -1, -4, 0), 3));
+  this->_dice.back()->rotate(counterClockwise, 90); // 6
   this->_dice.back()->setTile(this->_board->getTile(3, 0));
-  this->_dice.push_back(new Die(this, Vec(0, -4, 0), WHITE, true));
+  this->_dice.push_back(new Die(this, Vec(0, -4, 0), 4)); // King
   this->_dice.back()->setTile(this->_board->getTile(4, 0));
-  this->_dice.push_back(new Die(this, Vec(1, -4, 0), WHITE));
-  this->_dice.back()->rotate(toFront, 90);
-  this->_dice.back()->rotate(counterClockwise, 90);
+  this->_dice.push_back(new Die(this, Vec(1, -4, 0), 5));
+  this->_dice.back()->rotate(counterClockwise, 90); // 6
   this->_dice.back()->setTile(this->_board->getTile(5, 0));
-  this->_dice.push_back(new Die(this, Vec(2, -4, 0), WHITE));
-  this->_dice.back()->rotate(toBack, 180);
-  this->_dice.back()->rotate(counterClockwise, 90);
+  this->_dice.push_back(new Die(this, Vec(2, -4, 0), 6));
+  this->_dice.back()->rotate(toFront, 90); //
+  this->_dice.back()->rotate(counterClockwise, 90); // 2
   this->_dice.back()->setTile(this->_board->getTile(6, 0));
-  this->_dice.push_back(new Die(this, Vec(3, -4, 0), WHITE));
-  this->_dice.back()->rotate(toBack, 90);
-  this->_dice.back()->rotate(counterClockwise, 90);
+  this->_dice.push_back(new Die(this, Vec(3, -4, 0), 7));
+  this->_dice.back()->rotate(toBack, 180); //
+  this->_dice.back()->rotate(counterClockwise, 90); // 1
   this->_dice.back()->setTile(this->_board->getTile(7, 0));
-  this->_dice.push_back(new Die(this, Vec(4, -4, 0), WHITE));
-  this->_dice.back()->rotate(counterClockwise, 90);
+  this->_dice.push_back(new Die(this, Vec(4, -4, 0), 8));
+  this->_dice.back()->rotate(toBack, 90); //
+  this->_dice.back()->rotate(counterClockwise, 90); // 5
   this->_dice.back()->setTile(this->_board->getTile(8, 0));
 
   // black dice; b1 is in upper left corner, b8 in upper right
-  this->_dice.push_back(new Die(this, Vec( -4, 4, 0), BLACK));
-  this->_dice.back()->rotate(clockwise, 90);
+  this->_dice.push_back(new Die(this, Vec( -4, 4, 0), 9));
+  this->_dice.back()->rotate(toBack, 90); //
+  this->_dice.back()->rotate(clockwise, 90); // 5
   this->_dice.back()->setTile(this->_board->getTile(0, 8));
-  this->_dice.push_back(new Die(this, Vec( -3, 4, 0), BLACK));
-  this->_dice.back()->rotate(toBack, 90);
-  this->_dice.back()->rotate(clockwise, 90);
+  this->_dice.push_back(new Die(this, Vec( -3, 4, 0), 10));
+  this->_dice.back()->rotate(toBack, 180); //
+  this->_dice.back()->rotate(clockwise, 90); // 1
   this->_dice.back()->setTile(this->_board->getTile(1, 8));
-  this->_dice.push_back(new Die(this, Vec( -2, 4, 0), BLACK));
-  this->_dice.back()->rotate(toBack, 180);
-  this->_dice.back()->rotate(clockwise, 90);
+  this->_dice.push_back(new Die(this, Vec( -2, 4, 0), 11));
+  this->_dice.back()->rotate(toFront, 90); //
+  this->_dice.back()->rotate(clockwise, 90); // 2
   this->_dice.back()->setTile(this->_board->getTile(2, 8));
-  this->_dice.push_back(new Die(this, Vec( -1, 4, 0), BLACK));
-  this->_dice.back()->rotate(toFront, 90);
-  this->_dice.back()->rotate(clockwise, 90);
+  this->_dice.push_back(new Die(this, Vec( -1, 4, 0), 12));
   this->_dice.back()->setTile(this->_board->getTile(3, 8));
-  this->_dice.push_back(new Die(this, Vec(0, 4, 0), BLACK, true));
+  this->_dice.back()->rotate(clockwise, 90); // 6
+  this->_dice.push_back(new Die(this, Vec(0, 4, 0), 13));
   this->_dice.back()->setTile(this->_board->getTile(4, 8));
-  this->_dice.push_back(new Die(this, Vec(1, 4, 0), BLACK));
-  this->_dice.back()->rotate(toFront, 90);
-  this->_dice.back()->rotate(clockwise, 90);
+  this->_dice.push_back(new Die(this, Vec(1, 4, 0), 14));
+  this->_dice.back()->rotate(clockwise, 90); // 6
   this->_dice.back()->setTile(this->_board->getTile(5, 8));
-  this->_dice.push_back(new Die(this, Vec(2, 4, 0), BLACK));
-  this->_dice.back()->rotate(toBack, 180);
-  this->_dice.back()->rotate(clockwise, 90);
+  this->_dice.push_back(new Die(this, Vec(2, 4, 0), 15));
+  this->_dice.back()->rotate(toFront, 90); //
+  this->_dice.back()->rotate(clockwise, 90); // 2
   this->_dice.back()->setTile(this->_board->getTile(6, 8));
-  this->_dice.push_back(new Die(this, Vec(3, 4, 0), BLACK));
-  this->_dice.back()->rotate(toBack, 90);
-  this->_dice.back()->rotate(clockwise, 90);
+  this->_dice.push_back(new Die(this, Vec(3, 4, 0), 16));
+  this->_dice.back()->rotate(toBack, 180); //
+  this->_dice.back()->rotate(clockwise, 90); // 1
   this->_dice.back()->setTile(this->_board->getTile(7, 8));
-  this->_dice.push_back(new Die(this, Vec(4, 4, 0), BLACK));
-  this->_dice.back()->rotate(clockwise, 90);
+  this->_dice.push_back(new Die(this, Vec(4, 4, 0), 17));
+  this->_dice.back()->rotate(toBack, 90); //
+  this->_dice.back()->rotate(clockwise, 90); // 5
   this->_dice.back()->setTile(this->_board->getTile(8, 8));
 
   // add dice to scene
   for (size_t i = 0; i < this->_dice.size(); i++) {
     size_t objId = this->add(this->_dice[i]);
-    this->_objId2Die[objId] = i;
   }
 }
 
