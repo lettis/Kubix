@@ -308,11 +308,11 @@ Die::Die(Scene* scene, Vec pos, size_t dieId)
     : AnimatedModel(scene, pos),
       _dieId(dieId),
       _tile(NULL),
-      IS_KING( (dieId==4) || (dieId==13) ) {
+      IS_KING((dieId == 4) || (dieId == 13)) {
   Die::loadTextures();
-  if (this->_dieId < 9){
+  if (this->_dieId < 9) {
     this->_playColor = WHITE;
-  } else if (this->_dieId < 18){
+  } else if (this->_dieId < 18) {
     this->_playColor = BLACK;
   } else {
     throw "die index must be between 0 and 17.";
@@ -320,7 +320,7 @@ Die::Die(Scene* scene, Vec pos, size_t dieId)
 }
 
 /// return die index
-size_t Die::getId(){
+size_t Die::getId() {
   return this->_dieId;
 }
 
@@ -501,7 +501,6 @@ void Path::_render() {
 
   //FIXME: still some errors here!
 
-
   if ((this->_relMove.dx == 0) && (this->_relMove.dy == 0)) {
     // path points to origin; abort
     return;
@@ -530,8 +529,8 @@ void Path::_render() {
     glTranslatef( -dx, -dy, 0.0f);
   }
   // and signs of first and second move direction
-  float sgnX = sgn(dx);
-  float sgnY = sgn(dy);
+  float sgnX = sgnP(dx);
+  float sgnY = sgnP(dy);
 
   Vec a(sgnX * w, sgnY * w, h);
   Vec r(0.0f, sgnY * ( -2.0f * w), 0.0f);
@@ -545,7 +544,7 @@ void Path::_render() {
     glEnd();
   }
   // draw curve if necessary
-  if (fabs(dy) > 0.0f) {
+  if ((fabs(dy) > 0.0f && fabs(dx) > 0.0f) || (fabs(dx) > 0.0f && fabs(dy) > 0.0f)) {
     a = Vec(dx - sgnX * 0.5f, sgnY * w, h);
 
     glBegin(GL_QUADS);
@@ -594,7 +593,9 @@ void Path::_render() {
     sgnY *= -1;
     glTranslatef( -dx, -dy, 0.0f);
   }
-  if (this->_relMove.firstX) {
+
+  if ((dx == 0) || (dy != 0 && this->_relMove.firstX)) {
+    // vertical
     a = Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h);
     glBegin(GL_TRIANGLES);
     a.setAsGlVertex3f();
@@ -602,6 +603,7 @@ void Path::_render() {
     (a + Vec(0.5f * sgnX, 0.2f * sgnY, 0.0f)).setAsGlVertex3f();
     glEnd();
   } else {
+    // horizontal
     a = Vec(dx - sgnX * 0.5f, dy + sgnY * 0.5f, h);
     glBegin(GL_TRIANGLES);
     a.setAsGlVertex3f();

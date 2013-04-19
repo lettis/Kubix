@@ -164,6 +164,13 @@ bool GameWidget::_needUpdate() {
   }
 }
 
+void GameWidget::_clearPaths(){
+  for (std::list<size_t>::iterator it=this->_paths.begin(); it != this->_paths.end(); it++){
+    this->_scene->remove(*it);
+  }
+  this->_paths.clear();
+}
+
 /// enable/disable automatic updating of the scene
 /*
  \param autoUpdate true if automatic updating should be enabled, false otherwise
@@ -227,7 +234,7 @@ void GameWidget::paintGL() {
  \param event incoming event
  */
 void GameWidget::mousePressEvent(QMouseEvent *event) {
-  Object* obj;
+  Model* obj;
   if (event->button() == Qt::LeftButton) {
     // pick object
     _scene->clearStates();
@@ -350,45 +357,20 @@ void GameWidget::keyPressEvent(QKeyEvent* event) {
  move a die, deselect the currently selected object
  of select a new object and disregard the old selection
  */
-void GameWidget::userSelect(Object* obj) {
-  if ( !obj) {
-    this->_log.info("deselecting");
-  }
-  Die* selectedDie = dynamic_cast< Die* >(this->_scene->getSelected());
-  Tile* clickedTile = dynamic_cast< Tile* >(obj);
-  if ( !clickedTile) {
-    Die* d = dynamic_cast< Die* >(obj);
-    if (d) {
-      clickedTile = d->getTile();
+void GameWidget::userSelect(Model* obj) {
+//  Die* selectedDie = dynamic_cast< Die* >(this->_scene->getSelected());
+  Die* selectedDie = dynamic_cast< Die* >(obj);
+  if (selectedDie) {
+    this->_clearPaths();
+    std::list< Move > moves = this->_game->possibleMoves(selectedDie->getId());
+    for (std::list< Move >::iterator mv = moves.begin(); mv != moves.end(); mv++) {
+      this->_paths.push_back(this->_scene->add(new Path(this->_scene, selectedDie->getPosition(), mv->rel)));
+      //TODO: break for test
+//      break;
     }
+  } else {
+    this->_clearPaths();
   }
-
-  // FIXME dummy paths for testing purposes
-  if (clickedTile) {
-    Vec tilePos = clickedTile->getPosition();
-    //TODO: how to delete path afterwards?
-    bool x = true;
-    RelativeMove relM(2, 3, x);
-    this->_scene->add(new Path(this->_scene, tilePos, relM));
-    relM = RelativeMove( -2, 3, x);
-    this->_scene->add(new Path(this->_scene, tilePos, relM));
-    relM = RelativeMove(2, -3, x);
-    this->_scene->add(new Path(this->_scene, tilePos, relM));
-    relM = RelativeMove( -2, -3, x);
-    this->_scene->add(new Path(this->_scene, tilePos, relM));
-  }
-
-//  if (selectedDie && clickedTile) {
-//    //TODO: check if clicked move is valid
-//
-//    this->log.info("MOVE!!");
-//    this->scene->setSelected(NULL);
-//  } else {
-//    if (obj) {
-//      this->log.info("Selecting new object");
-//      this->scene->setSelected(obj);
-//    }
-//  }
 }
 
 void GameWidget::save() {

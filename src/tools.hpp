@@ -29,6 +29,7 @@ namespace KBX {
 template< class NumType > int sgn(NumType n);
 int sgn(float f);
 int sgn(int i);
+int sgnP(float f);
 
 void swap(int& a, int& b);
 
@@ -86,6 +87,8 @@ class Vec {
     bool operator==(Vec v);
     Vec rotate(Vec rotAxis, float angle);
     Vec cross(Vec v);
+    float dot(const Vec& v);
+    float operator*(const Vec& v);
     void setAsGlVertex3f();
 };
 

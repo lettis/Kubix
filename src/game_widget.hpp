@@ -23,17 +23,21 @@
 #include <QTimer>
 #include <QWheelEvent>
 
+#include <list>
+
 #include "models.hpp"
 
 namespace KBX {
 class GameWidget: public QGLWidget {
-  Q_OBJECT // must include this if you use Qt signals/slots
+    // must include this if you use Qt signals/slots
+  Q_OBJECT
+
   public:
     Color bgColor;
 
     void changed();
     void setAutoUpdate(bool newAutoUpdate);
-    void userSelect(Object* obj);
+    void userSelect(Model* obj);
 
   private:
     Scene* _scene;
@@ -53,7 +57,10 @@ class GameWidget: public QGLWidget {
     void _updated();
     bool _needUpdate();
 
-    Object* _pickObject(QPoint p);
+    Model* _pickObject(QPoint p);
+
+    std::list<size_t> _paths;
+    void _clearPaths();
 
     bool _relativeMarking;
 

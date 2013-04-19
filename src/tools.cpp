@@ -53,6 +53,16 @@ int sgn(float f) {
 int sgn(int i) {
   return sgn< int >(i);
 }
+
+int sgnP(float f){
+  if (f == 0){
+    return 1;
+  } else {
+    return sgn(f);
+  }
+}
+
+
 /// swap values of integers a & b
 void swap(int& a, int& b) {
   int buf = a;
@@ -365,6 +375,15 @@ Vec Vec::cross(Vec v) {
   result.z = this->x * v.y - this->y * v.x;
   return result;
 }
+
+float Vec::dot(const Vec& v){
+  return this->x*v.x + this->y*v.y + this->z*z;
+}
+
+float Vec::operator*(const Vec& v){
+  return this->dot(v);
+}
+
 
 void Vec::setAsGlVertex3f() {
   glVertex3f(this->x, this->y, this->z);

@@ -121,7 +121,7 @@ class DieState {
     void revive();
     bool gotKilled();
     size_t getValue();
-    size_t getColor();
+    PlayColor getColor();
     int x();
     int y();
     bool write(std::ostream& out) const;

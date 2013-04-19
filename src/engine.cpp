@@ -205,7 +205,7 @@ size_t DieState::getValue() {
   return this->_state[this->_curState][VALUE];
 }
 /// return color (BLACK or WHITE) of die
-size_t DieState::getColor() {
+PlayColor DieState::getColor() {
   return this->_color;
 }
 /// return x position
@@ -368,6 +368,10 @@ Move Game::redoMove() {
  */
 bool Game::moveIsValid(Move move) {
   DieState dieState = this->_dice[move.dieIndex];
+  // check, if die is from player with next move
+  if (dieState.getColor() != this->_nextPlayer){
+    return false;
+  }
   // check, if move is farer than die value allows
   if (dieState.getValue() != fabs(move.rel.dx) + fabs(move.rel.dy)) {
     return false;
@@ -411,9 +415,14 @@ bool Game::moveIsValid(Move move) {
     }
     // iterate over x-values (after y-iteration)
     for (size_t i = 1; i < fabs(move.rel.dy); i++) {
-      if (this->_fields[dieState.x() + i * sgn(move.rel.dx)][dieState.y() + move.rel.dy] != CLEAR) {
-        // there is a die on the way => move is not possible
-        return false;
+      int xVal = dieState.x() + i * sgn(move.rel.dx);
+      int yVal = dieState.y() + move.rel.dy;
+      //TODO: perform this boundary check for other field-lookups as well
+      if (0 <= xVal && xVal <= 8 && 0 <= yVal && yVal <= 8){
+        if (this->_fields[xVal][yVal] != CLEAR) {
+          // there is a die on the way => move is not possible
+          return false;
+        }
       }
     }
   }
