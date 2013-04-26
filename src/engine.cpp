@@ -498,10 +498,11 @@ float Game::rate(PlayColor color) {
   winner = this->getWinner();
   // best/worst case if winning condition reached
   if (winner) {
-    if (winner == color)
-      return 100.0;
-    else
-      return 0.0;
+    if (winner == color){
+      return 100.0f;
+    } else {
+      return 0.0f;
+    }
   }
   float rating = 0;
   rating += this->_config.strategy.coeffDiceRatio * this->rateDiceRatio(color);
@@ -612,7 +613,7 @@ void Game::reset() {
 /**
  rate according to the ratio of the number of dice on the board
  values:
- 100%:	only own dices on board
+ 100%: only own dices on board
  0%:   only opponent's dices on board
  */
 float Game::rateDiceRatio(PlayColor color) {
@@ -818,13 +819,16 @@ bool Config::write(std::ostream& out) const {
 
 /// deserializer
 bool Config::read(std::istream& in) {
-  if ( !readEntry< PlayMode >(in, this->mode))
+  if ( !readEntry< PlayMode >(in, this->mode)){
     return false;
-  if ( !readEntry< size_t >(in, this->cpuLevel))
+  }
+  if ( !readEntry< size_t >(in, this->cpuLevel)){
     return false;
+  }
   this->strategy.read(in);
-  if ( !proceed(in))
+  if ( !proceed(in)){
     return false;
+  }
   return true;
 }
 
@@ -837,10 +841,12 @@ bool Strategy::write(std::ostream& out) const {
 
 /// deserializer
 bool Strategy::read(std::istream& in) {
-  if ( !readEntry< int >(in, this->coeffDiceRatio))
+  if ( !readEntry< int >(in, this->coeffDiceRatio)){
     return false;
-  if ( !proceed(in))
+  }
+  if ( !proceed(in)){
     return false;
+  }
   return true;
 }
 
@@ -852,7 +858,6 @@ bool RelativeMove::write(std::ostream& out) const {
   proceed(out);
   return true;
 }
-;
 
 /// deserializer
 bool RelativeMove::read(std::istream& in) {
@@ -870,7 +875,6 @@ bool RelativeMove::read(std::istream& in) {
   }
   return true;
 }
-;
 
 /// serializer
 bool Move::write(std::ostream& out) const {
@@ -881,7 +885,6 @@ bool Move::write(std::ostream& out) const {
   proceed(out);
   return true;
 }
-;
 
 /// deserializer
 bool Move::read(std::istream& in) {
@@ -896,7 +899,6 @@ bool Move::read(std::istream& in) {
   }
   return true;
 }
-;
 
 } // end namespace KBX
 

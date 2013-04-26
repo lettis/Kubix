@@ -365,8 +365,6 @@ void GameWidget::userSelect(Model* obj) {
     std::list< Move > moves = this->_game->possibleMoves(selectedDie->getId());
     for (std::list< Move >::iterator mv = moves.begin(); mv != moves.end(); mv++) {
       this->_paths.push_back(this->_scene->add(new Path(this->_scene, selectedDie->getPosition(), mv->rel)));
-      //TODO: break for test
-//      break;
     }
   } else {
     this->_clearPaths();
