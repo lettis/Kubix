@@ -4,99 +4,58 @@
 
 #include <GL/glu.h>
 #include <QtGui>
+#include <QFileDialog>
+
 #include <fstream>
 #include <sstream>
 
-/// show a 'Save File'-Dialog
-/**
- Qt already offers a function for displaying 'save-file'-dialogs.
- While this works flawlessly under Win and MacOS, automatically appending
- the file extension does not work under *nix - hence this workaround/wrapper.
-
- courtesy to Dave Mateer for this piece of code
- http://stackoverflow.com/questions/9822177/is-there-a-way-to-automatically-add-extensions-to-a-file-using-qfiledialog-on-li
- */
-QString showSaveFileDialog(QWidget *parent, const QString &title, const QString &directory, const QString &filter) {
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
-  return QFileDialog::getSaveFileName(parent,
-      title,
-      directory,
-      filter);
-#else
-  QFileDialog dialog(parent, title, directory, filter);
-  if (parent) {
-    dialog.setWindowModality(Qt::WindowModal);
-  }
-  QRegExp filter_regex(QLatin1String("(?:^\\*\\.(?!.*\\()|\\(\\*\\.)(\\w+)"));
-  QStringList filters = filter.split(QLatin1String(";;"));
-  if ( !filters.isEmpty()) {
-    dialog.setNameFilter(filters.first());
-    if (filter_regex.indexIn(filters.first()) != -1) {
-      dialog.setDefaultSuffix(filter_regex.cap(1));
-    }
-  }
-  dialog.setAcceptMode(QFileDialog::AcceptSave);
-  if (dialog.exec() == QDialog::Accepted) {
-    QString file_name = dialog.selectedFiles().first();
-    QFileInfo info(file_name);
-    if (info.suffix().isEmpty() && !dialog.selectedNameFilter().isEmpty()) {
-      if (filter_regex.indexIn(dialog.selectedNameFilter()) != -1) {
-        QString extension = filter_regex.cap(1);
-        file_name += QLatin1String(".") + extension;
-      }
-    }
-    return file_name;
-  } else {
-    return QString();
-  }
-#endif  // Q_WS_MAC || Q_WS_WIN
-}
-
 namespace KBX {
 
-void GameWidget::initializeGUI() {
-  QPushButton *btn_newGame = new QPushButton(QApplication::translate("childwidget", "New Game"), this);
-  btn_newGame->setFocusPolicy(Qt::NoFocus);
-  connect(btn_newGame, SIGNAL( released() ), this, SLOT( newGame() ));
-  btn_newGame->setToolTip("Start a new game\nThe current game state will be lost.");
+//TODO: put all this functionality into main window
 
-  QPushButton *btn_save = new QPushButton(QApplication::translate("childwidget", "Save"), this);
-  btn_save->setFocusPolicy(Qt::NoFocus);
-  btn_save->move(200, 0);
-  connect(btn_save, SIGNAL( released() ), this, SLOT( save() ));
-  btn_save->setToolTip("Save the current game to resume playing later.");
-
-  QPushButton *btn_load = new QPushButton(QApplication::translate("childwidget", "Load"), this);
-  btn_load->setFocusPolicy(Qt::NoFocus);
-  btn_load->move(300, 0);
-  connect(btn_load, SIGNAL( released() ), this, SLOT( load() ));
-  btn_load->setToolTip("Load the current game to resume playing later.");
-
-  QPushButton *btn_quit = new QPushButton(QApplication::translate("childwidget", "Quit"), this);
-  btn_quit->setFocusPolicy(Qt::NoFocus);
-  connect(btn_quit, SIGNAL( released() ), this, SLOT( close() ));
-  btn_quit->setToolTip("Quit Kubix");
-  btn_quit->move(700, 0);
-
-  QCheckBox* chbx_autoRefresh = new QCheckBox(QApplication::translate("childwidget", "Auto-Refresh"), this);
-  connect(chbx_autoRefresh, SIGNAL( toggled(bool) ), this, SLOT(setAutoRefresh(bool)));
-  chbx_autoRefresh->move(400, 0);
-  chbx_autoRefresh->setToolTip("Auto-Refresh will cause the scene to be redrawn regularly,"
-      " even if nothing changed meanwhile.\nWithout Auto-Refresh,"
-      " the scene will only be redrawn if changes happened since the"
-      " last redraw.\nOnly enable if you experience flickering"
-      " or other graphics issues.");
-  chbx_autoRefresh->setFocusPolicy(Qt::NoFocus);
-  this->setAutoRefresh(false);
-
-  QCheckBox* chbx_relativeMarking = new QCheckBox(QApplication::translate("childwidget", "relative Marking"), this);
-  connect(chbx_relativeMarking, SIGNAL( toggled(bool) ), this, SLOT(setRelativeMarking(bool)));
-  chbx_relativeMarking->move(550, 0);
-  chbx_relativeMarking->setToolTip("Relative Marking will cause the keyboard controls for marking"
-      " objects to behave relative to the current camera position.");
-  chbx_relativeMarking->setFocusPolicy(Qt::NoFocus);
-  this->setRelativeMarking(false);
-}
+//void GameWidget::initializeGUI() {
+//  QPushButton *btn_newGame = new QPushButton(QApplication::translate("childwidget", "New Game"), this);
+//  btn_newGame->setFocusPolicy(Qt::NoFocus);
+//  connect(btn_newGame, SIGNAL( released() ), this, SLOT( newGame() ));
+//  btn_newGame->setToolTip("Start a new game\nThe current game state will be lost.");
+//
+//  QPushButton *btn_save = new QPushButton(QApplication::translate("childwidget", "Save"), this);
+//  btn_save->setFocusPolicy(Qt::NoFocus);
+//  btn_save->move(200, 0);
+//  connect(btn_save, SIGNAL( released() ), this, SLOT( save() ));
+//  btn_save->setToolTip("Save the current game to resume playing later.");
+//
+//  QPushButton *btn_load = new QPushButton(QApplication::translate("childwidget", "Load"), this);
+//  btn_load->setFocusPolicy(Qt::NoFocus);
+//  btn_load->move(300, 0);
+//  connect(btn_load, SIGNAL( released() ), this, SLOT( load() ));
+//  btn_load->setToolTip("Load the current game to resume playing later.");
+//
+//  QPushButton *btn_quit = new QPushButton(QApplication::translate("childwidget", "Quit"), this);
+//  btn_quit->setFocusPolicy(Qt::NoFocus);
+//  connect(btn_quit, SIGNAL( released() ), this, SLOT( close() ));
+//  btn_quit->setToolTip("Quit Kubix");
+//  btn_quit->move(700, 0);
+//
+//  QCheckBox* chbx_autoRefresh = new QCheckBox(QApplication::translate("childwidget", "Auto-Refresh"), this);
+//  connect(chbx_autoRefresh, SIGNAL( toggled(bool) ), this, SLOT(setAutoRefresh(bool)));
+//  chbx_autoRefresh->move(400, 0);
+//  chbx_autoRefresh->setToolTip("Auto-Refresh will cause the scene to be redrawn regularly,"
+//      " even if nothing changed meanwhile.\nWithout Auto-Refresh,"
+//      " the scene will only be redrawn if changes happened since the"
+//      " last redraw.\nOnly enable if you experience flickering"
+//      " or other graphics issues.");
+//  chbx_autoRefresh->setFocusPolicy(Qt::NoFocus);
+//  this->setAutoRefresh(false);
+//
+//  QCheckBox* chbx_relativeMarking = new QCheckBox(QApplication::translate("childwidget", "relative Marking"), this);
+//  connect(chbx_relativeMarking, SIGNAL( toggled(bool) ), this, SLOT(setRelativeMarking(bool)));
+//  chbx_relativeMarking->move(550, 0);
+//  chbx_relativeMarking->setToolTip("Relative Marking will cause the keyboard controls for marking"
+//      " objects to behave relative to the current camera position.");
+//  chbx_relativeMarking->setFocusPolicy(Qt::NoFocus);
+//  this->setRelativeMarking(false);
+//}
 
 void GameWidget::newGame() {
   this->_scene->wipe();
@@ -164,9 +123,9 @@ bool GameWidget::_needUpdate() {
   }
 }
 
-void GameWidget::_clearPaths(){
-  for (std::list<size_t>::iterator it=this->_paths.begin(); it != this->_paths.end(); it++){
-    this->_scene->remove(*it);
+void GameWidget::_clearPaths() {
+  for (std::list< size_t >::iterator it = this->_paths.begin(); it != this->_paths.end(); it++) {
+    this->_scene->remove( *it);
   }
   this->_paths.clear();
 }
@@ -372,33 +331,41 @@ void GameWidget::userSelect(Model* obj) {
 }
 
 void GameWidget::save() {
-  QString ofname = showSaveFileDialog(this, "Save Game", QString(), "Kubix Savegames (*.kbx)");
-  std::ofstream outfile(ofname.toStdString().c_str());
-  if ( !outfile.is_open()) {
-    this->_log.warning("Error: cannot open file to save. Check filesystem permissions!");
-    return;
+  QString ofname = QFileDialog::getSaveFileName(this, "Save game", "", "Kubix Savegames (*.kbx)").simplified();
+  if (ofname != "") {
+    if ( !ofname.endsWith(".kbx")) {
+      ofname += ".kbx";
+    }
+    //QString ofname = showSaveFileDialog(this, "Save Game", QString(), "Kubix Savegames (*.kbx)");
+    std::ofstream outfile(ofname.toStdString().c_str());
+    if ( !outfile.is_open()) {
+      this->_log.warning("Error: cannot open file to save. Check filesystem permissions!");
+      return;
+    }
+    if (this->_game->write(outfile)) {
+      this->_log.info("Saved game successfully to file '" + ofname.toStdString() + "'.");
+    } else {
+      this->_log.warning("Error saving game!");
+    }
+    outfile.close();
   }
-  if (this->_game->write(outfile)) {
-    this->_log.info("Saved game successfully to file '" + ofname.toStdString() + "'.");
-  } else {
-    this->_log.warning("Error saving game!");
-  }
-  outfile.close();
 }
 
 void GameWidget::load() {
-  QString ifname = QFileDialog::getOpenFileName(this, "Load Game", QString(), "Kubix Savegames (*.kbx)");
-  std::ifstream infile(ifname.toStdString().c_str());
-  if ( !infile.is_open()) {
-    this->_log.warning("Error: cannot open file for reading...");
-    return;
+  QString ifname = QFileDialog::getOpenFileName(this, "Load Game", "", "Kubix Savegames (*.kbx)").simplified();
+  if (ifname != "") {
+    std::ifstream infile(ifname.toStdString().c_str());
+    if ( !infile.is_open()) {
+      this->_log.warning("Error: cannot open file for reading...");
+      return;
+    }
+    if (this->_game->read(infile)) {
+      this->_log.info("Loaded game successfully from file '" + ifname.toStdString() + "'.");
+    } else {
+      this->_log.warning("Error loading game!");
+    }
+    infile.close();
   }
-  if (this->_game->read(infile)) {
-    this->_log.info("Loaded game successfully from file '" + ifname.toStdString() + "'.");
-  } else {
-    this->_log.warning("Error loading game!");
-  }
-  infile.close();
 }
 
 } // end namespace KBX

@@ -8,7 +8,7 @@ FIND_PACKAGE( OpenGL REQUIRED )
 INCLUDE_DIRECTORIES( ${OPENGL_INCLUDE_DIR} )
 
 # Q_OBJECT handling
-set(KBX_MOC_HDRS game_widget.hpp)
+set(KBX_MOC_HDRS game_widget.hpp main_window.hpp)
 QT4_WRAP_CPP(KBX_MOC_OUTFILES ${KBX_MOC_HDRS})
 
 # ressource binding
@@ -16,11 +16,12 @@ SET(KBX_RESOURCES ../res.qrc)
 QT4_ADD_RESOURCES(KBX_RESOURCES_RCC ${KBX_RESOURCES})
 
 # UI creation
-SET(KBX_FORMS ../ui/mainWindow.ui)
+SET(KBX_FORMS ../ui/mainWindow.ui ../ui/aboutDialog.ui)
 QT4_WRAP_UI(KBX_FORMS_HEADERS ${KBX_FORMS})
 
 ADD_EXECUTABLE(../Kubix
   kubix.cpp
+  main_window.cpp
   engine.cpp
   game_widget.cpp
   models.cpp

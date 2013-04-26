@@ -20,8 +20,7 @@
 #include <QApplication>
 
 #include "tools.hpp"
-#include "game_widget.hpp"
-#include "ui_mainWindow.h"
+#include "main_window.hpp"
 
 int main(int argc, char** argv){
   // load Qt-Resources
@@ -39,9 +38,7 @@ int main(int argc, char** argv){
     // TODO: get config from cmd arguments + rc-files
     //Config config( HUMAN_AI, 4, KBX_Strategy(1.0) );
     QApplication app(argc, argv);
-    QMainWindow *window = new QMainWindow;
-    Ui::MainWindow ui;
-    ui.setupUi(window);
+    MainWindow *window = new MainWindow();
     window->show();
     return app.exec();
   }catch(const char* errMsg){

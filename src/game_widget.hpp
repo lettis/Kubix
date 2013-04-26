@@ -75,18 +75,18 @@ class GameWidget: public QGLWidget {
     void wheelEvent(QWheelEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
-  protected slots:
+  public slots:
+    void setAutoRefresh(bool newAutoRefresh);
+    void setRelativeMarking(bool newRelativeMarking);
+
     void newGame();
     void save();
     void load();
-    void setAutoRefresh(bool newAutoRefresh);
-    void setRelativeMarking(bool newRelativeMarking);
 
   public:
     GameWidget(QWidget *parent = NULL);
     ~GameWidget() {
     }
-    void initializeGUI();
 };
 
 } // end namespace KBX
