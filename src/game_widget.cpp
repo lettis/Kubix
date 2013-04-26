@@ -11,58 +11,23 @@
 
 namespace KBX {
 
-//TODO: put all this functionality into main window
-
-//void GameWidget::initializeGUI() {
-//  QPushButton *btn_newGame = new QPushButton(QApplication::translate("childwidget", "New Game"), this);
-//  btn_newGame->setFocusPolicy(Qt::NoFocus);
-//  connect(btn_newGame, SIGNAL( released() ), this, SLOT( newGame() ));
-//  btn_newGame->setToolTip("Start a new game\nThe current game state will be lost.");
-//
-//  QPushButton *btn_save = new QPushButton(QApplication::translate("childwidget", "Save"), this);
-//  btn_save->setFocusPolicy(Qt::NoFocus);
-//  btn_save->move(200, 0);
-//  connect(btn_save, SIGNAL( released() ), this, SLOT( save() ));
-//  btn_save->setToolTip("Save the current game to resume playing later.");
-//
-//  QPushButton *btn_load = new QPushButton(QApplication::translate("childwidget", "Load"), this);
-//  btn_load->setFocusPolicy(Qt::NoFocus);
-//  btn_load->move(300, 0);
-//  connect(btn_load, SIGNAL( released() ), this, SLOT( load() ));
-//  btn_load->setToolTip("Load the current game to resume playing later.");
-//
-//  QPushButton *btn_quit = new QPushButton(QApplication::translate("childwidget", "Quit"), this);
-//  btn_quit->setFocusPolicy(Qt::NoFocus);
-//  connect(btn_quit, SIGNAL( released() ), this, SLOT( close() ));
-//  btn_quit->setToolTip("Quit Kubix");
-//  btn_quit->move(700, 0);
-//
-//  QCheckBox* chbx_autoRefresh = new QCheckBox(QApplication::translate("childwidget", "Auto-Refresh"), this);
-//  connect(chbx_autoRefresh, SIGNAL( toggled(bool) ), this, SLOT(setAutoRefresh(bool)));
-//  chbx_autoRefresh->move(400, 0);
-//  chbx_autoRefresh->setToolTip("Auto-Refresh will cause the scene to be redrawn regularly,"
-//      " even if nothing changed meanwhile.\nWithout Auto-Refresh,"
-//      " the scene will only be redrawn if changes happened since the"
-//      " last redraw.\nOnly enable if you experience flickering"
-//      " or other graphics issues.");
-//  chbx_autoRefresh->setFocusPolicy(Qt::NoFocus);
-//  this->setAutoRefresh(false);
-//
-//  QCheckBox* chbx_relativeMarking = new QCheckBox(QApplication::translate("childwidget", "relative Marking"), this);
-//  connect(chbx_relativeMarking, SIGNAL( toggled(bool) ), this, SLOT(setRelativeMarking(bool)));
-//  chbx_relativeMarking->move(550, 0);
-//  chbx_relativeMarking->setToolTip("Relative Marking will cause the keyboard controls for marking"
-//      " objects to behave relative to the current camera position.");
-//  chbx_relativeMarking->setFocusPolicy(Qt::NoFocus);
-//  this->setRelativeMarking(false);
-//}
+//TODO: add menu items / preferences for
+//      autoRefresh and relativeMarking
 
 void GameWidget::newGame() {
+  // clear paths and wipe scene for new game
+  // attention: order is important because of
+  //            references in path list to
+  //            path-objects listed inside scene.
+  this->_clearPaths();
   this->_scene->wipe();
-  delete this->_game;
+  // create new game instance
   // TODO: this is just a dummy for now, please replace by something that makes more sense!
+  delete this->_game;
   this->_game = new Game(Config(PlayMode(HUMAN_AI), 3, Strategy(1)));
+  // setup board and make change known to renderer
   this->_scene->setup();
+  this->changed();
 }
 
 GameWidget::GameWidget(QWidget *parent)

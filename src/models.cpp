@@ -822,7 +822,6 @@ void Scene::wipe() {
     delete *obj;
   }
   this->_dice.clear();
-//  this->_objId2Die.clear();
   this->_objList.clear();
   this->_board = NULL;
 }
