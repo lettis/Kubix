@@ -24,12 +24,15 @@
 
 namespace KBX {
 
-enum StateValue {
-  VALUE = 0,
+enum Directions {
   NORTH = 1,
   SOUTH = 2,
   EAST = 3,
-  WEST = 4,
+  WEST = 4
+};
+
+enum StateValue {
+  VALUE = 0,
   DEAD = 25,
   CLEAR = -1
 };

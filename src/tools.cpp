@@ -272,7 +272,7 @@ Vec::Vec(float x, float y, float z)
       z(z) {
 }
 /// calculate the Euclidian norm
-float Vec::norm() {
+float Vec::norm() const {
   float norm = 0;
   norm += this->x * this->x;
   norm += this->y * this->y;
@@ -283,7 +283,7 @@ float Vec::norm() {
 /*
  \returns the normalized vector
  */
-Vec Vec::normalize() {
+Vec Vec::normalized() const {
   float norm = this->norm();
   if (norm != 0) {
     return Vec(this->x / norm, this->y / norm, this->z / norm);
@@ -296,22 +296,22 @@ Vec Vec::normalize() {
  \param a scaling factor
  scaling is done by multiplying every element of the vector by the factor a
  */
-Vec Vec::scale(float a) {
+Vec Vec::scaled(float a) const {
   return Vec(a * this->x, a * this->y, a * this->z);
 }
 /// add vector
 /**
  \param v the vector to be added
  */
-Vec Vec::add(Vec v) {
+Vec Vec::add(Vec v) const {
   return Vec(this->x + v.x, this->y + v.y, this->z + v.z);
 }
 /// subtract vector
 /**
  \param v the vector to be subtracted
  */
-Vec Vec::sub(Vec v) {
-  return this->add(v.scale( -1));
+Vec Vec::sub(Vec v) const {
+  return this->add(v.scaled( -1));
 }
 
 /// compare vector in all three dimensions
@@ -323,13 +323,13 @@ bool Vec::equals(Vec v) {
 }
 
 // some operator overloading
-Vec Vec::operator*(float a) {
-  return this->scale(a);
+Vec Vec::operator*(float a) const {
+  return this->scaled(a);
 }
-Vec Vec::operator+(Vec v) {
+Vec Vec::operator+(Vec v) const {
   return this->add(v);
 }
-Vec Vec::operator-(Vec v) {
+Vec Vec::operator-(Vec v) const {
   return this->sub(v);
 }
 bool Vec::operator==(Vec v) {
@@ -342,12 +342,12 @@ bool Vec::operator==(Vec v) {
  \param angle angle of rotation, given in degrees
  \returns the rotated vector
  */
-Vec Vec::rotate(Vec rotAxis, float angle) {
+Vec Vec::rotate(Vec rotAxis, float angle) const {
   if (angle == 0.0f) {
     return Vec( *this);
   }
   // first normalize rotation axis
-  rotAxis = rotAxis.normalize();
+  rotAxis = rotAxis.normalized();
   float n1 = rotAxis.x;
   float n2 = rotAxis.y;
   float n3 = rotAxis.z;
@@ -363,12 +363,23 @@ Vec Vec::rotate(Vec rotAxis, float angle) {
   float z = this->x * (n3 * n1 * cc - n2 * s) + this->y * (n3 * n2 * cc + n1 * s) + this->z * (c + n3 * n3 * cc);
   return Vec(x, y, z);
 }
+/// rotate vector into coordinate system as defined by given orthonormal vectors
+//Vec Vec::rotate(Vec xAxis, Vec yAxis, Vec zAxis){
+//  xAxis = xAxis.normalized();
+//  yAxis = yAxis.normalized();
+//  zAxis = zAxis.normalized();
+//  float x = this->x * xAxis.x + this->y * yAxis.x + this->z * zAxis.x;
+//  float y = this->x * xAxis.y + this->y * yAxis.y + this->z * zAxis.y;
+//  float z = this->x * xAxis.z + this->y * yAxis.z + this->z * zAxis.z;
+//  return Vec(x, y, z);
+//}
+
 /// calculate the cross product
 /**
  \param v the other vector
  \returns the cross product  (this X v)
  */
-Vec Vec::cross(Vec v) {
+Vec Vec::cross(Vec v) const {
   Vec result;
   result.x = this->y * v.z - this->z * v.y;
   result.y = this->z * v.x - this->x * v.z;
@@ -376,11 +387,11 @@ Vec Vec::cross(Vec v) {
   return result;
 }
 
-float Vec::dot(const Vec& v){
+float Vec::dot(const Vec& v) const {
   return this->x*v.x + this->y*v.y + this->z*z;
 }
 
-float Vec::operator*(const Vec& v){
+float Vec::operator*(const Vec& v) const {
   return this->dot(v);
 }
 

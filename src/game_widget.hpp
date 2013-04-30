@@ -29,7 +29,6 @@
 
 namespace KBX {
 class GameWidget: public QGLWidget {
-    // must include this if you use Qt signals/slots
   Q_OBJECT
 
   public:

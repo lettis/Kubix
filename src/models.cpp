@@ -30,32 +30,32 @@
 namespace KBX {
 /// constructor initializing to pos=(0,0,0) and target=(0,1,0)
 Camera::Camera() {
-  this->position = Vec(0, 0, 0);
-  this->target = Vec(0, 1, 0);
+  this->_position = Vec(0, 0, 0);
+  this->_target = Vec(0, 1, 0);
 }
 
 /// constructor initializing to given pos and target=(0,1,0)
 Camera::Camera(Vec pos) {
-  this->position = pos;
-  this->target = Vec(0, 1, 0);
+  this->_position = pos;
+  this->_target = Vec(0, 1, 0);
 }
 
 /// constructor initializing to given pos and target
 Camera::Camera(Vec pos, Vec target) {
-  this->position = pos;
-  this->target = target;
+  this->_position = pos;
+  this->_target = target;
 }
 
 /// update the OpenGL camera perspective
 void Camera::updateView() {
   // set OpenGL camera
-  gluLookAt(this->position.x, this->position.y, this->position.z, this->target.x, this->target.y, this->target.z, 0, 0,
+  gluLookAt(this->_position.x, this->_position.y, this->_position.z, this->_target.x, this->_target.y, this->_target.z, 0, 0,
       1);
 }
 
 /// get orientation of camera
 Vec Camera::getOrientation() {
-  return this->position.sub(this->target);
+  return this->_position.sub(this->_target);
 }
 
 /// set new target
@@ -63,7 +63,7 @@ Vec Camera::getOrientation() {
  \param target the target to be set (i.e. the point where to look at)
  */
 void Camera::setTarget(Vec target) {
-  this->target = target;
+  this->_target = target;
 }
 
 /// set new position
@@ -71,7 +71,7 @@ void Camera::setTarget(Vec target) {
  \param position the new position of the camera
  */
 void Camera::setPosition(Vec position) {
-  this->position = position;
+  this->_position = position;
 }
 
 /// set new camera position by rotating around target
@@ -83,18 +83,18 @@ void Camera::setPosition(Vec position) {
  negative means to the left (horizontal) or downwards (vertical).
  */
 void Camera::rotate(float angle, size_t direction) {
-  Vec v = this->position.sub(this->target);
+  Vec v = this->_position.sub(this->_target);
   if (direction == this->HORIZONTAL) {
     // rotate in horizontal plane, i.e. around the y-axis
     v = v.rotate(Vec(0, 0, 1), angle);
-    this->position = this->target.add(v);
+    this->_position = this->_target.add(v);
   } else if (direction == this->VERTICAL) {
     // rotate in vertical plane, i.e. around the axis
     // orthogonal to the y-axis and the vector v.
-    if ((v.normalize().z < 0.99 && angle > 0) || (v.normalize().z > -0.99 && angle < 0)) {
+    if ((v.normalized().z < 0.99 && angle > 0) || (v.normalized().z > -0.99 && angle < 0)) {
       Vec ortho = v.cross(Vec(0, 0, 1));
       v = v.rotate(ortho, angle);
-      this->position = this->target.add(v);
+      this->_position = this->_target.add(v);
     }
   } else {
     throw "cannot rotate in unknown direction";
@@ -113,16 +113,16 @@ void Camera::zoom(float factor) {
   if (factor <= 0) {
     throw "cannot zoom by negative or zero zoom factor";
   }
-  Vec diff = this->position.sub(this->target);
-  diff = diff.scale(factor);
+  Vec diff = this->_position.sub(this->_target);
+  diff = diff.scaled(factor);
   if (diff.norm() < 900 && diff.norm() > 15) {
-    this->position = this->target.add(diff);
+    this->_position = this->_target.add(diff);
   }
 }
 
 /// load Object textures
 /*
- TODO: documentation
+ load texture for die surface
  */
 void Model::loadTexture(QString filename, GLuint* textures, size_t nTexture) {
   QImage tex, img = QImage(filename);
@@ -150,13 +150,14 @@ Color Model::cHighlighted = Color(0, 255, 255);
 
 /// default constructor
 Model::Model(Scene* scene)
-    : _angle(0),
+    : _primaryOrientation(NormalVectors::X),
+      _secondaryOrientation(NormalVectors::Y),
       _isVisible(true),
       _pos(Vec(0, 0, 0)),
-      isHighlighted(false),
-      isMarked(false),
-      isSelected(false),
-      scene(scene)
+      _isHighlighted(false),
+      _isMarked(false),
+      _isSelected(false),
+      _scene(scene)
 // we need to add the object to the object list
 // and retrieve our own unique id from there
 //      ,id(Object::objectList.add(this))
@@ -165,58 +166,43 @@ Model::Model(Scene* scene)
 
 /// constructor setting the object's position
 Model::Model(Scene* scene, Vec pos)
-    : _angle(0),
+    : _primaryOrientation(NormalVectors::X),
+      _secondaryOrientation(NormalVectors::Y),
       _isVisible(true),
       _pos(pos),
-      isHighlighted(false),
-      isMarked(false),
-      isSelected(false),
-      scene(scene) {
+      _isHighlighted(false),
+      _isMarked(false),
+      _isSelected(false),
+      _scene(scene) {
 }
 
 /// default destructor
 Model::~Model() {
 }
 
-/// set object rotation (accumulatively)
-/**
- \param axis the axis around which the object will be rotated
- \param angle angle of the rotation
+void Model::setOrientation(Vec primary, Vec secondary){
+  this->_primaryOrientation = primary.normalized();
+  this->_secondaryOrientation = secondary.normalized();
+}
 
- Rotations will be done accumulatively. This means, you can
- call .rotate(...) several times after another with different rotation
- axes and angles. The orientation will always be in the direction of the
- first rotation. That way you can rotate the object with the same reference
- of orientation and you do not have to account for the rotating coordinate system.
- This is done by rotating the rotation axis inversely around the last rotation.
- Thus the reference frame is always the same.
- */
 void Model::rotate(Vec axis, float angle) {
-  // push angle to list of successive rotations
-  this->_angle.push_back(angle);
-  // push axis to list of succ. rotations by converting it
-  // to the local frame of reference
-  // (this is needed, since the OpenGL coordinate system rotates with the objects)
-  if ( !this->_rotAxis.empty()) {
-    size_t last = this->_rotAxis.size() - 1;
-    axis = axis.rotate(this->_rotAxis[last].scale( -1), this->_angle[last]);
-  }
-  this->_rotAxis.push_back(axis);
+  this->_primaryOrientation = this->_primaryOrientation.rotate(axis, angle);
+  this->_secondaryOrientation = this->_secondaryOrientation.rotate(axis, angle);
 }
 void Model::setSelectedState(bool selected) {
-  this->isSelected = selected;
+  this->_isSelected = selected;
 }
 void Model::setMarkedState(bool marked) {
-  this->isMarked = marked;
+  this->_isMarked = marked;
 }
 void Model::setHighlightedState(bool highlighted) {
-  this->isHighlighted = highlighted;
+  this->_isHighlighted = highlighted;
 }
 Model* Model::clicked(size_t id) {
-  if (this->scene->uniqueColorId == id) {
+  if (this->_scene->uniqueColorId == id) {
     return this;
   } else {
-    this->scene->uniqueColorId++;
+    this->_scene->uniqueColorId++;
     return NULL;
   }
 }
@@ -225,11 +211,18 @@ Model* Model::clicked(size_t id) {
 void Model::translate(Vec direction) {
   this->_pos = direction;
 }
-/// actually rotate object (private, only called by 'display')
+/// actually rotate object (private, only called by 'display' or animation code)
 void Model::_rotate() {
-  for (size_t i = 0; i < this->_angle.size(); i++) {
-    glRotatef(this->_angle[i], this->_rotAxis[i].x, this->_rotAxis[i].y, this->_rotAxis[i].z);
-  }
+  Vec v1 = this->_primaryOrientation;
+  Vec v2 = this->_secondaryOrientation;
+  Vec v3 = v1.cross(v2);
+  GLfloat r[16] = {
+      v1.x, v2.x, v3.x, 0.0f,
+      v1.y, v2.y, v3.y, 0.0f,
+      v1.z, v2.z, v3.z, 0.0f,
+      0.0f, 0.0f, 0.0f, 1.0f
+  };
+  glMultMatrixf(r);
 }
 /// actually translate object (private, only called by 'display')
 void Model::_translate() {
@@ -239,38 +232,38 @@ void Model::_translate() {
 void Model::display() {
   // save transformations done before
   glPushMatrix();
-  this->_setColor();
+  this->_setRenderingColor();
   this->_translate();
   this->_rotate();
   this->_render();
   // reload transformations done before
   glPopMatrix();
 }
-void Model::_setColor() {
-  if ( !this->scene)
+void Model::_setRenderingColor() {
+  if ( !this->_scene)
     throw "Cannot display object not belonging to any scene!";
-  if (this->scene->inObjPickingMode) {
+  if (this->_scene->inObjPickingMode) {
     // render object with unique color mode for object picking
     // (click on obj -> click on unique color -> identify object)
-    Color(this->scene->uniqueColorId).setAsGlColor();
-    this->scene->uniqueColorId++;
+    Color(this->_scene->uniqueColorId).setAsGlColor();
+    this->_scene->uniqueColorId++;
   } else {
     // render object with true color (for view)
-    this->setColor();
+    this->_setColor();
   }
 }
 
 /// set the object color before rendering
-void Model::setColor() {
-  if (this->isSelected) {
+void Model::_setColor() {
+  if (this->_isSelected) {
     this->cSelected.setAsGlColor();
     return;
   }
-  if (this->isHighlighted) {
+  if (this->_isHighlighted) {
     this->cHighlighted.setAsGlColor();
     return;
   }
-  if (this->isMarked) {
+  if (this->_isMarked) {
     this->cMarked.setAsGlColor();
     return;
   }
@@ -283,21 +276,21 @@ Vec Model::getPosition() {
 }
 
 /// inherit parent constructor
-AnimatedModel::AnimatedModel(Scene* scene)
-    : _angleOrig(0),
-      _rotStep(0),
-      _transStep(0),
-      _angleDest(0),
-      Model(scene) {
-}
+//AnimatedModel::AnimatedModel(Scene* scene)
+//    : _angleOrig(0),
+//      _rotStep(0),
+//      _transStep(0),
+//      _angleDest(0),
+//      Model(scene) {
+//}
 /// inherit parent constructor
-AnimatedModel::AnimatedModel(Scene* scene, Vec pos)
-    : _angleOrig(0),
-      _rotStep(0),
-      _transStep(0),
-      _angleDest(0),
-      Model(scene, pos) {
-}
+//AnimatedModel::AnimatedModel(Scene* scene, Vec pos)
+//    : _angleOrig(0),
+//      _rotStep(0),
+//      _transStep(0),
+//      _angleDest(0),
+//      Model(scene, pos) {
+//}
 
 // set texture loading flag to false initially
 bool Die::texturesLoaded = false;
@@ -305,7 +298,7 @@ GLuint Die::textures[14];
 
 /// inherit parent constructor and set dieId (same as in engine)
 Die::Die(Scene* scene, Vec pos, size_t dieId)
-    : AnimatedModel(scene, pos),
+    : Model(scene, pos),
       _dieId(dieId),
       _tile(NULL),
       IS_KING((dieId == 4) || (dieId == 13)) {
@@ -378,11 +371,11 @@ void Die::_render() {
   if (this->_playColor == BLACK) {
     b = 1;
   }
-  if ( !this->scene->inObjPickingMode) {
+  if ( !this->_scene->inObjPickingMode) {
     glEnable(GL_TEXTURE_2D);
   }
   // face 1
-  if ( !this->scene->inObjPickingMode) {
+  if ( !this->_scene->inObjPickingMode) {
     if (this->IS_KING) {
       glBindTexture(GL_TEXTURE_2D, Die::textures[12 + b]);
     } else {
@@ -400,7 +393,7 @@ void Die::_render() {
   glVertex3f( -0.5, +0.5, -0.5);
   glEnd();
   // face 2
-  if ( !(this->scene->inObjPickingMode || this->IS_KING)) {
+  if ( !(this->_scene->inObjPickingMode || this->IS_KING)) {
     glBindTexture(GL_TEXTURE_2D, Die::textures[2 + b]);
   }
   glBegin(GL_QUADS);
@@ -414,7 +407,7 @@ void Die::_render() {
   glVertex3f( -0.5, -0.5, +0.5);
   glEnd();
   // face 3
-  if ( !(this->scene->inObjPickingMode || this->IS_KING)) {
+  if ( !(this->_scene->inObjPickingMode || this->IS_KING)) {
     glBindTexture(GL_TEXTURE_2D, Die::textures[4 + b]);
   }
   glBegin(GL_QUADS);
@@ -428,7 +421,7 @@ void Die::_render() {
   glVertex3f( -0.5, -0.5, +0.5);
   glEnd();
   // face 4
-  if ( !(this->scene->inObjPickingMode || this->IS_KING)) {
+  if ( !(this->_scene->inObjPickingMode || this->IS_KING)) {
     glBindTexture(GL_TEXTURE_2D, Die::textures[6 + b]);
 
   }
@@ -443,7 +436,7 @@ void Die::_render() {
   glVertex3f( +0.5, -0.5, +0.5);
   glEnd();
   // face 5
-  if ( !(this->scene->inObjPickingMode || this->IS_KING)) {
+  if ( !(this->_scene->inObjPickingMode || this->IS_KING)) {
     glBindTexture(GL_TEXTURE_2D, Die::textures[8 + b]);
   }
   glBegin(GL_QUADS);
@@ -457,7 +450,7 @@ void Die::_render() {
   glVertex3f( -0.5, +0.5, +0.5);
   glEnd();
   // face 6
-  if ( !(this->scene->inObjPickingMode || this->IS_KING)) {
+  if ( !(this->_scene->inObjPickingMode || this->IS_KING)) {
     glBindTexture(GL_TEXTURE_2D, Die::textures[10 + b]);
   }
   glBegin(GL_QUADS);
@@ -472,6 +465,26 @@ void Die::_render() {
   glEnd();
   glDisable(GL_TEXTURE_2D);
 }
+
+void Die::rollOneField(Directions d){
+  //TODO: implement rollOneField
+  // while not done {
+  glPushMatrix();
+  this->_rotate();
+  // rotate towards next field
+  this->_translate();
+  this->_render();
+  glPopMatrix();
+
+  // redraw scene
+  this->_scene->display();
+  //}
+
+  //TODO: set new position
+  //TODO: set new orientation
+}
+
+
 
 const Color Path::MAIN_COLOR = ColorTable::GREEN;
 const Color Path::NORMAL_COLOR = ColorTable::YELLOW;
@@ -488,7 +501,7 @@ Path::Path(Scene* scene, Vec posFrom, RelativeMove relMove, bool isMainPath)
       _isMainPath(isMainPath) {
 }
 
-void Path::setColor() {
+void Path::_setColor() {
   // set correct color
   if (this->_isMainPath) {
     Path::MAIN_COLOR.setAsGlColor();
@@ -637,7 +650,7 @@ Board::Board(Scene* scene, size_t nX, size_t nY)
     for (size_t y = 0; y < this->_nY; y++) {
       tileColor = ((x % 2 + y % 2) % 2 == 0) ? dark : bright;
       tilePosition = Vec((float) x - (float) (this->_nX) / 2 + 0.5, (float) y - (float) (this->_nY) / 2 + 0.5, -0.5);
-      this->_tiles[x][y] = new Tile(this->scene, this, tilePosition, tileColor);
+      this->_tiles[x][y] = new Tile(this->_scene, this, tilePosition, tileColor);
     }
   }
 }
@@ -758,16 +771,16 @@ void Tile::_render() {
 }
 
 /// set the tile color before rendering
-void Tile::setColor() {
-  if (this->isSelected) {
+void Tile::_setColor() {
+  if (this->_isSelected) {
     this->cSelected.setAsGlColor();
     return;
   }
-  if (this->isHighlighted) {
+  if (this->_isHighlighted) {
     this->cHighlighted.setAsGlColor();
     return;
   }
-  if (this->isMarked) {
+  if (this->_isMarked) {
     this->cMarked.setAsGlColor();
     return;
   }
@@ -777,14 +790,14 @@ void Tile::setColor() {
 void Tile::setMarkedState(bool marked) {
   if (this->_die)
     this->_die->setMarkedState(marked);
-  this->isMarked = marked;
+  this->_isMarked = marked;
 }
 
 void Tile::setSelectedState(bool selected) {
   if (this->_die)
     this->_die->setSelectedState(selected);
   else
-    this->isSelected = selected;
+    this->_isSelected = selected;
 }
 ;
 
@@ -829,15 +842,15 @@ void Scene::wipe() {
 /// scene constructor
 Scene::Scene(GameWidget* act)
     : Model(this),
-      markX(4),
-      markY(4),
-      selected(NULL),
+      _markX(4),
+      _markY(4),
+      _selected(NULL),
       inObjPickingMode(false),
       uniqueColorId(0),
       _act(act),
       _board(NULL),
-      cam(Vec(0, -50, 70), Vec(0, 0, 0)),
-      messages("Scene") {
+      _cam(Vec(0, -50, 70), Vec(0, 0, 0)),
+      _messages("Scene") {
   this->setup();
 }
 
@@ -863,79 +876,67 @@ void Scene::setup() {
   // initialize the board and add it to the scene
   this->_board = new Board(this, 9, 9);
   this->add(this->_board);
-  this->markX = 4;
-  this->markY = 4;
-  this->selected = NULL;
+  this->_markX = 4;
+  this->_markY = 4;
+  this->_selected = NULL;
 
   // die setup.
   // attention: order has to be kept as is to have same die ids as in engine!
 
   // white dice; w1 is in lower left corner, w8 in lower right
   this->_dice.push_back(new Die(this, Vec( -4, -4, 0), 0));
-  this->_dice.back()->rotate(toBack, 90); //
-  this->_dice.back()->rotate(counterClockwise, 90); // 5
+  this->_dice.back()->setOrientation(NormalVectors::Z, NormalVectors::X);
   this->_dice.back()->setTile(this->_board->getTile(0, 0));
   this->_dice.push_back(new Die(this, Vec( -3, -4, 0), 1));
-  this->_dice.back()->rotate(toBack, 180); //
-  this->_dice.back()->rotate(counterClockwise, 90); // 1
+  this->_dice.back()->setOrientation(NormalVectors::Y, NormalVectors::X);
   this->_dice.back()->setTile(this->_board->getTile(1, 0));
   this->_dice.push_back(new Die(this, Vec( -2, -4, 0), 2));
-  this->_dice.back()->rotate(toFront, 90); //
-  this->_dice.back()->rotate(counterClockwise, 90); // 2
+  this->_dice.back()->setOrientation(NormalVectors::Z * (-1), NormalVectors::X);
   this->_dice.back()->setTile(this->_board->getTile(2, 0));
   this->_dice.push_back(new Die(this, Vec( -1, -4, 0), 3));
-  this->_dice.back()->rotate(counterClockwise, 90); // 6
+  this->_dice.back()->setOrientation(NormalVectors::Y *(-1), NormalVectors::X);
   this->_dice.back()->setTile(this->_board->getTile(3, 0));
   this->_dice.push_back(new Die(this, Vec(0, -4, 0), 4)); // King
   this->_dice.back()->setTile(this->_board->getTile(4, 0));
   this->_dice.push_back(new Die(this, Vec(1, -4, 0), 5));
-  this->_dice.back()->rotate(counterClockwise, 90); // 6
+  this->_dice.back()->setOrientation(NormalVectors::Y *(-1), NormalVectors::X);
   this->_dice.back()->setTile(this->_board->getTile(5, 0));
   this->_dice.push_back(new Die(this, Vec(2, -4, 0), 6));
-  this->_dice.back()->rotate(toFront, 90); //
-  this->_dice.back()->rotate(counterClockwise, 90); // 2
+  this->_dice.back()->setOrientation(NormalVectors::Z * (-1), NormalVectors::X);
   this->_dice.back()->setTile(this->_board->getTile(6, 0));
   this->_dice.push_back(new Die(this, Vec(3, -4, 0), 7));
-  this->_dice.back()->rotate(toBack, 180); //
-  this->_dice.back()->rotate(counterClockwise, 90); // 1
+  this->_dice.back()->setOrientation(NormalVectors::Y, NormalVectors::X);
   this->_dice.back()->setTile(this->_board->getTile(7, 0));
   this->_dice.push_back(new Die(this, Vec(4, -4, 0), 8));
-  this->_dice.back()->rotate(toBack, 90); //
-  this->_dice.back()->rotate(counterClockwise, 90); // 5
+  this->_dice.back()->setOrientation(NormalVectors::Z, NormalVectors::X);
   this->_dice.back()->setTile(this->_board->getTile(8, 0));
 
   // black dice; b1 is in upper left corner, b8 in upper right
   this->_dice.push_back(new Die(this, Vec( -4, 4, 0), 9));
-  this->_dice.back()->rotate(toBack, 90); //
-  this->_dice.back()->rotate(clockwise, 90); // 5
+  this->_dice.back()->setOrientation(NormalVectors::Z *(-1), NormalVectors::X *(-1));
   this->_dice.back()->setTile(this->_board->getTile(0, 8));
   this->_dice.push_back(new Die(this, Vec( -3, 4, 0), 10));
-  this->_dice.back()->rotate(toBack, 180); //
-  this->_dice.back()->rotate(clockwise, 90); // 1
+  this->_dice.back()->setOrientation(NormalVectors::Y*(-1), NormalVectors::X*(-1));
   this->_dice.back()->setTile(this->_board->getTile(1, 8));
   this->_dice.push_back(new Die(this, Vec( -2, 4, 0), 11));
-  this->_dice.back()->rotate(toFront, 90); //
-  this->_dice.back()->rotate(clockwise, 90); // 2
+  this->_dice.back()->setOrientation(NormalVectors::Z, NormalVectors::X*(-1));
   this->_dice.back()->setTile(this->_board->getTile(2, 8));
   this->_dice.push_back(new Die(this, Vec( -1, 4, 0), 12));
   this->_dice.back()->setTile(this->_board->getTile(3, 8));
-  this->_dice.back()->rotate(clockwise, 90); // 6
+  this->_dice.back()->setOrientation(NormalVectors::Y, NormalVectors::X*(-1));
   this->_dice.push_back(new Die(this, Vec(0, 4, 0), 13));
   this->_dice.back()->setTile(this->_board->getTile(4, 8));
   this->_dice.push_back(new Die(this, Vec(1, 4, 0), 14));
-  this->_dice.back()->rotate(clockwise, 90); // 6
+  this->_dice.back()->setOrientation(NormalVectors::Y, NormalVectors::X*(-1));
   this->_dice.back()->setTile(this->_board->getTile(5, 8));
   this->_dice.push_back(new Die(this, Vec(2, 4, 0), 15));
-  this->_dice.back()->rotate(toFront, 90); //
-  this->_dice.back()->rotate(clockwise, 90); // 2
+  this->_dice.back()->setOrientation(NormalVectors::Z, NormalVectors::X*(-1));
   this->_dice.back()->setTile(this->_board->getTile(6, 8));
   this->_dice.push_back(new Die(this, Vec(3, 4, 0), 16));
-  this->_dice.back()->rotate(toBack, 180); //
-  this->_dice.back()->rotate(clockwise, 90); // 1
+  this->_dice.back()->setOrientation(NormalVectors::Y*(-1), NormalVectors::X*(-1));
   this->_dice.back()->setTile(this->_board->getTile(7, 8));
   this->_dice.push_back(new Die(this, Vec(4, 4, 0), 17));
-  this->_dice.back()->rotate(toBack, 90); //
-  this->_dice.back()->rotate(clockwise, 90); // 5
+  this->_dice.back()->setOrientation(NormalVectors::Z*(-1), NormalVectors::X*(-1));
   this->_dice.back()->setTile(this->_board->getTile(8, 8));
 
   // add dice to scene
@@ -958,7 +959,7 @@ void Scene::_render() {
   // reset the drawing perspective
   glLoadIdentity();
   // set correct camera position/view
-  this->cam.updateView();
+  this->_cam.updateView();
   // call every object's display method to draw
   // the object to the scene
   for (size_t i = 0; i < this->_objList.size(); i++) {
@@ -968,7 +969,7 @@ void Scene::_render() {
   }
 }
 
-void Scene::_setColor() {
+void Scene::_setRenderingColor() {
 }
 
 /// add object to the scene
@@ -997,12 +998,12 @@ void Scene::remove(size_t objId) {
  \param direction the direction of the rotation, either Camera.HORIZONTAL or Camera.VERTICAL
  */
 void Scene::rotate(float angle, size_t direction) {
-  this->cam.rotate(angle, direction);
+  this->_cam.rotate(angle, direction);
 }
 
 /// obtain camera orientation relative to center of scene
 Vec Scene::getOrientation() {
-  return this->cam.getOrientation();
+  return this->_cam.getOrientation();
 }
 
 /// zoom the scene in/out
@@ -1010,7 +1011,7 @@ Vec Scene::getOrientation() {
  \param factor the zoom factor
  */
 void Scene::zoom(float factor) {
-  this->cam.zoom(factor);
+  this->_cam.zoom(factor);
 }
 
 /// display in picking mode
@@ -1043,12 +1044,12 @@ Model* Scene::pickObject(QPoint p) {
   glReadPixels(p.x(), viewport[3] - p.y(), 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
   size_t id = Color(pixel[0], pixel[1], pixel[2]).id();
   this->uniqueColorId = 0;
-  this->messages.info(stringprintf("clicked object id: %d", (int) id));
+  this->_messages.info(stringprintf("clicked object id: %d", (int) id));
   Model* obj = this->clicked(id);
   if (obj) {
     return obj;
   } else {
-    this->messages.warning(stringprintf("sorry, could not find object matching id %d", (int) id));
+    this->_messages.warning(stringprintf("sorry, could not find object matching id %d", (int) id));
     return NULL;
   }
 }
@@ -1080,7 +1081,7 @@ Model* Scene::clicked(size_t id) {
  */
 void Scene::markNext(Vec delta) {
   if ( !this->_board) {
-    this->messages.warning("Scene::markNext called without board!");
+    this->_messages.warning("Scene::markNext called without board!");
     return;
   }
   int dx, dy;
@@ -1091,12 +1092,12 @@ void Scene::markNext(Vec delta) {
     dy = 0;
     dx = sgn(delta.x);
   }
-  this->_board->getTile(this->markX, this->markY)->setMarkedState(false);
-  if (this->markX + dx < this->_board->getNX())
-    this->markX += dx;
-  if (this->markY + dy < this->_board->getNY())
-    this->markY += dy;
-  this->_board->getTile(this->markX, this->markY)->setMarkedState(true);
+  this->_board->getTile(this->_markX, this->_markY)->setMarkedState(false);
+  if (this->_markX + dx < this->_board->getNX())
+    this->_markX += dx;
+  if (this->_markY + dy < this->_board->getNY())
+    this->_markY += dy;
+  this->_board->getTile(this->_markX, this->_markY)->setMarkedState(true);
 }
 
 Model* Scene::getMarked() {
@@ -1104,7 +1105,7 @@ Model* Scene::getMarked() {
   if ( !this->_board) {
     throw "Scene::getMarked called without board!";
   }
-  Tile* t = this->_board->getTile(this->markX, this->markY);
+  Tile* t = this->_board->getTile(this->_markX, this->_markY);
   if (t->getDie())
     return t->getDie();
   else
@@ -1115,10 +1116,10 @@ void Scene::setSelected(Model* obj) {
   if (obj) {
     obj->setSelectedState(true);
   }
-  this->selected = obj;
+  this->_selected = obj;
 }
 
 Model* Scene::getSelected() {
-  return this->selected;
+  return this->_selected;
 }
 } // end namespace KBX
