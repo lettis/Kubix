@@ -37,6 +37,7 @@ class GameWidget: public QGLWidget {
     void changed();
     void setAutoUpdate(bool newAutoUpdate);
     void userSelect(Model* obj);
+    void setBackgroundColor();
 
   private:
     Scene* _scene;

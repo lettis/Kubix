@@ -46,6 +46,10 @@ GameWidget::GameWidget(QWidget *parent)
   this->_game = new Game(Config(PlayMode(HUMAN_AI), 3, Strategy(1)));
 }
 
+void GameWidget::setBackgroundColor(){
+  glClearColor(this->bgColor.r, this->bgColor.g, this->bgColor.b, 0.0f);
+}
+
 void GameWidget::initializeGL() {
   glEnable(GL_DEPTH_TEST);
   //this->bgColor = Color::GREY20;
@@ -145,7 +149,7 @@ void GameWidget::resizeGL(int w, int h) {
 
 void GameWidget::paintGL() {
   if (this->_needUpdate()) {
-    glClearColor(this->bgColor.r, this->bgColor.g, this->bgColor.b, 0.0f);
+    this->setBackgroundColor();
     // if you want to debug the color-picking, use the this->scene->display_picking() instead
     this->_scene->display();
     // set update flag to redraw scene
@@ -287,10 +291,10 @@ void GameWidget::userSelect(Model* obj) {
   if (selectedDie) {
     //FIXME: remove debug code
     std::cerr << "selected die" << std::endl;
-//    selectedDie->rollOneField(NORTH);
+    selectedDie->rollOneField(NORTH);
 //    selectedDie->rollOneField(SOUTH);
 //    selectedDie->rollOneField(EAST);
-    selectedDie->rollOneField(WEST);
+//    selectedDie->rollOneField(WEST);
 
 //    this->_clearPaths();
 //    std::list< Move > moves = this->_game->possibleMoves(selectedDie->getId());

@@ -21,10 +21,10 @@
 
 #include <GL/glu.h>
 
+#include <QTime> // for animations
 #include "models.hpp"
 #include "game_widget.hpp"
 #include "tools.hpp"
-// engine is needed for PlayColor definition
 #include "engine.hpp"
 
 namespace KBX {
@@ -49,8 +49,8 @@ Camera::Camera(Vec pos, Vec target) {
 /// update the OpenGL camera perspective
 void Camera::updateView() {
   // set OpenGL camera
-  gluLookAt(this->_position.x, this->_position.y, this->_position.z, this->_target.x, this->_target.y, this->_target.z, 0, 0,
-      1);
+  gluLookAt(this->_position.x, this->_position.y, this->_position.z, this->_target.x, this->_target.y, this->_target.z,
+      0, 0, 1);
 }
 
 /// get orientation of camera
@@ -180,7 +180,7 @@ Model::Model(Scene* scene, Vec pos)
 Model::~Model() {
 }
 
-void Model::setOrientation(Vec primary, Vec secondary){
+void Model::setOrientation(Vec primary, Vec secondary) {
   this->_primaryOrientation = primary.normalized();
   this->_secondaryOrientation = secondary.normalized();
 }
@@ -216,12 +216,7 @@ void Model::_rotate() {
   Vec v1 = this->_primaryOrientation;
   Vec v2 = this->_secondaryOrientation;
   Vec v3 = v1.cross(v2);
-  GLfloat r[16] = {
-      v1.x, v2.x, v3.x, 0.0f,
-      v1.y, v2.y, v3.y, 0.0f,
-      v1.z, v2.z, v3.z, 0.0f,
-      0.0f, 0.0f, 0.0f, 1.0f
-  };
+  GLfloat r[16] = {v1.x, v2.x, v3.x, 0.0f, v1.y, v2.y, v3.y, 0.0f, v1.z, v2.z, v3.z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
   glMultMatrixf(r);
 }
 /// actually translate object (private, only called by 'display')
@@ -363,11 +358,6 @@ Tile* Die::getTile() {
 
 /// render the die
 void Die::_render() {
-  //FIXME: remove this debug code
-  if (this->_dieId == 0){
-    std::cerr << this->_secondaryOrientation.x << " " << this->_secondaryOrientation.y << " " << this->_secondaryOrientation.z << std::endl;
-  }
-
   // setting the color is necessary in order to ensure that the texture is drawn 'as-is'
   // leaving this out might cause the texture to be drawn with 'shaded' colors
   // because all texture-pixel rgb values are multiplied with the corresponding values
@@ -477,34 +467,44 @@ void Die::_render() {
   glDisable(GL_TEXTURE_2D);
 }
 
-void Die::rollOneField(Directions d){
+void Die::rollOneField(Directions d) {
   Vec newPrimary = this->_primaryOrientation;
   Vec newSecondary = this->_secondaryOrientation;
   Vec rotAxis;
-  switch(d){
-    //TODO: set new orientations
-    case NORTH:
-      rotAxis = NormalVectors::X.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
-      newSecondary = newSecondary.rotate(rotAxis, 90.0f);
-      break;
-    case SOUTH:
-      std::cerr << "rolling south" << std::endl;
-      rotAxis = NormalVectors::X.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
-      newSecondary = newSecondary.rotate(rotAxis, -90.0f);
-      break;
-    case EAST:
-      rotAxis = NormalVectors::Y.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
-      newPrimary = newPrimary.rotate(rotAxis, 90.0f);
-      break;
-    case WEST:
-      rotAxis = NormalVectors::Y.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
-      newPrimary = newPrimary.rotate(rotAxis, -90.0f);
-      break;
+
+  QTime timer;
+  timer.start();
+  for (int i = 0; i < 10;) {
+    if (timer.elapsed() > 500) {
+      switch (d) {
+        //TODO: set new orientations
+        case NORTH:
+          rotAxis = NormalVectors::X.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
+          newSecondary = newSecondary.rotate(rotAxis, 90.0f);
+          break;
+        case SOUTH:
+          std::cerr << "rolling south" << std::endl;
+          rotAxis = NormalVectors::X.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
+          newSecondary = newSecondary.rotate(rotAxis, -90.0f);
+          break;
+        case EAST:
+          rotAxis = NormalVectors::Y.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
+          newPrimary = newPrimary.rotate(rotAxis, 90.0f);
+          break;
+        case WEST:
+          rotAxis = NormalVectors::Y.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
+          newPrimary = newPrimary.rotate(rotAxis, -90.0f);
+          break;
+      }
+
+      //FIXME: delete this debug code
+      this->setOrientation(newPrimary, newSecondary);
+      this->_scene->forceRedraw();
+      timer.restart();
+      i++;
+    }
+
   }
-
-  //FIXME: delete this debug code
-  this->setOrientation(newPrimary, newSecondary);
-
 
   //TODO: rotate origin around die edge for smooth rolling
   // while not done {
@@ -522,8 +522,6 @@ void Die::rollOneField(Directions d){
   //TODO: set new position
   //TODO: set new orientation
 }
-
-
 
 const Color Path::MAIN_COLOR = ColorTable::GREEN;
 const Color Path::NORMAL_COLOR = ColorTable::YELLOW;
@@ -930,18 +928,18 @@ void Scene::setup() {
   this->_dice.back()->setOrientation(NormalVectors::Y, NormalVectors::X);
   this->_dice.back()->setTile(this->_board->getTile(1, 0));
   this->_dice.push_back(new Die(this, Vec( -2, -4, 0), 2));
-  this->_dice.back()->setOrientation(NormalVectors::Z * (-1), NormalVectors::X);
+  this->_dice.back()->setOrientation(NormalVectors::Z * ( -1), NormalVectors::X);
   this->_dice.back()->setTile(this->_board->getTile(2, 0));
   this->_dice.push_back(new Die(this, Vec( -1, -4, 0), 3));
-  this->_dice.back()->setOrientation(NormalVectors::Y *(-1), NormalVectors::X);
+  this->_dice.back()->setOrientation(NormalVectors::Y * ( -1), NormalVectors::X);
   this->_dice.back()->setTile(this->_board->getTile(3, 0));
   this->_dice.push_back(new Die(this, Vec(0, -4, 0), 4)); // King
   this->_dice.back()->setTile(this->_board->getTile(4, 0));
   this->_dice.push_back(new Die(this, Vec(1, -4, 0), 5));
-  this->_dice.back()->setOrientation(NormalVectors::Y *(-1), NormalVectors::X);
+  this->_dice.back()->setOrientation(NormalVectors::Y * ( -1), NormalVectors::X);
   this->_dice.back()->setTile(this->_board->getTile(5, 0));
   this->_dice.push_back(new Die(this, Vec(2, -4, 0), 6));
-  this->_dice.back()->setOrientation(NormalVectors::Z * (-1), NormalVectors::X);
+  this->_dice.back()->setOrientation(NormalVectors::Z * ( -1), NormalVectors::X);
   this->_dice.back()->setTile(this->_board->getTile(6, 0));
   this->_dice.push_back(new Die(this, Vec(3, -4, 0), 7));
   this->_dice.back()->setOrientation(NormalVectors::Y, NormalVectors::X);
@@ -952,30 +950,30 @@ void Scene::setup() {
 
   // black dice; b1 is in upper left corner, b8 in upper right
   this->_dice.push_back(new Die(this, Vec( -4, 4, 0), 9));
-  this->_dice.back()->setOrientation(NormalVectors::Z *(-1), NormalVectors::X *(-1));
+  this->_dice.back()->setOrientation(NormalVectors::Z * ( -1), NormalVectors::X * ( -1));
   this->_dice.back()->setTile(this->_board->getTile(0, 8));
   this->_dice.push_back(new Die(this, Vec( -3, 4, 0), 10));
-  this->_dice.back()->setOrientation(NormalVectors::Y*(-1), NormalVectors::X*(-1));
+  this->_dice.back()->setOrientation(NormalVectors::Y * ( -1), NormalVectors::X * ( -1));
   this->_dice.back()->setTile(this->_board->getTile(1, 8));
   this->_dice.push_back(new Die(this, Vec( -2, 4, 0), 11));
-  this->_dice.back()->setOrientation(NormalVectors::Z, NormalVectors::X*(-1));
+  this->_dice.back()->setOrientation(NormalVectors::Z, NormalVectors::X * ( -1));
   this->_dice.back()->setTile(this->_board->getTile(2, 8));
   this->_dice.push_back(new Die(this, Vec( -1, 4, 0), 12));
   this->_dice.back()->setTile(this->_board->getTile(3, 8));
-  this->_dice.back()->setOrientation(NormalVectors::Y, NormalVectors::X*(-1));
+  this->_dice.back()->setOrientation(NormalVectors::Y, NormalVectors::X * ( -1));
   this->_dice.push_back(new Die(this, Vec(0, 4, 0), 13));
   this->_dice.back()->setTile(this->_board->getTile(4, 8));
   this->_dice.push_back(new Die(this, Vec(1, 4, 0), 14));
-  this->_dice.back()->setOrientation(NormalVectors::Y, NormalVectors::X*(-1));
+  this->_dice.back()->setOrientation(NormalVectors::Y, NormalVectors::X * ( -1));
   this->_dice.back()->setTile(this->_board->getTile(5, 8));
   this->_dice.push_back(new Die(this, Vec(2, 4, 0), 15));
-  this->_dice.back()->setOrientation(NormalVectors::Z, NormalVectors::X*(-1));
+  this->_dice.back()->setOrientation(NormalVectors::Z, NormalVectors::X * ( -1));
   this->_dice.back()->setTile(this->_board->getTile(6, 8));
   this->_dice.push_back(new Die(this, Vec(3, 4, 0), 16));
-  this->_dice.back()->setOrientation(NormalVectors::Y*(-1), NormalVectors::X*(-1));
+  this->_dice.back()->setOrientation(NormalVectors::Y * ( -1), NormalVectors::X * ( -1));
   this->_dice.back()->setTile(this->_board->getTile(7, 8));
   this->_dice.push_back(new Die(this, Vec(4, 4, 0), 17));
-  this->_dice.back()->setOrientation(NormalVectors::Z*(-1), NormalVectors::X*(-1));
+  this->_dice.back()->setOrientation(NormalVectors::Z * ( -1), NormalVectors::X * ( -1));
   this->_dice.back()->setTile(this->_board->getTile(8, 8));
 
   // add dice to scene
@@ -987,6 +985,12 @@ void Scene::setup() {
 // scene destructor
 Scene::~Scene() {
   this->wipe();
+}
+
+void Scene::forceRedraw(){
+  this->_act->setBackgroundColor();
+  this->display();
+  this->_act->updateGL();
 }
 
 /// render the scene

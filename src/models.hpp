@@ -262,6 +262,7 @@ class Scene: public Model {
     Model* getSelected();
     void setSelected(Model* obj);
     void display_picking();
+    void forceRedraw();
 
     bool inObjPickingMode;
     size_t uniqueColorId;
