@@ -19,8 +19,8 @@
      <widget class="KBX::GameWidget" name="game" native="true">
       <property name="minimumSize">
        <size>
-        <width>584</width>
-        <height>732</height>
+        <width>640</width>
+        <height>480</height>
        </size>
       </property>
       <property name="autoFillBackground">
