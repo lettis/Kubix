@@ -471,12 +471,15 @@ void Die::_render() {
 /// perform changes due to animations
 void Die::_animate() {
   if ( !this->_animationQueue.empty()) {
+    this->_scene->enableAutoUpdate();
     if (this->_animationQueue.front().isFinished()) {
       this->_animationQueue.pop();
       this->_animate();
     } else {
       this->_animationQueue.front().progress();
     }
+  } else {
+    this->_scene->disableAutoUpdate();
   }
 }
 
@@ -540,7 +543,7 @@ bool Die::RollAnimation::isFinished() {
 }
 
 void Die::rollOneField(Direction d) {
-  this->_animationQueue.push( Die::RollAnimation(*this, d) );
+  this->_animationQueue.push(Die::RollAnimation( *this, d));
 }
 
 const Color Path::MAIN_COLOR = ColorTable::GREEN;
@@ -1007,10 +1010,19 @@ Scene::~Scene() {
   this->wipe();
 }
 
-void Scene::forceRedraw() {
-  this->_act->setBackgroundColor();
-  this->display();
-  this->_act->updateGL();
+void Scene::enableAutoUpdate() {
+  this->_act->setAutoUpdate(true);
+}
+
+void Scene::disableAutoUpdate() {
+  this->_act->setAutoUpdate(false);
+}
+
+void Scene::changed() {
+//  this->_act->setBackgroundColor();
+//  this->display();
+//  this->_act->updateGL();
+  this->_act->changed();
 }
 
 /// render the scene

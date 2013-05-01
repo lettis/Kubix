@@ -58,8 +58,7 @@ void GameWidget::initializeGL() {
   // setup timer for graphics refresh
   this->_updateTimer = new QTimer(this);
   connect(this->_updateTimer, SIGNAL(timeout()), this, SLOT(update()));
-  this->_updateTimer->start(30);
-  //this->nBuffers = 2;
+  this->_updateTimer->start(40);
   this->setAutoRefresh(false);
   this->changed();
 }

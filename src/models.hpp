@@ -283,7 +283,9 @@ class Scene: public Model {
     Model* getSelected();
     void setSelected(Model* obj);
     void display_picking();
-    void forceRedraw();
+    void enableAutoUpdate();
+    void disableAutoUpdate();
+    void changed();
 
     bool inObjPickingMode;
     size_t uniqueColorId;
