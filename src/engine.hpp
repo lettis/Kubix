@@ -24,7 +24,7 @@
 
 namespace KBX {
 
-enum Directions {
+enum Direction {
   NORTH = 1,
   SOUTH = 2,
   EAST = 3,

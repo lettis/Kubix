@@ -21,7 +21,6 @@
 
 #include <GL/glu.h>
 
-#include <QTime> // for animations
 #include "models.hpp"
 #include "game_widget.hpp"
 #include "tools.hpp"
@@ -358,6 +357,8 @@ Tile* Die::getTile() {
 
 /// render the die
 void Die::_render() {
+  this->_animate();
+
   // setting the color is necessary in order to ensure that the texture is drawn 'as-is'
   // leaving this out might cause the texture to be drawn with 'shaded' colors
   // because all texture-pixel rgb values are multiplied with the corresponding values
@@ -467,60 +468,79 @@ void Die::_render() {
   glDisable(GL_TEXTURE_2D);
 }
 
-void Die::rollOneField(Directions d) {
-  Vec newPrimary = this->_primaryOrientation;
-  Vec newSecondary = this->_secondaryOrientation;
-  Vec rotAxis;
-
-  QTime timer;
-  timer.start();
-  for (int i = 0; i < 10;) {
-    if (timer.elapsed() > 500) {
-      switch (d) {
-        //TODO: set new orientations
-        case NORTH:
-          rotAxis = NormalVectors::X.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
-          newSecondary = newSecondary.rotate(rotAxis, 90.0f);
-          break;
-        case SOUTH:
-          std::cerr << "rolling south" << std::endl;
-          rotAxis = NormalVectors::X.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
-          newSecondary = newSecondary.rotate(rotAxis, -90.0f);
-          break;
-        case EAST:
-          rotAxis = NormalVectors::Y.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
-          newPrimary = newPrimary.rotate(rotAxis, 90.0f);
-          break;
-        case WEST:
-          rotAxis = NormalVectors::Y.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
-          newPrimary = newPrimary.rotate(rotAxis, -90.0f);
-          break;
-      }
-
-      //FIXME: delete this debug code
-      this->setOrientation(newPrimary, newSecondary);
-      this->_scene->forceRedraw();
-      timer.restart();
-      i++;
+/// perform changes due to animations
+void Die::_animate() {
+  if ( !this->_animationQueue.empty()) {
+    if (this->_animationQueue.front().isFinished()) {
+      this->_animationQueue.pop();
+      this->_animate();
+    } else {
+      this->_animationQueue.front().progress();
     }
-
   }
+}
 
-  //TODO: rotate origin around die edge for smooth rolling
-  // while not done {
-//  glPushMatrix();
-//  this->_rotate();
-  // rotate towards next field
-//  this->_translate();
-//  this->_render();
-//  glPopMatrix();
+Die::RollAnimation::RollAnimation(Die& die, Direction d)
+    : _parent(die),
+      _d(d),
+      _animationIntervall(500),
+      _animationSteps(1),
+      _stepsDone(0) {
+  Vec p = die._primaryOrientation;
+  Vec s = die._secondaryOrientation;
+  switch (d) {
+    case NORTH:
+      this->_rotAxis = NormalVectors::X.rotate(p, s, p.cross(s));
+      this->_rotAngle = 90.0f;
+      break;
+    case SOUTH:
+      this->_rotAxis = NormalVectors::X.rotate(p, s, p.cross(s));
+      this->_rotAngle = -90.0f;
+      break;
+    case EAST:
+      this->_rotAxis = NormalVectors::Y.rotate(p, s, p.cross(s));
+      this->_rotAngle = 90.0f;
+      break;
+    case WEST:
+      this->_rotAxis = NormalVectors::Y.rotate(p, s, p.cross(s));
+      this->_rotAngle = -90.0f;
+      break;
+  }
+  this->_timer.start();
+}
 
-  // redraw scene
-//  this->_scene->display();
-  //}
+void Die::RollAnimation::progress() {
+  if (this->_timer.elapsed() >= this->_animationIntervall) {
+    Vec p = this->_parent._primaryOrientation;
+    Vec s = this->_parent._secondaryOrientation;
+    switch (this->_d) {
+      case NORTH:
+      case SOUTH:
+        s = s.rotate(this->_rotAxis, this->_rotAngle);
+        break;
+      case EAST:
+      case WEST:
+        p = p.rotate(this->_rotAxis, this->_rotAngle);
+        break;
+    }
+    this->_parent.setOrientation(p, s);
+    this->_stepsDone++;
+    this->_timer.restart();
+  }
+}
 
-  //TODO: set new position
-  //TODO: set new orientation
+bool Die::RollAnimation::isFinished() {
+  if (this->_stepsDone >= this->_animationSteps) {
+    return true;
+    //TODO: set new position
+    //TODO: set new orientation
+  } else {
+    return false;
+  }
+}
+
+void Die::rollOneField(Direction d) {
+  this->_animationQueue.push( Die::RollAnimation(*this, d) );
 }
 
 const Color Path::MAIN_COLOR = ColorTable::GREEN;
@@ -987,7 +1007,7 @@ Scene::~Scene() {
   this->wipe();
 }
 
-void Scene::forceRedraw(){
+void Scene::forceRedraw() {
   this->_act->setBackgroundColor();
   this->display();
   this->_act->updateGL();

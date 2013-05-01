@@ -19,7 +19,9 @@
 #define MODELS__HPP
 
 #include <vector>
-#include <map>
+#include <queue>
+
+#include <QTime> // for animations
 
 // forward declaration for KBX::Scene
 namespace KBX {
@@ -144,6 +146,25 @@ class Die: public Model {
     Tile* _tile;
     size_t _dieId;
     PlayColor _playColor;
+
+    class RollAnimation {
+        Die& _parent;
+        Direction _d;
+        QTime _timer;
+        int _animationIntervall; // [ms]
+        int _animationSteps;
+        int _stepsDone;
+        Vec _rotAxis;
+        float _rotAngle; // [deg]
+      public:
+        RollAnimation(Die& die, Direction d);
+        void progress();
+        bool isFinished();
+    };
+
+    std::queue<RollAnimation> _animationQueue;
+    void _animate();
+
   public:
     const bool IS_KING;
 
@@ -153,7 +174,7 @@ class Die: public Model {
     Die(Scene* scene, Vec pos, size_t dieId);
     size_t getId();
 
-    void rollOneField(Directions d);
+    void rollOneField(Direction d);
 };
 
 /// Path
