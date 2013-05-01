@@ -483,32 +483,21 @@ void Die::_animate() {
   }
 }
 
+const Vec Die::RollAnimation::_radials[] = {Vec(), // dummy for base-1 array (Directions are base-1)
+    Vec(0.0f, 0.5f, -0.5f), // NORTH
+    Vec(0.0f, -0.5f, -0.5f), // SOUTH
+    Vec(0.5f, 0.0f, -0.5f), // EAST
+    Vec( -0.5f, 0.0f, -0.5f) // WEST
+    };
+
 Die::RollAnimation::RollAnimation(Die& die, Direction d)
     : _parent(die),
       _d(d),
-      _animationIntervall(500),
-      _animationSteps(1),
-      _stepsDone(0) {
-  Vec p = die._primaryOrientation;
-  Vec s = die._secondaryOrientation;
-  switch (d) {
-    case NORTH:
-      this->_rotAxis = NormalVectors::X.rotate(p, s, p.cross(s));
-      this->_rotAngle = 90.0f;
-      break;
-    case SOUTH:
-      this->_rotAxis = NormalVectors::X.rotate(p, s, p.cross(s));
-      this->_rotAngle = -90.0f;
-      break;
-    case EAST:
-      this->_rotAxis = NormalVectors::Y.rotate(p, s, p.cross(s));
-      this->_rotAngle = 90.0f;
-      break;
-    case WEST:
-      this->_rotAxis = NormalVectors::Y.rotate(p, s, p.cross(s));
-      this->_rotAngle = -90.0f;
-      break;
-  }
+      _animationIntervall(20),
+      _animationSteps(20),
+      _stepsDone(0),
+      _rotAngle(0.0f) {
+  this->_radial = Die::RollAnimation::_radials[d];
   this->_timer.start();
 }
 
@@ -516,16 +505,47 @@ void Die::RollAnimation::progress() {
   if (this->_timer.elapsed() >= this->_animationIntervall) {
     Vec p = this->_parent._primaryOrientation;
     Vec s = this->_parent._secondaryOrientation;
+
+    if (this->_stepsDone == 0) {
+      this->_anklePoint = this->_parent._pos + this->_radial;
+      float a = 90.0f / this->_animationSteps;
+      switch (this->_d) {
+        case NORTH:
+          this->_newPos = this->_parent._pos + NormalVectors::Y;
+          this->_rotAxis = NormalVectors::X.rotate(p, s, p.cross(s));
+          this->_rotAngle = a;
+          break;
+        case SOUTH:
+          this->_newPos = this->_parent._pos - NormalVectors::Y;
+          this->_rotAxis = NormalVectors::X.rotate(p, s, p.cross(s));
+          this->_rotAngle = -a;
+          break;
+        case EAST:
+          this->_newPos = this->_parent._pos + NormalVectors::X;
+          this->_rotAxis = NormalVectors::Y.rotate(p, s, p.cross(s));
+          this->_rotAngle = -a;
+          break;
+        case WEST:
+          this->_newPos = this->_parent._pos - NormalVectors::X;
+          this->_rotAxis = NormalVectors::Y.rotate(p, s, p.cross(s));
+          this->_rotAngle = a;
+          break;
+      }
+    }
+
     switch (this->_d) {
       case NORTH:
       case SOUTH:
         s = s.rotate(this->_rotAxis, this->_rotAngle);
+        this->_radial = this->_radial.rotate(NormalVectors::X, -this->_rotAngle);
         break;
       case EAST:
       case WEST:
         p = p.rotate(this->_rotAxis, this->_rotAngle);
+        this->_radial = this->_radial.rotate(NormalVectors::Y, -this->_rotAngle);
         break;
     }
+    this->_parent._pos = this->_anklePoint - this->_radial;
     this->_parent.setOrientation(p, s);
     this->_stepsDone++;
     this->_timer.restart();
@@ -534,9 +554,10 @@ void Die::RollAnimation::progress() {
 
 bool Die::RollAnimation::isFinished() {
   if (this->_stepsDone >= this->_animationSteps) {
+    // minimize accumulating rounding errors by setting position
+    // explicitly after last animation frame
+    this->_parent._pos = this->_newPos;
     return true;
-    //TODO: set new position
-    //TODO: set new orientation
   } else {
     return false;
   }

@@ -148,6 +148,8 @@ class Die: public Model {
     PlayColor _playColor;
 
     class RollAnimation {
+        static const Vec _radials[];
+
         Die& _parent;
         Direction _d;
         QTime _timer;
@@ -156,6 +158,9 @@ class Die: public Model {
         int _stepsDone;
         Vec _rotAxis;
         float _rotAngle; // [deg]
+        Vec _anklePoint;
+        Vec _radial;
+        Vec _newPos;
       public:
         RollAnimation(Die& die, Direction d);
         void progress();

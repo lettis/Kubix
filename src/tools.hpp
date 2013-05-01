@@ -93,6 +93,9 @@ class Vec {
     void setAsGlVertex3f();
 };
 
+std::ostream& operator<<(std::ostream& out, const Vec&);
+
+
 namespace NormalVectors {
 const Vec Null = Vec(0.0f, 0.0f, 0.0f);
 const Vec X = Vec(1.0f, 0.0f, 0.0f);

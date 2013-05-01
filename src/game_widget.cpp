@@ -58,7 +58,7 @@ void GameWidget::initializeGL() {
   // setup timer for graphics refresh
   this->_updateTimer = new QTimer(this);
   connect(this->_updateTimer, SIGNAL(timeout()), this, SLOT(update()));
-  this->_updateTimer->start(40);
+  this->_updateTimer->start(20);
   this->setAutoRefresh(false);
   this->changed();
 }
@@ -290,10 +290,10 @@ void GameWidget::userSelect(Model* obj) {
   if (selectedDie) {
     //FIXME: remove debug code
     std::cerr << "selected die" << std::endl;
-    selectedDie->rollOneField(NORTH);
+//    selectedDie->rollOneField(NORTH);
 //    selectedDie->rollOneField(SOUTH);
 //    selectedDie->rollOneField(EAST);
-//    selectedDie->rollOneField(WEST);
+    selectedDie->rollOneField(WEST);
 
 //    this->_clearPaths();
 //    std::list< Move > moves = this->_game->possibleMoves(selectedDie->getId());

@@ -395,6 +395,9 @@ float Vec::operator*(const Vec& v) const {
   return this->dot(v);
 }
 
+std::ostream& operator<<(std::ostream& out, const Vec& v){
+  return out << "[ " << v.x << ", " << v.y << ", " << v.z << " ]";
+}
 
 void Vec::setAsGlVertex3f() {
   glVertex3f(this->x, this->y, this->z);
