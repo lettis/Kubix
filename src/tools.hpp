@@ -86,7 +86,7 @@ class Vec {
     bool equals(Vec v);
     bool operator==(Vec v);
     Vec rotate(Vec rotAxis, float angle) const;
-//    Vec rotate(Vec xAxis, Vec yAxis, Vec zAxis);
+    Vec rotate(Vec xAxis, Vec yAxis, Vec zAxis) const;
     Vec cross(Vec v) const;
     float dot(const Vec& v) const;
     float operator*(const Vec& v) const;

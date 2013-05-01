@@ -364,15 +364,15 @@ Vec Vec::rotate(Vec rotAxis, float angle) const {
   return Vec(x, y, z);
 }
 /// rotate vector into coordinate system as defined by given orthonormal vectors
-//Vec Vec::rotate(Vec xAxis, Vec yAxis, Vec zAxis){
-//  xAxis = xAxis.normalized();
-//  yAxis = yAxis.normalized();
-//  zAxis = zAxis.normalized();
-//  float x = this->x * xAxis.x + this->y * yAxis.x + this->z * zAxis.x;
-//  float y = this->x * xAxis.y + this->y * yAxis.y + this->z * zAxis.y;
-//  float z = this->x * xAxis.z + this->y * yAxis.z + this->z * zAxis.z;
-//  return Vec(x, y, z);
-//}
+Vec Vec::rotate(Vec xAxis, Vec yAxis, Vec zAxis) const {
+  xAxis = xAxis.normalized();
+  yAxis = yAxis.normalized();
+  zAxis = zAxis.normalized();
+  float x = this->x * xAxis.x + this->y * yAxis.x + this->z * zAxis.x;
+  float y = this->x * xAxis.y + this->y * yAxis.y + this->z * zAxis.y;
+  float z = this->x * xAxis.z + this->y * yAxis.z + this->z * zAxis.z;
+  return Vec(x, y, z);
+}
 
 /// calculate the cross product
 /**

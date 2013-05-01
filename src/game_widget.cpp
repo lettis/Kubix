@@ -285,13 +285,20 @@ void GameWidget::userSelect(Model* obj) {
 //  Die* selectedDie = dynamic_cast< Die* >(this->_scene->getSelected());
   Die* selectedDie = dynamic_cast< Die* >(obj);
   if (selectedDie) {
-    this->_clearPaths();
-    std::list< Move > moves = this->_game->possibleMoves(selectedDie->getId());
-    for (std::list< Move >::iterator mv = moves.begin(); mv != moves.end(); mv++) {
-      this->_paths.push_back(this->_scene->add(new Path(this->_scene, selectedDie->getPosition(), mv->rel)));
-    }
+    //FIXME: remove debug code
+    std::cerr << "selected die" << std::endl;
+//    selectedDie->rollOneField(NORTH);
+//    selectedDie->rollOneField(SOUTH);
+//    selectedDie->rollOneField(EAST);
+    selectedDie->rollOneField(WEST);
+
+//    this->_clearPaths();
+//    std::list< Move > moves = this->_game->possibleMoves(selectedDie->getId());
+//    for (std::list< Move >::iterator mv = moves.begin(); mv != moves.end(); mv++) {
+//      this->_paths.push_back(this->_scene->add(new Path(this->_scene, selectedDie->getPosition(), mv->rel)));
+//    }
   } else {
-    this->_clearPaths();
+//    this->_clearPaths();
   }
 }
 

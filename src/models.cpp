@@ -363,6 +363,11 @@ Tile* Die::getTile() {
 
 /// render the die
 void Die::_render() {
+  //FIXME: remove this debug code
+  if (this->_dieId == 0){
+    std::cerr << this->_secondaryOrientation.x << " " << this->_secondaryOrientation.y << " " << this->_secondaryOrientation.z << std::endl;
+  }
+
   // setting the color is necessary in order to ensure that the texture is drawn 'as-is'
   // leaving this out might cause the texture to be drawn with 'shaded' colors
   // because all texture-pixel rgb values are multiplied with the corresponding values
@@ -374,6 +379,12 @@ void Die::_render() {
   if ( !this->_scene->inObjPickingMode) {
     glEnable(GL_TEXTURE_2D);
   }
+
+  // standard orientation of faces:
+  //  +x: 4; -x: 3
+  //  +y: 5; -y: 2
+  //  +z: 6; -z: 1
+
   // face 1
   if ( !this->_scene->inObjPickingMode) {
     if (this->IS_KING) {
@@ -467,17 +478,45 @@ void Die::_render() {
 }
 
 void Die::rollOneField(Directions d){
-  //TODO: implement rollOneField
+  Vec newPrimary = this->_primaryOrientation;
+  Vec newSecondary = this->_secondaryOrientation;
+  Vec rotAxis;
+  switch(d){
+    //TODO: set new orientations
+    case NORTH:
+      rotAxis = NormalVectors::X.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
+      newSecondary = newSecondary.rotate(rotAxis, 90.0f);
+      break;
+    case SOUTH:
+      std::cerr << "rolling south" << std::endl;
+      rotAxis = NormalVectors::X.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
+      newSecondary = newSecondary.rotate(rotAxis, -90.0f);
+      break;
+    case EAST:
+      rotAxis = NormalVectors::Y.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
+      newPrimary = newPrimary.rotate(rotAxis, 90.0f);
+      break;
+    case WEST:
+      rotAxis = NormalVectors::Y.rotate(newPrimary, newSecondary, newPrimary.cross(newSecondary));
+      newPrimary = newPrimary.rotate(rotAxis, -90.0f);
+      break;
+  }
+
+  //FIXME: delete this debug code
+  this->setOrientation(newPrimary, newSecondary);
+
+
+  //TODO: rotate origin around die edge for smooth rolling
   // while not done {
-  glPushMatrix();
-  this->_rotate();
+//  glPushMatrix();
+//  this->_rotate();
   // rotate towards next field
-  this->_translate();
-  this->_render();
-  glPopMatrix();
+//  this->_translate();
+//  this->_render();
+//  glPopMatrix();
 
   // redraw scene
-  this->_scene->display();
+//  this->_scene->display();
   //}
 
   //TODO: set new position
