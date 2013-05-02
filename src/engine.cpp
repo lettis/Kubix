@@ -332,7 +332,7 @@ void Game::makeMove(Move move, bool storeMove) {
   }
   for (size_t i = stepsSec; i > 0; i--) {
     // rotate in second direction
-    dieState.moveOneStep(directionFirst);
+    dieState.moveOneStep(directionSec);
     log.info(stringprintf("new state: %d", dieState.getCurrentState()));
   }
   // delete old die on this position before moving new die to it
