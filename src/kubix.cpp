@@ -34,6 +34,8 @@ int main(int argc, char** argv){
   // build logger instance for main
   KBX::Logger mainLog("main");
 
+  KBX::Logger::filter("DieState");
+
   try{
     // TODO: get config from cmd arguments + rc-files
     //Config config( HUMAN_AI, 4, KBX_Strategy(1.0) );

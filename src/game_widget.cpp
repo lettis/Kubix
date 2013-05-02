@@ -5,6 +5,7 @@
 #include <GL/glu.h>
 #include <QtGui>
 #include <QFileDialog>
+#include <QPoint>
 
 #include <fstream>
 #include <sstream>
@@ -19,7 +20,7 @@ void GameWidget::newGame() {
   // attention: order is important because of
   //            references in path list to
   //            path-objects listed inside scene.
-  this->_clearPaths();
+  this->_clearDieSelection();
   this->_scene->wipe();
   // create new game instance
   // TODO: this is just a dummy for now, please replace by something that makes more sense!
@@ -35,6 +36,7 @@ GameWidget::GameWidget(QWidget *parent)
       _log("act"),
       bgColor(ColorTable::GREY10),
       _scene(NULL),
+      _selectedDie(NULL),
       _autoRefresh(false),
       _autoUpdate(false),
       _updateTimer(NULL),
@@ -46,7 +48,7 @@ GameWidget::GameWidget(QWidget *parent)
   this->_game = new Game(Config(PlayMode(HUMAN_AI), 3, Strategy(1)));
 }
 
-void GameWidget::setBackgroundColor(){
+void GameWidget::setBackgroundColor() {
   glClearColor(this->bgColor.r, this->bgColor.g, this->bgColor.b, 0.0f);
 }
 
@@ -91,11 +93,12 @@ bool GameWidget::_needUpdate() {
   }
 }
 
-void GameWidget::_clearPaths() {
+void GameWidget::_clearDieSelection() {
   for (std::list< size_t >::iterator it = this->_paths.begin(); it != this->_paths.end(); it++) {
     this->_scene->remove( *it);
   }
   this->_paths.clear();
+  this->_selectedDie = NULL;
 }
 
 /// enable/disable automatic updating of the scene
@@ -285,25 +288,33 @@ void GameWidget::keyPressEvent(QKeyEvent* event) {
  of select a new object and disregard the old selection
  */
 void GameWidget::userSelect(Model* obj) {
-//  Die* selectedDie = dynamic_cast< Die* >(this->_scene->getSelected());
-  Die* selectedDie = dynamic_cast< Die* >(obj);
-  if (selectedDie) {
-    //FIXME: remove debug code
-    std::cerr << "selected die" << std::endl;
-    selectedDie->rollOneField(NORTH);
-//    selectedDie->rollOneField(SOUTH);
-//    selectedDie->rollOneField(EAST);
-//    selectedDie->rollOneField(WEST);
+  //FIXME: this function currently only working with mouse interaction
 
-
-    //TODO: include this path drawing code again
-//    this->_clearPaths();
-//    std::list< Move > moves = this->_game->possibleMoves(selectedDie->getId());
-//    for (std::list< Move >::iterator mv = moves.begin(); mv != moves.end(); mv++) {
-//      this->_paths.push_back(this->_scene->add(new Path(this->_scene, selectedDie->getPosition(), mv->rel)));
-//    }
-  } else {
-//    this->_clearPaths();
+  // dynamically select clicked object
+  Die* die = dynamic_cast< Die* >(obj);
+  Tile* tile = dynamic_cast< Tile* >(obj);
+  Path* path = dynamic_cast< Path* >(obj);
+  if (die) {
+    this->_clearDieSelection();
+    if (die->getPlayColor() == this->_game->getNext()) {
+      // die of current player: render paths, i.e. move possibilities
+      std::list< Move > moves = this->_game->possibleMoves(die->getId());
+      for (std::list< Move >::iterator mv = moves.begin(); mv != moves.end(); mv++) {
+        this->_paths.push_back(this->_scene->add(new Path(this->_scene, die->getPosition(), *mv)));
+      }
+      this->_selectedDie = die;
+    } else {
+      // TODO: die of other player: check if it may be captured and do it if possible
+    }
+  } else if (tile) {
+    std::cerr << "is tile" << std::endl;
+    //TODO: check if selected die can move to this field. if yes: move (or draw remaining paths)
+  } else if (path) {
+    // move die along this path
+    this->_selectedDie->rollOverFields(path->getMove().rel);
+    // update engine
+    this->_game->makeMove(path->getMove());
+    this->_clearDieSelection();
   }
 }
 

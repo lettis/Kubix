@@ -146,8 +146,8 @@ const std::vector< std::vector< RelativeMove > > DieState::initPossibleMoves() {
  1 up, 6 down, 2 south, 5 north, 3 east, 4 west,
 
  i.e.:
- o-----o
- /  1  /|
+   o-----o
+  /  1  /|
  o-----o |
  |     |3|
  |  2  | o
@@ -203,6 +203,9 @@ bool DieState::gotKilled() {
 /// return current value (1, ..., 6) of die
 size_t DieState::getValue() {
   return this->_state[this->_curState][VALUE];
+}
+size_t DieState::getCurrentState(){
+  return this->_curState;
 }
 /// return color (BLACK or WHITE) of die
 PlayColor DieState::getColor() {
@@ -273,7 +276,8 @@ void Game::_setup(){
   this->_lastMove = this->_moveList.begin();
 }
 /// move die over board
-void Game::makeMove(Move move, bool storeMove = true) {
+void Game::makeMove(Move move, bool storeMove) {
+  //TODO: check correctness! (Game::makeMove)
   if (storeMove) {
     // delete moves in list form here to end if lastMove != moveList.end()
     if (this->_lastMove != this->_moveList.end()) {
@@ -291,8 +295,10 @@ void Game::makeMove(Move move, bool storeMove = true) {
     this->_moveList.push_back(move);
     this->_lastMove++;
   }
+  KBX::Logger log("DieState");
   //// perform move
   DieState& dieState = this->_dice[move.dieIndex];
+  log.info(stringprintf("initial state: %d", dieState.getCurrentState()));
   // delete die from current position on board
   this->_fields[dieState.x()][dieState.y()] = CLEAR;
   // get directions for horizontal movement (aka x coordinate)
@@ -322,10 +328,12 @@ void Game::makeMove(Move move, bool storeMove = true) {
   for (size_t i = stepsFirst; i > 0; i--) {
     // rotate in first direction
     dieState.moveOneStep(directionFirst);
+    log.info(stringprintf("new state: %d", dieState.getCurrentState()));
   }
   for (size_t i = stepsSec; i > 0; i--) {
     // rotate in second direction
     dieState.moveOneStep(directionFirst);
+    log.info(stringprintf("new state: %d", dieState.getCurrentState()));
   }
   // delete old die on this position before moving new die to it
   int keyOldDie = this->_fields[dieState.x()][dieState.y()];
@@ -462,6 +470,10 @@ PlayColor Game::getWinner() {
   // nobody has won yet
   return NONE_OF_BOTH;
 }
+/// get player with next move
+PlayColor Game::getNext(){
+  return this->_nextPlayer;
+}
 /// get die state of die with given id
 DieState* Game::getDie(size_t id) {
   if (id < 18) {
@@ -510,6 +522,8 @@ float Game::rate(PlayColor color) {
 }
 /// return list of all possible moves of selected die in current board setting
 std::list< Move > Game::possibleMoves(size_t dieId) {
+  //TODO: check correctness! (Game::possibleMoves)
+
   std::list< Move > moves;
   int val = this->_dice[dieId].getValue();
   for (size_t i=1; i <= DieState::nPossibleMoves[val]; i++){

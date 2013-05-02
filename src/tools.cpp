@@ -193,6 +193,7 @@ std::string stringprintf(std::string str, ...) {
     buf = (char*) realloc(buf, size * sizeof(char));
   }
   va_end(args);
+  //TODO (stringprintf): free the allocs!
   return std::string(buf);
 }
 

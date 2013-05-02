@@ -22,13 +22,11 @@
 #include <queue>
 
 #include <QTime> // for animations
-
 // forward declaration for KBX::Scene
 namespace KBX {
 class GameWidget;
 }
 
-// engine is needed for PlayColor definition
 #include "engine.hpp"
 #include "tools.hpp"
 
@@ -137,6 +135,19 @@ class Model {
 ///  defines a die
 ///  dieIds are same as in engine; i.e. 0-8 white dice (4 == king), 9-17 black dice (13 == king)
 class Die: public Model {
+  public:
+    const bool IS_KING;
+
+    void setTile(Tile* t);
+    Tile* getTile();
+
+    Die(Scene* scene, Vec pos, size_t dieId);
+    size_t getId();
+    PlayColor getPlayColor();
+
+    void rollOneField(Direction d);
+    void rollOverFields(RelativeMove relMove);
+
   private:
     static GLuint textures[];
     static bool texturesLoaded;
@@ -167,36 +178,27 @@ class Die: public Model {
         bool isFinished();
     };
 
-    std::queue<RollAnimation> _animationQueue;
+    std::queue< RollAnimation > _animationQueue;
     void _animate();
-
-  public:
-    const bool IS_KING;
-
-    void setTile(Tile* t);
-    Tile* getTile();
-
-    Die(Scene* scene, Vec pos, size_t dieId);
-    size_t getId();
-
-    void rollOneField(Direction d);
 };
 
 /// Path
 ///  draw a path of possible moves for a die
 class Path: public Model {
-    static const Color MAIN_COLOR;
+  public:
+    Path(Scene* scene, Vec posFrom, Move move);
+    Move getMove();
+//    Path(Scene* scene, Vec posFrom, Move move, bool isMainPath);
+//    void setAsMainPath();
+//    void setAsNormalPath();
+  private:
+    //    static const Color MAIN_COLOR;
     static const Color NORMAL_COLOR;
-    RelativeMove _relMove;
-    bool _isMainPath;
+    Move _move;
+    //    bool _isMainPath;
     void _render();
     // overwrite general color setting
     void _setColor();
-  public:
-    Path(Scene* scene, Vec posFrom, RelativeMove relMove);
-    Path(Scene* scene, Vec posFrom, RelativeMove relMove, bool isMainPath);
-    void setAsMainPath();
-    void setAsNormalPath();
 };
 
 /// Board Tile

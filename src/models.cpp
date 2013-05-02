@@ -311,6 +311,10 @@ size_t Die::getId() {
   return this->_dieId;
 }
 
+PlayColor Die::getPlayColor(){
+  return this->_playColor;
+}
+
 /**
  load textures for models
  */
@@ -567,35 +571,82 @@ void Die::rollOneField(Direction d) {
   this->_animationQueue.push(Die::RollAnimation( *this, d));
 }
 
-const Color Path::MAIN_COLOR = ColorTable::GREEN;
+void Die::rollOverFields(RelativeMove relMove){
+  // generate vertical and horizontal roll animations
+  std::queue< Die::RollAnimation > horizontal;
+  std::queue< Die::RollAnimation > vertical;
+  Direction d;
+  if(relMove.dx < 0){
+    d = WEST;
+  } else {
+    d = EAST;
+  }
+  for(int i=0; i<abs(relMove.dx); i++){
+    horizontal.push(Die::RollAnimation( *this, d));
+  }
+  if(relMove.dy < 0){
+    d = SOUTH;
+  } else {
+    d = NORTH;
+  }
+  for(int i=0; i<abs(relMove.dy); i++){
+    vertical.push(Die::RollAnimation( *this, d));
+  }
+  // add single roll animations to animation queue
+  if(relMove.firstX){
+    while(!horizontal.empty()){
+      this->_animationQueue.push(horizontal.front());
+      horizontal.pop();
+    }
+    while(!vertical.empty()){
+          this->_animationQueue.push(vertical.front());
+          vertical.pop();
+    }
+  } else {
+    while(!vertical.empty()){
+          this->_animationQueue.push(vertical.front());
+          vertical.pop();
+    }
+    while(!horizontal.empty()){
+      this->_animationQueue.push(horizontal.front());
+      horizontal.pop();
+    }
+  }
+}
+
+
+//const Color Path::MAIN_COLOR = ColorTable::GREEN;
 const Color Path::NORMAL_COLOR = ColorTable::YELLOW;
 
-Path::Path(Scene* scene, Vec posFrom, RelativeMove relMove)
+Path::Path(Scene* scene, Vec posFrom, Move move)
     : Model(scene, posFrom),
-      _relMove(relMove),
-      _isMainPath(false) {
+      _move(move){
 }
 
-Path::Path(Scene* scene, Vec posFrom, RelativeMove relMove, bool isMainPath)
-    : Model(scene, posFrom),
-      _relMove(relMove),
-      _isMainPath(isMainPath) {
+Move Path::getMove(){
+  return this->_move;
 }
+
+//Path::Path(Scene* scene, Vec posFrom, RelativeMove relMove, bool isMainPath)
+//    : Model(scene, posFrom),
+//      _move(relMove),
+//      _isMainPath(isMainPath) {
+//}
 
 void Path::_setColor() {
   // set correct color
-  if (this->_isMainPath) {
-    Path::MAIN_COLOR.setAsGlColor();
-  } else {
+//  if (this->_isMainPath) {
+//    Path::MAIN_COLOR.setAsGlColor();
+//  } else {
     Path::NORMAL_COLOR.setAsGlColor();
-  }
+//  }
 }
 
 void Path::_render() {
 
   //FIXME: still some errors here!
 
-  if ((this->_relMove.dx == 0) && (this->_relMove.dy == 0)) {
+  if ((this->_move.rel.dx == 0) && (this->_move.rel.dy == 0)) {
     // path points to origin; abort
     return;
   }
@@ -605,19 +656,19 @@ void Path::_render() {
   // (half) width of path (in units of 0.5*tile width)
   float w = 0.2f;
   // height over board (should be higher than dice!)
-  float h = 1.1f;
+  float h = 0.6f;
   // spacer width
   float wSpacer = 0.5f - w;
   // incremental angle to draw curves
   float incrementalAngle = 90.0f / curveResolution;
 
   // distances in 1. and 2. move direction
-  float dx = this->_relMove.dx;
-  float dy = this->_relMove.dy;
+  float dx = this->_move.rel.dx;
+  float dy = this->_move.rel.dy;
   // use symmetry to draw with same algorithm if
   // move is first in y-direction. i.e. draw inverse move
   // as if it were in x-direction first, then translate appropriately.
-  if (this->_relMove.firstX == false) {
+  if (this->_move.rel.firstX == false) {
     dx *= -1;
     dy *= -1;
     glTranslatef( -dx, -dy, 0.0f);
@@ -680,7 +731,7 @@ void Path::_render() {
   }
 
   // draw arrow head (with reverted symmetry operation)
-  if (this->_relMove.firstX == false) {
+  if (this->_move.rel.firstX == false) {
     dx *= -1;
     dy *= -1;
     sgnX *= -1;
@@ -688,7 +739,7 @@ void Path::_render() {
     glTranslatef( -dx, -dy, 0.0f);
   }
 
-  if ((dx == 0) || (dy != 0 && this->_relMove.firstX)) {
+  if ((dx == 0) || (dy != 0 && this->_move.rel.firstX)) {
     // vertical
     a = Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h);
     glBegin(GL_TRIANGLES);
@@ -707,13 +758,13 @@ void Path::_render() {
   }
 }
 
-void Path::setAsMainPath() {
-  this->_isMainPath = true;
-}
+//void Path::setAsMainPath() {
+//  this->_isMainPath = true;
+//}
 
-void Path::setAsNormalPath() {
-  this->_isMainPath = false;
-}
+//void Path::setAsNormalPath() {
+//  this->_isMainPath = false;
+//}
 
 /// board constructor
 Board::Board(Scene* scene, size_t nX, size_t nY)

@@ -104,12 +104,6 @@ class Move {
 
 /// defines the current state of a die (i.e. position, orientation, value, color, etc.)
 class DieState {
-    static const size_t _state[26][5];
-    int _x;
-    int _y;
-    PlayColor _color;
-    size_t _formerState;
-    size_t _curState;
   public:
     static const size_t nPossibleMoves[7];
     // list of possible (relative) moves for a die
@@ -124,11 +118,20 @@ class DieState {
     void revive();
     bool gotKilled();
     size_t getValue();
+    size_t getCurrentState();
     PlayColor getColor();
     int x();
     int y();
     bool write(std::ostream& out) const;
     bool read(std::istream& in);
+
+  private:
+    static const size_t _state[26][5];
+    int _x;
+    int _y;
+    PlayColor _color;
+    size_t _formerState;
+    size_t _curState;
 };
 
 class Evaluation {
@@ -140,24 +143,17 @@ class Evaluation {
 };
 
 class Game {
-    int _fields[9][9];
-    DieState _dice[18];
-    Config _config;
-    std::list< Move > _moveList;
-    std::list< Move >::iterator _lastMove;
-    PlayColor _nextPlayer;
-    void _setup();
   public:
     Game(Config config);
 
     bool moveIsValid(Move move);
-    void makeMove(Move move, bool storeMove);
+    void makeMove(Move move, bool storeMove = true);
     Move undoMove();
     Move redoMove();
-    //TODO: implement
     std::list< Move > possibleMoves(size_t dieId);
 
     PlayColor getWinner();
+    PlayColor getNext();
     void reset();
 
     DieState* getDie(size_t id);
@@ -171,6 +167,15 @@ class Game {
     bool read(std::istream& in);
     // rating functions
     float rateDiceRatio(PlayColor color);
+
+  private:
+    int _fields[9][9];
+    DieState _dice[18];
+    Config _config;
+    std::list< Move > _moveList;
+    std::list< Move >::iterator _lastMove;
+    PlayColor _nextPlayer;
+    void _setup();
 };
 
 } // end namespace KBX

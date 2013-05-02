@@ -19,7 +19,6 @@
 #define GAME_WIDGET__HPP
 
 #include <QtOpenGL/QGLWidget>
-#include <QPoint>
 #include <QTimer>
 #include <QWheelEvent>
 
@@ -32,16 +31,28 @@ class GameWidget: public QGLWidget {
   Q_OBJECT
 
   public:
-    Color bgColor;
+    GameWidget(QWidget *parent = NULL);
 
+    Color bgColor;
     void changed();
     void setAutoUpdate(bool newAutoUpdate);
     void userSelect(Model* obj);
     void setBackgroundColor();
 
+  public slots:
+    void setAutoRefresh(bool newAutoRefresh);
+    void setRelativeMarking(bool newRelativeMarking);
+
+    void newGame();
+    void save();
+    void load();
+
   private:
     Scene* _scene;
     Game* _game;
+
+    Die* _selectedDie;
+
     QPoint _mousePos;
     QTimer* _updateTimer;
 
@@ -59,8 +70,8 @@ class GameWidget: public QGLWidget {
 
     Model* _pickObject(QPoint p);
 
-    std::list<size_t> _paths;
-    void _clearPaths();
+    std::list< size_t > _paths;
+    void _clearDieSelection();
 
     bool _relativeMarking;
 
@@ -74,19 +85,6 @@ class GameWidget: public QGLWidget {
     void mouseMoveEvent(QMouseEvent *event);
     void wheelEvent(QWheelEvent *event);
     void keyPressEvent(QKeyEvent *event);
-
-  public slots:
-    void setAutoRefresh(bool newAutoRefresh);
-    void setRelativeMarking(bool newRelativeMarking);
-
-    void newGame();
-    void save();
-    void load();
-
-  public:
-    GameWidget(QWidget *parent = NULL);
-    ~GameWidget() {
-    }
 };
 
 } // end namespace KBX
