@@ -33,16 +33,16 @@ void GameWidget::newGame() {
 
 GameWidget::GameWidget(QWidget *parent)
     : QGLWidget(parent),
-      _log("act"),
       bgColor(ColorTable::GREY10),
       _scene(NULL),
       _selectedDie(NULL),
+      _updateTimer(NULL),
       _autoRefresh(false),
       _autoUpdate(false),
-      _updateTimer(NULL),
-      _relativeMarking(false),
       _nBuffers(2),
-      _bfChange(0) {
+      _bfChange(0),
+      _relativeMarking(false),
+      _log("act") {
   setMouseTracking(false);
   // TODO: this is just a dummy for now, please replace by something that makes more sense!
   this->_game = new Game(Config(PlayMode(HUMAN_AI), 3, Strategy(1)));
@@ -164,7 +164,6 @@ void GameWidget::paintGL() {
  \param event incoming event
  */
 void GameWidget::mousePressEvent(QMouseEvent *event) {
-  Model* obj;
   if (event->button() == Qt::LeftButton) {
     // pick object
     _scene->clearStates();
@@ -289,7 +288,7 @@ void GameWidget::keyPressEvent(QKeyEvent* event) {
  */
 void GameWidget::userSelect(Model* obj) {
   //FIXME: this function currently only working with mouse interaction
-
+  KBX::Logger log("userSelect");
   // dynamically select clicked object
   Die* die = dynamic_cast< Die* >(obj);
   Tile* tile = dynamic_cast< Tile* >(obj);
@@ -299,7 +298,11 @@ void GameWidget::userSelect(Model* obj) {
     if (die->getPlayColor() == this->_game->getNext()) {
       // die of current player: render paths, i.e. move possibilities
       std::list< Move > moves = this->_game->possibleMoves(die->getId());
+      log.info(stringprintf("# of possible moves: %d", moves.size()));
       for (std::list< Move >::iterator mv = moves.begin(); mv != moves.end(); mv++) {
+        log.info(
+            stringprintf("possible move [dx, dy, firstX]: %d, %d, %s", mv->rel.dx, mv->rel.dy,
+                mv->rel.firstX ? "true" : "false"));
         this->_paths.push_back(this->_scene->add(new Path(this->_scene, die->getPosition(), *mv)));
       }
       this->_selectedDie = die;
@@ -314,6 +317,7 @@ void GameWidget::userSelect(Model* obj) {
     this->_selectedDie->rollOverFields(path->getMove().rel);
     // update engine
     this->_game->makeMove(path->getMove());
+    //TODO: check, if die got captured. if yes: remove model from board!
     this->_clearDieSelection();
   }
 }

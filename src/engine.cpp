@@ -375,13 +375,16 @@ Move Game::redoMove() {
  \returns true, if the move is valid, else false
  */
 bool Game::moveIsValid(Move move) {
+  //TODO/FIXME: not all moves are correctly identified
+
+
   DieState dieState = this->_dice[move.dieIndex];
   // check, if die is from player with next move
   if (dieState.getColor() != this->_nextPlayer){
     return false;
   }
   // check, if move is farer than die value allows
-  if (dieState.getValue() != fabs(move.rel.dx) + fabs(move.rel.dy)) {
+  if (dieState.getValue() != (size_t) (abs(move.rel.dx) + abs(move.rel.dy))) {
     return false;
   }
   // check, if move goes off the board
@@ -392,37 +395,37 @@ bool Game::moveIsValid(Move move) {
   // check, if there are dice on the way, that cannot be crossed
   if (move.rel.firstX) {
     // iterate over x-values (before y-iteration)
-    size_t end = fabs(move.rel.dx);
+    int end = abs(move.rel.dx);
     if (move.rel.dy == 0) {
       end--;
     }
-    for (size_t i = 1; i <= end; i++) {
+    for (int i = 1; i <= end; i++) {
       if (this->_fields[dieState.x() + i * sgn(move.rel.dx)][dieState.y()] != CLEAR) {
         // there is a die on the way => move is not possible
         return false;
       }
     }
     // iterate over y-values
-    for (size_t i = 1; i < fabs(move.rel.dy); i++) {
+    for (int i = 1; i <= abs(move.rel.dy); i++) {
       if (this->_fields[dieState.x() + move.rel.dx][dieState.y() + i * sgn(move.rel.dy)] != CLEAR) {
         // there is a die on the way => move is not possible
         return false;
       }
     }
   } else { // first move in y direction
-    size_t end = fabs(move.rel.dy);
+    int end = abs(move.rel.dy);
     if (move.rel.dx == 0) {
       end--;
     }
     // iterate over y-values first
-    for (size_t i = 1; i <= end; i++) {
+    for (int i = 1; i <= end; i++) {
       if (this->_fields[dieState.x()][dieState.y() + i * sgn(move.rel.dy)] != CLEAR) {
         // there is a die on the way => move is not possible
         return false;
       }
     }
     // iterate over x-values (after y-iteration)
-    for (size_t i = 1; i < fabs(move.rel.dy); i++) {
+    for (int i = 1; i <= abs(move.rel.dx)-1; i++) {
       int xVal = dieState.x() + i * sgn(move.rel.dx);
       int yVal = dieState.y() + move.rel.dy;
       //TODO: perform this boundary check for other field-lookups as well
@@ -522,12 +525,11 @@ float Game::rate(PlayColor color) {
 }
 /// return list of all possible moves of selected die in current board setting
 std::list< Move > Game::possibleMoves(size_t dieId) {
-  //TODO: check correctness! (Game::possibleMoves)
-
   std::list< Move > moves;
   int val = this->_dice[dieId].getValue();
-  for (size_t i=1; i <= DieState::nPossibleMoves[val]; i++){
-    Move mv = Move(dieId, DieState::possibleMoves[val][i]);
+  std::vector< RelativeMove >::const_iterator relMv;
+  for(relMv=DieState::possibleMoves[val].begin(); relMv!=DieState::possibleMoves[val].end(); relMv++){
+    Move mv = Move(dieId, *relMv);
     if (this->moveIsValid(mv)){
       moves.push_back(mv);
     }

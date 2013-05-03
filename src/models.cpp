@@ -151,8 +151,8 @@ Color Model::cHighlighted = Color(0, 255, 255);
 Model::Model(Scene* scene)
     : _primaryOrientation(NormalVectors::X),
       _secondaryOrientation(NormalVectors::Y),
-      _isVisible(true),
       _pos(Vec(0, 0, 0)),
+      _isVisible(true),
       _isHighlighted(false),
       _isMarked(false),
       _isSelected(false),
@@ -167,8 +167,8 @@ Model::Model(Scene* scene)
 Model::Model(Scene* scene, Vec pos)
     : _primaryOrientation(NormalVectors::X),
       _secondaryOrientation(NormalVectors::Y),
-      _isVisible(true),
       _pos(pos),
+      _isVisible(true),
       _isHighlighted(false),
       _isMarked(false),
       _isSelected(false),
@@ -293,9 +293,9 @@ GLuint Die::textures[14];
 /// inherit parent constructor and set dieId (same as in engine)
 Die::Die(Scene* scene, Vec pos, size_t dieId)
     : Model(scene, pos),
-      _dieId(dieId),
+      IS_KING((dieId == 4) || (dieId == 13)),
       _tile(NULL),
-      IS_KING((dieId == 4) || (dieId == 13)) {
+      _dieId(dieId) {
   Die::loadTextures();
   if (this->_dieId < 9) {
     this->_playColor = WHITE;
@@ -931,7 +931,6 @@ void Tile::setSelectedState(bool selected) {
   else
     this->_isSelected = selected;
 }
-;
 
 /// set the die belonging to this tile
 /**
@@ -974,14 +973,14 @@ void Scene::wipe() {
 /// scene constructor
 Scene::Scene(GameWidget* act)
     : Model(this),
-      _markX(4),
-      _markY(4),
-      _selected(NULL),
       inObjPickingMode(false),
       uniqueColorId(0),
       _act(act),
       _board(NULL),
+      _selected(NULL),
       _cam(Vec(0, -50, 70), Vec(0, 0, 0)),
+      _markX(4),
+      _markY(4),
       _messages("Scene") {
   this->setup();
 }
@@ -1073,7 +1072,7 @@ void Scene::setup() {
 
   // add dice to scene
   for (size_t i = 0; i < this->_dice.size(); i++) {
-    size_t objId = this->add(this->_dice[i]);
+    this->add(this->_dice[i]);
   }
 }
 

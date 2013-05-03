@@ -31,10 +31,8 @@ int main(int argc, char** argv){
   KBX::Logger::enableWarnings();
   KBX::Logger::enableErrors();
 
-  // build logger instance for main
-  KBX::Logger mainLog("main");
-
-  KBX::Logger::filter("DieState");
+//  KBX::Logger::filter("DieState");
+  KBX::Logger::filter("userSelect");
 
   try{
     // TODO: get config from cmd arguments + rc-files
@@ -44,7 +42,7 @@ int main(int argc, char** argv){
     window->show();
     return app.exec();
   }catch(const char* errMsg){
-    mainLog.error( std::string(errMsg) );
+    KBX::Logger("main").error( std::string(errMsg) );
     return 1;
   }
 }

@@ -57,27 +57,6 @@ class Board;
 // Model
 //  abstract class defining opengl object
 class Model {
-  protected:
-    // primary orientation is per default along positive x-axis
-    Vec _primaryOrientation;
-    // secondary orientation is per default along positive y-axis
-    Vec _secondaryOrientation;
-    // origin of model system in global system
-    Vec _pos;
-
-    bool _isVisible;
-    Scene* _scene;
-    bool _isSelected;
-    bool _isHighlighted;
-    bool _isMarked;
-    // define opengl for this object
-    virtual void _render() = 0;
-    // rotate object to match x-axis onto primaryOrientation and y-axis onto secondaryOrientation
-    void _rotate();
-    // translate object to _pos
-    void _translate();
-    virtual void _setRenderingColor();
-    virtual void _setColor();
   public:
     static void loadTexture(QString filename, GLuint* textureIds, size_t nId);
     static Color cSelected;
@@ -103,6 +82,26 @@ class Model {
     void display();
     // return position
     Vec getPosition();
+  protected:
+    // primary orientation is per default along positive x-axis
+    Vec _primaryOrientation;
+    // secondary orientation is per default along positive y-axis
+    Vec _secondaryOrientation;
+    // origin of model system in global system
+    Vec _pos;
+    bool _isVisible;
+    bool _isHighlighted;
+    bool _isMarked;
+    bool _isSelected;
+    Scene* _scene;
+    // define opengl for this object
+    virtual void _render() = 0;
+    // rotate object to match x-axis onto primaryOrientation and y-axis onto secondaryOrientation
+    void _rotate();
+    // translate object to _pos
+    void _translate();
+    virtual void _setRenderingColor();
+    virtual void _setColor();
 };
 
 // AnimatedModel
@@ -208,8 +207,8 @@ class Tile: public Model {
     Color basicColor;
     void _setColor();
 
-    Board* _board;
     Die* _die;
+    Board* _board;
 
   public:
     Die* getDie();
@@ -249,26 +248,6 @@ class Board: public Model {
  when the scene is rendered.
  */
 class Scene: public Model {
-  protected:
-    GameWidget* _act;
-
-    std::vector< Model* > _objList;
-
-    Board* _board;
-
-    size_t _markX;
-    size_t _markY;
-
-    Model* _selected;
-
-    Logger _messages;
-
-    Camera _cam;
-    void _render();
-    void _setRenderingColor();
-    std::vector< Die* > _dice;
-//    std::map< size_t, size_t > _objId2Die;
-
   public:
     Scene(GameWidget* act);
     ~Scene();
@@ -296,6 +275,19 @@ class Scene: public Model {
 
     bool inObjPickingMode;
     size_t uniqueColorId;
+  protected:
+    GameWidget* _act;
+    std::vector< Model* > _objList;
+    Board* _board;
+    Model* _selected;
+    Camera _cam;
+    size_t _markX;
+    size_t _markY;
+    Logger _messages;
+    void _render();
+    void _setRenderingColor();
+    std::vector< Die* > _dice;
+//    std::map< size_t, size_t > _objId2Die;
 };
 
 } // end namespace KBX

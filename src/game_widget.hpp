@@ -47,36 +47,6 @@ class GameWidget: public QGLWidget {
     void save();
     void load();
 
-  private:
-    Scene* _scene;
-    Game* _game;
-
-    Die* _selectedDie;
-
-    QPoint _mousePos;
-    QTimer* _updateTimer;
-
-    bool _autoRefresh;
-    bool _autoUpdate;
-
-    int _nBuffers;
-    // _bfChange keeps track of the changes of the scene
-    // _bfChange  > 0: perform a redraw for the next bfChange frames
-    // _bfChange == 0: do not perform redraws
-    // _bfChange  < 0: permanently perform redraws
-    int _bfChange;
-    void _updated();
-    bool _needUpdate();
-
-    Model* _pickObject(QPoint p);
-
-    std::list< size_t > _paths;
-    void _clearDieSelection();
-
-    bool _relativeMarking;
-
-    Logger _log;
-
   protected:
     void initializeGL();
     void resizeGL(int w, int h);
@@ -85,6 +55,28 @@ class GameWidget: public QGLWidget {
     void mouseMoveEvent(QMouseEvent *event);
     void wheelEvent(QWheelEvent *event);
     void keyPressEvent(QKeyEvent *event);
+
+  private:
+    Scene* _scene;
+    Game* _game;
+    Die* _selectedDie;
+    QPoint _mousePos;
+    QTimer* _updateTimer;
+    bool _autoRefresh;
+    bool _autoUpdate;
+    int _nBuffers;
+    // _bfChange keeps track of the changes of the scene
+    // _bfChange  > 0: perform a redraw for the next bfChange frames
+    // _bfChange == 0: do not perform redraws
+    // _bfChange  < 0: permanently perform redraws
+    int _bfChange;
+    void _updated();
+    bool _needUpdate();
+    Model* _pickObject(QPoint p);
+    std::list< size_t > _paths;
+    void _clearDieSelection();
+    bool _relativeMarking;
+    Logger _log;
 };
 
 } // end namespace KBX
