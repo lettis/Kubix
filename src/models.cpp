@@ -351,6 +351,26 @@ void Die::setTile(Tile* t) {
   }
 }
 
+void Die::setTileNext(Direction d){
+  int x = this->_tile->getX();
+  int y = this->_tile->getY();
+  switch(d){
+    case NORTH:
+      y++;
+      break;
+    case SOUTH:
+      y--;
+      break;
+    case EAST:
+      x++;
+      break;
+    case WEST:
+      x--;
+      break;
+  }
+  this->setTile(this->_scene->getTile(x, y));
+}
+
 /// get the tile belonging to this die
 /**
  \return tile currently associated to this die
@@ -561,6 +581,8 @@ bool Die::RollAnimation::isFinished() {
     // minimize accumulating rounding errors by setting position
     // explicitly after last animation frame
     this->_parent._pos = this->_newPos;
+    // update tile after move
+    this->_parent.setTileNext(this->_d);
     return true;
   } else {
     return false;
@@ -782,7 +804,7 @@ Board::Board(Scene* scene, size_t nX, size_t nY)
     for (size_t y = 0; y < this->_nY; y++) {
       tileColor = ((x % 2 + y % 2) % 2 == 0) ? dark : bright;
       tilePosition = Vec((float) x - (float) (this->_nX) / 2 + 0.5, (float) y - (float) (this->_nY) / 2 + 0.5, -0.5);
-      this->_tiles[x][y] = new Tile(this->_scene, this, tilePosition, tileColor);
+      this->_tiles[x][y] = new Tile(this->_scene, this, tilePosition, x, y, tileColor);
     }
   }
 }
@@ -858,8 +880,10 @@ void Board::clearStates() {
 }
 
 /// tile constructor
-Tile::Tile(Scene* scene, Board* board, Vec pos, Color color)
+Tile::Tile(Scene* scene, Board* board, Vec pos, int x, int y, Color color)
     : Model(scene, pos),
+      _x(x),
+      _y(y),
       basicColor(color),
       _die(NULL),
       _board(board) {
@@ -947,6 +971,15 @@ void Tile::setDie(Die* d) {
 Die* Tile::getDie() {
   return this->_die;
 }
+
+int Tile::getX(){
+  return this->_x;
+}
+
+int Tile::getY(){
+  return this->_y;
+}
+
 
 /// clear all object states
 /**
@@ -1072,7 +1105,8 @@ void Scene::setup() {
 
   // add dice to scene
   for (size_t i = 0; i < this->_dice.size(); i++) {
-    this->add(this->_dice[i]);
+    size_t objId = this->add(this->_dice[i]);
+    this->_dieObjIds[i] = objId;
   }
 }
 
@@ -1136,6 +1170,15 @@ size_t Scene::add(Model* obj) {
 void Scene::remove(size_t objId) {
   delete this->_objList[objId];
   this->_objList[objId] = NULL;
+}
+
+void Scene::removeDie(int dieId){
+  size_t objId = this->_dieObjIds[dieId];
+  this->remove(objId);
+}
+
+Tile* Scene::getTile(int x, int y){
+  return this->_board->getTile(x,y);
 }
 
 /// rotate the scene

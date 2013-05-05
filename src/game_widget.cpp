@@ -287,12 +287,16 @@ void GameWidget::keyPressEvent(QKeyEvent* event) {
  of select a new object and disregard the old selection
  */
 void GameWidget::userSelect(Model* obj) {
-  //FIXME: this function currently only working with mouse interaction
+  //FIXME: this function is currently only working with mouse interaction
   KBX::Logger log("userSelect");
   // dynamically select clicked object
   Die* die = dynamic_cast< Die* >(obj);
   Tile* tile = dynamic_cast< Tile* >(obj);
   Path* path = dynamic_cast< Path* >(obj);
+
+  //TODO/FIXME: still errors in this function (selecting dice, tiles, paths, etc)
+
+  bool pathIsTempObj = false;
   if (die) {
     this->_clearDieSelection();
     if (die->getPlayColor() == this->_game->getNext()) {
@@ -307,18 +311,59 @@ void GameWidget::userSelect(Model* obj) {
       }
       this->_selectedDie = die;
     } else {
-      // TODO: die of other player: check if it may be captured and do it if possible
+      if (this->_selectedDie) {
+        // die of other player: get tile below die and treat with 'tile-code' below
+        tile = die->getTile();
+      }
     }
-  } else if (tile) {
-    std::cerr << "is tile" << std::endl;
-    //TODO: check if selected die can move to this field. if yes: move (or draw remaining paths)
-  } else if (path) {
+  }
+  if (tile) {
+    int oldX = this->_game->getDie(this->_selectedDie->getId())->x();
+    int oldY = this->_game->getDie(this->_selectedDie->getId())->y();
+    // check if selected die can move to this field. if yes: move (or draw remaining paths)
+    std::list< Move > moves = this->_game->possibleMoves(this->_selectedDie->getId());
+    std::list< Move > filteredMoves;
+    for (std::list< Move >::iterator mv = moves.begin(); mv != moves.end(); mv++) {
+      if ((mv->rel.dx + oldX == tile->getX()) && (mv->rel.dy + oldY == tile->getY())) {
+        // move lands on selected tile
+        filteredMoves.push_back( *mv);
+      }
+    }
+    if (filteredMoves.size() == 1) {
+      // only one move possible: perform move directly
+      path = new Path(this->_scene, this->_selectedDie->getPosition(), filteredMoves.front());
+      pathIsTempObj = true;
+    } else if (filteredMoves.size() == 2) {
+      // clear old paths, but keep selected die
+      Die* sel = this->_selectedDie;
+      this->_clearDieSelection();
+      this->_selectedDie = sel;
+      // two moves possible: draw paths
+      this->_paths.push_back(this->_scene->add(new Path(this->_scene, sel->getPosition(), filteredMoves.front())));
+      this->_paths.push_back(this->_scene->add(new Path(this->_scene, sel->getPosition(), filteredMoves.back())));
+    } else {
+      // no move possible: just clear selection
+      this->_clearDieSelection();
+    }
+  }
+  if (path) {
     // move die along this path
     this->_selectedDie->rollOverFields(path->getMove().rel);
+    int movingDie = this->_selectedDie->getId();
+    int oldX = this->_game->getDie(movingDie)->x();
+    int oldY = this->_game->getDie(movingDie)->y();
+    Move mv = path->getMove();
+    int capturedDie = this->_game->getDieId(oldX + mv.rel.dx, oldY + mv.rel.dy);
+    if (capturedDie != CLEAR) {
+      // remove captured die from board
+      this->_scene->removeDie(capturedDie);
+    }
     // update engine
     this->_game->makeMove(path->getMove());
-    //TODO: check, if die got captured. if yes: remove model from board!
     this->_clearDieSelection();
+    if (pathIsTempObj && (path != NULL)) {
+      delete path;
+    }
   }
 }
 

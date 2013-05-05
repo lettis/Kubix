@@ -20,6 +20,7 @@
 
 #include <vector>
 #include <queue>
+#include <map>
 
 #include <QTime> // for animations
 // forward declaration for KBX::Scene
@@ -138,6 +139,7 @@ class Die: public Model {
     const bool IS_KING;
 
     void setTile(Tile* t);
+    void setTileNext(Direction d);
     Tile* getTile();
 
     Die(Scene* scene, Vec pos, size_t dieId);
@@ -203,42 +205,50 @@ class Path: public Model {
 /// Board Tile
 ///  defines game board tile
 class Tile: public Model {
+  public:
+    Tile(Scene* scene, Board* board, Vec pos, int x, int y, Color color);
+
+    Die* getDie();
+    void setDie(Die* d);
+
+    int getX();
+    int getY();
+
+    void setMarkedState(bool marked);
+    void setSelectedState(bool selected);
+  private:
+    int _x;
+    int _y;
+
     void _render();
     Color basicColor;
     void _setColor();
 
     Die* _die;
     Board* _board;
-
-  public:
-    Die* getDie();
-    void setDie(Die* d);
-
-    void setMarkedState(bool marked);
-    void setSelectedState(bool selected);
-
-    Tile(Scene* scene, Board* board, Vec pos, Color color);
 };
 
 /// Board
 ///  defines game board
 class Board: public Model {
+  public:
+    Board(Scene* scene, size_t rows, size_t cols);
+    ~Board();
+
+    size_t getNX();
+    size_t getNY();
+
+    void clearStates();
+    Model* clicked(size_t id);
+
+    Tile* getTile(size_t x, size_t y);
+  private:
     size_t _nX;
     size_t _nY;
     std::vector< std::vector< Tile* > > _tiles;
     void _render();
     void _setRenderingColor() {
     }
-  public:
-    size_t getNX();
-    size_t getNY();
-    Board(Scene* scene, size_t rows, size_t cols);
-    ~Board();
-
-    void clearStates();
-    Model* clicked(size_t id);
-
-    Tile* getTile(size_t x, size_t y);
 };
 
 /// Defines the whole scene.
@@ -254,6 +264,8 @@ class Scene: public Model {
     Vec getOrientation();
     size_t add(Model* obj);
     void remove(size_t objId);
+    void removeDie(int dieId);
+    Tile* getTile(int x, int y);
 
     void wipe();
     void setup();
@@ -287,7 +299,7 @@ class Scene: public Model {
     void _render();
     void _setRenderingColor();
     std::vector< Die* > _dice;
-//    std::map< size_t, size_t > _objId2Die;
+    std::map< int, size_t > _dieObjIds;
 };
 
 } // end namespace KBX
