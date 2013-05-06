@@ -1174,6 +1174,8 @@ void Scene::remove(size_t objId) {
 
 void Scene::removeDie(int dieId){
   size_t objId = this->_dieObjIds[dieId];
+  Die* d = dynamic_cast< Die* >(this->_objList[objId]);
+  d->setTile(NULL);
   this->remove(objId);
 }
 
