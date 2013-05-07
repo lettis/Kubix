@@ -45,6 +45,7 @@ class Logger {
     static std::ostream* _err;
     static std::vector< std::string > _filters;
     static bool _infosEnabled;
+    static bool _debugEnabled;
     static bool _warningsEnabled;
     static bool _errorsEnabled;
     static std::string _getTime();
@@ -55,12 +56,15 @@ class Logger {
     static void setErr(std::ostream* err);
     static void enableInfos();
     static void disableInfos();
+    static void enableDebug();
+    static void disableDebug();
     static void enableWarnings();
     static void disableWarnings();
     static void enableErrors();
     static void disableErrors();
     static void filter(std::string name);
     void info(std::string msg);
+    void debug(std::string msg);
     void warning(std::string msg);
     void error(std::string msg);
 };

@@ -1,4 +1,8 @@
+
 #include "main_window.hpp"
+#include "preferences_dialog.hpp"
+
+#include "ui_aboutDialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent) {
@@ -12,4 +16,14 @@ void MainWindow::showAboutDialog() {
   QDialog d;
   dialog.setupUi(&d);
   d.exec();
+}
+
+void MainWindow::showPreferencesDialog(){
+  Preferences p(this);
+  p.exec();
+}
+
+void MainWindow::reloadSettings(){
+  // just send the signal on to the game widget
+  emit this->settingsChanged();
 }

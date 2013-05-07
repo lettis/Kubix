@@ -518,7 +518,7 @@ Die::RollAnimation::RollAnimation(Die& die, Direction d)
     : _parent(die),
       _d(d),
       _animationIntervall(20),
-      _animationSteps(20),
+      _animationSteps(15),
       _stepsDone(0),
       _rotAngle(0.0f) {
   this->_radial = Die::RollAnimation::_radials[d];

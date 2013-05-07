@@ -46,6 +46,7 @@ class GameWidget: public QGLWidget {
     void newGame();
     void save();
     void load();
+    void reloadSettings();
 
   protected:
     void initializeGL();

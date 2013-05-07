@@ -65,20 +65,22 @@ class Strategy {
   public:
     int coeffDiceRatio;
     Strategy(float coeffDiceRatio);
+    //TODO: replace read/write by stream operators <<
     bool write(std::ostream& out) const;
     bool read(std::istream& in);
 };
 
 /// configuration settings
-class Config {
-  public:
-    PlayMode mode;
-    size_t cpuLevel;
-    Strategy strategy;
-    Config(PlayMode mode, size_t cpuLevel, Strategy strategy);
-    bool write(std::ostream& out) const;
-    bool read(std::istream& in);
-};
+//class Config {
+//  public:
+//    PlayMode mode;
+//    size_t cpuLevel;
+//    Strategy strategy;
+//    Config(PlayMode mode, size_t cpuLevel, Strategy strategy);
+//    //TODO: replace read/write by stream operators <<
+//    bool write(std::ostream& out) const;
+//    bool read(std::istream& in);
+//};
 
 class RelativeMove {
   public:
@@ -144,7 +146,7 @@ class Evaluation {
 
 class Game {
   public:
-    Game(Config config);
+    Game(PlayMode mode, size_t aiDepth, Strategy strategy);
 
     bool moveIsValid(Move move);
     void makeMove(Move move, bool storeMove = true);
@@ -163,6 +165,7 @@ class Game {
     //TODO: implement
     Move evaluateNext(int level);
     Evaluation evaluateMoves(int level, float alpha, float beta, bool initialCall);
+    //TODO: replace read/write by stream operators <<
     bool write(std::ostream& out) const;
     bool read(std::istream& in);
     // rating functions
@@ -171,7 +174,9 @@ class Game {
   private:
     int _fields[9][9];
     DieState _dice[18];
-    Config _config;
+    PlayMode _mode;
+    size_t _aiDepth;
+    Strategy _strategy;
     std::list< Move > _moveList;
     std::list< Move >::iterator _lastMove;
     PlayColor _nextPlayer;

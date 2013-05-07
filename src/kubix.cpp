@@ -31,12 +31,7 @@ int main(int argc, char** argv){
   KBX::Logger::enableWarnings();
   KBX::Logger::enableErrors();
 
-//  KBX::Logger::filter("DieState");
-  KBX::Logger::filter("userSelect");
-
   try{
-    // TODO: get config from cmd arguments + rc-files
-    //Config config( HUMAN_AI, 4, KBX_Strategy(1.0) );
     QApplication app(argc, argv);
     MainWindow *window = new MainWindow();
     window->show();
@@ -46,4 +41,3 @@ int main(int argc, char** argv){
     return 1;
   }
 }
-

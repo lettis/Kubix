@@ -9,7 +9,6 @@
 #define MAINWINDOW_HPP_
 
 #include "ui_mainWindow.h"
-#include "ui_aboutDialog.h"
 
 class MainWindow: public QMainWindow {
   Q_OBJECT
@@ -19,6 +18,11 @@ class MainWindow: public QMainWindow {
 
   public slots:
     void showAboutDialog();
+    void showPreferencesDialog();
+    void reloadSettings();
+
+  signals:
+    void settingsChanged();
 
   private:
     Ui::MainWindow ui;

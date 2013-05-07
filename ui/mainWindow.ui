@@ -47,6 +47,8 @@
     <addaction name="action_Open_File"/>
     <addaction name="action_Save_Game"/>
     <addaction name="separator"/>
+    <addaction name="action_Preferences"/>
+    <addaction name="separator"/>
     <addaction name="action_Quit"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
@@ -114,6 +116,14 @@
     <string>&amp;About</string>
    </property>
   </action>
+  <action name="action_Preferences">
+   <property name="text">
+    <string>&amp;Preferences</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -125,6 +135,7 @@
     <slot>newGame()</slot>
     <slot>save()</slot>
     <slot>load()</slot>
+    <slot>reloadSettings()</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -169,8 +180,8 @@
    <slot>newGame()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>404</x>
-     <y>396</y>
+     <x>-1</x>
+     <y>-1</y>
     </hint>
     <hint type="destinationlabel">
      <x>507</x>
@@ -210,8 +221,43 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>action_Preferences</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>showPreferencesDialog()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>404</x>
+     <y>396</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>MainWindow</sender>
+   <signal>settingsChanged()</signal>
+   <receiver>game</receiver>
+   <slot>reloadSettings()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>404</x>
+     <y>396</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>479</x>
+     <y>396</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
+  <signal>settingsChanged()</signal>
   <slot>showAboutDialog()</slot>
+  <slot>showPreferencesDialog()</slot>
+  <slot>reloadSettings()</slot>
  </slots>
 </ui>

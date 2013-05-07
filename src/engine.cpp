@@ -43,11 +43,11 @@ Strategy::Strategy(float coeffDiceRatio)
     : coeffDiceRatio(coeffDiceRatio) {
 }
 
-Config::Config(PlayMode mode, size_t cpuLevel, Strategy strategy)
-    : mode(mode),
-      cpuLevel(cpuLevel),
-      strategy(strategy) {
-}
+//Config::Config(PlayMode mode, size_t cpuLevel, Strategy strategy)
+//    : mode(mode),
+//      cpuLevel(cpuLevel),
+//      strategy(strategy) {
+//}
 
 /// initialize a move
 RelativeMove::RelativeMove()
@@ -232,8 +232,10 @@ Evaluation::Evaluation(float rating, Move move)
 }
 
 /// initialize game
-Game::Game(Config config)
-    : _config(config),
+Game::Game(PlayMode mode, size_t aiDepth, Strategy strategy)
+    : _mode(mode),
+      _aiDepth(aiDepth),
+      _strategy(strategy),
       _nextPlayer(WHITE) {
   this->_setup();
 }
@@ -520,7 +522,7 @@ float Game::rate(PlayColor color) {
     }
   }
   float rating = 0;
-  rating += this->_config.strategy.coeffDiceRatio * this->rateDiceRatio(color);
+  rating += this->_strategy.coeffDiceRatio * this->rateDiceRatio(color);
   return rating;
 }
 /// return list of all possible moves of selected die in current board setting
@@ -729,9 +731,10 @@ bool Game::write(std::ostream& out) const {
       return false;
     }
   }
-  if ( !this->_config.write(out)){
-    return false;
-  }
+  //FIXME: rewrite with single config elements (mode, aiDepth, strategy)
+//  if ( !this->_config.write(out)){
+//    return false;
+//  }
   size_t mpos = 0;
   size_t i = 0;
   for (std::list< Move >::const_iterator m = this->_moveList.begin(); m != this->_moveList.end(); m++) {
@@ -769,9 +772,10 @@ bool Game::read(std::istream& in) {
       return false;
     }
   }
-  if ( !this->_config.read(in)){
-    return false;
-  }
+  //FIXME: rewrite with single config elements (mode, aiDepth, strategy)
+//  if ( !this->_config.read(in)){
+//    return false;
+//  }
   Move m;
   while (m.read(in)) {
     this->_moveList.push_back(m);
@@ -825,28 +829,28 @@ bool DieState::read(std::istream& in) {
 }
 
 /// serializer
-bool Config::write(std::ostream& out) const {
-  writeEntry< int >(out, this->mode);
-  writeEntry< int >(out, this->cpuLevel);
-  this->strategy.write(out);
-  proceed(out);
-  return true;
-}
+//bool Config::write(std::ostream& out) const {
+//  writeEntry< int >(out, this->mode);
+//  writeEntry< int >(out, this->cpuLevel);
+//  this->strategy.write(out);
+//  proceed(out);
+//  return true;
+//}
 
 /// deserializer
-bool Config::read(std::istream& in) {
-  if ( !readEntry< PlayMode >(in, this->mode)){
-    return false;
-  }
-  if ( !readEntry< size_t >(in, this->cpuLevel)){
-    return false;
-  }
-  this->strategy.read(in);
-  if ( !proceed(in)){
-    return false;
-  }
-  return true;
-}
+//bool Config::read(std::istream& in) {
+//  if ( !readEntry< PlayMode >(in, this->mode)){
+//    return false;
+//  }
+//  if ( !readEntry< size_t >(in, this->cpuLevel)){
+//    return false;
+//  }
+//  this->strategy.read(in);
+//  if ( !proceed(in)){
+//    return false;
+//  }
+//  return true;
+//}
 
 /// serializer
 bool Strategy::write(std::ostream& out) const {

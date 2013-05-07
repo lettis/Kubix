@@ -1,6 +1,7 @@
 #include "game_widget.hpp"
 #include "tools.hpp"
 #include "models.hpp"
+#include "config.hpp"
 
 #include <GL/glu.h>
 #include <QtGui>
@@ -25,7 +26,7 @@ void GameWidget::newGame() {
   // create new game instance
   // TODO: this is just a dummy for now, please replace by something that makes more sense!
   delete this->_game;
-  this->_game = new Game(Config(PlayMode(HUMAN_AI), 3, Strategy(1)));
+  this->_game = new Game(HUMAN_AI, 3, Strategy(1));
   // setup board and make change known to renderer
   this->_scene->setup();
   this->changed();
@@ -45,7 +46,7 @@ GameWidget::GameWidget(QWidget *parent)
       _log("act") {
   setMouseTracking(false);
   // TODO: this is just a dummy for now, please replace by something that makes more sense!
-  this->_game = new Game(Config(PlayMode(HUMAN_AI), 3, Strategy(1)));
+  this->_game = new Game(HUMAN_AI, 3, Strategy(1));
 }
 
 void GameWidget::setBackgroundColor() {
@@ -403,6 +404,13 @@ void GameWidget::load() {
     }
     infile.close();
   }
+}
+
+void GameWidget::reloadSettings(){
+  //TODO: implement reaction on setting change
+  this->_log.debug("got signal 'reload settings'");
+  Config c;
+  std::cerr << "ai depth is: " << c.value("game/aidepth").toInt() << std::endl;
 }
 
 } // end namespace KBX

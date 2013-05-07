@@ -91,6 +91,7 @@ void Logger::setErr(std::ostream* err) {
 
 // logging will be disabled per default
 bool Logger::_infosEnabled = false;
+bool Logger::_debugEnabled = false;
 bool Logger::_warningsEnabled = false;
 bool Logger::_errorsEnabled = false;
 /// use this method to enable info logging
@@ -100,6 +101,14 @@ void Logger::enableInfos() {
 /// use this method to disable info logging
 void Logger::disableInfos() {
   Logger::_infosEnabled = false;
+}
+/// use this method to enable debug logging
+void Logger::enableDebug() {
+  Logger::_debugEnabled = true;
+}
+/// use this method to disable debug logging
+void Logger::disableDebug() {
+  Logger::_debugEnabled = false;
 }
 /// use this method to enable warning logging
 void Logger::enableWarnings() {
@@ -153,6 +162,12 @@ void Logger::_sendMessage(std::string category, std::string msg) {
 void Logger::info(std::string msg) {
   if (this->_infosEnabled) {
     this->_sendMessage("INFO", msg);
+  }
+}
+/// write debug output to logfile / stdout
+void Logger::debug(std::string msg) {
+  if (this->_debugEnabled) {
+    this->_sendMessage("DEBUG", msg);
   }
 }
 /// write warning to logfile / stdout
