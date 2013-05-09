@@ -248,8 +248,8 @@ Evaluation::Evaluation(float rating, Move move)
       move(move) {
 }
 
-bool Evaluation::greater::operator()(const Evaluation& lhs, const Evaluation& rhs) const {
-  if (lhs.rating > rhs.rating) {
+bool Evaluation::lessOrEqual::operator()(const Evaluation& lhs, const Evaluation& rhs) const {
+  if (lhs.rating <= rhs.rating) {
     return true;
   } else {
     return false;
@@ -552,6 +552,9 @@ float Game::_rate(PlayColor color) {
 }
 /// return list of all possible moves of selected die in current board setting
 std::list< Move > Game::possibleMoves(size_t dieId) {
+
+  //TODO: this function does not give ALL possible moves
+
   std::list< Move > moves;
   int val = this->_dice[dieId].getValue();
   std::vector< RelativeMove >::const_iterator relMv;
@@ -566,14 +569,23 @@ std::list< Move > Game::possibleMoves(size_t dieId) {
 /// return next evaluated move
 Move Game::evaluateNext() {
   //TODO: return vector with several moves of same rating to choose from
-  Evaluation eval = this->_evaluateMoves(this->_aiDepth, -1000.0f, 1000.0f, true);
+  Evaluation eval = this->_evaluateMoves(this->_aiDepth, -100.0f, 100.0f, true);
   return eval.move;
 }
 /// evaluate best possible move up to a certain level
 /// this is done recursively by a form of the NegaMax algorithm with alpha-beta pruning
 Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initialCall) {
+
+  //TODO: debug evaluation
+
+  if (level == 1) {
+    std::cerr << "next player: " << this->_nextPlayer << std::endl;
+    return Evaluation(this->_rate(this->_nextPlayer));
+  }
+  // get rating, either directly or by recursive call
+  float rating;
   // container for best move candidates
-  std::priority_queue< Evaluation, std::vector<Evaluation>, Evaluation::greater > candidates;
+  std::priority_queue< Evaluation, std::vector< Evaluation >, Evaluation::lessOrEqual > candidates;
   // limit indices to significant color
   size_t from, to;
   if (this->_nextPlayer == WHITE) {
@@ -599,14 +611,8 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
         int idDieOnTarget = this->_fields[this->_dice[d].x() + move.dx][this->_dice[d].y() + move.dy];
         // perform move
         this->makeMove(Move(d, move));
-        // get rating, either directly or by recursive call
-        float rating;
-        if (level == 1) {
-          rating = this->_rate(this->_nextPlayer);
-        } else {
-          // recursive call for next step (negative weighting, since it is opponent's turn)
-          rating = -this->_evaluateMoves(level - 1, -beta, -alpha, false).rating;
-        }
+        // recursive call for next step (negative weighting, since it is opponent's turn)
+        rating = -this->_evaluateMoves(level - 1, -beta, -alpha, false).rating;
         // undo move
         this->makeMove(Move(d, moveBack));
         // revive killed die on target field
@@ -618,7 +624,7 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
         if (rating >= beta) {
           return Evaluation(rating);
         }
-        if (rating >= alpha) {
+        if (rating > alpha) {
           alpha = rating;
         }
         if (initialCall == true) {
@@ -632,18 +638,23 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
     size_t max = 6;
     size_t n;
     std::vector< Evaluation > best;
-    if (candidates.size() < max){
+    if (candidates.size() < max) {
       n = candidates.size();
     } else {
       n = max;
     }
-    for (size_t i=0; i<n; i++){
-      best.push_back( candidates.top() );
+    for (size_t i = 0; i < n; i++) {
+      best.push_back(candidates.top());
       candidates.pop();
     }
-    // select move randomly from the list
-    std::random_shuffle(best.begin(), best.end());
-    if (! best.empty()){
+    // select move randomly from the list (if ratings are equal)
+    //TODO: add checking of ratings before shuffling
+//    std::random_shuffle(best.begin(), best.end());
+    if ( !best.empty()) {
+      //TODO: remove debug code
+      for (size_t i = 0; i < best.size(); i++) {
+        std::cerr << "move " << i << ": " << best[i].rating << std::endl;
+      }
       return best[0];
     }
   }

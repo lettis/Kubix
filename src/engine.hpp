@@ -146,7 +146,7 @@ class Evaluation {
     float rating;
     Move move;
 
-    class greater {
+    class lessOrEqual {
       public:
         bool operator()(const Evaluation& lhs, const Evaluation& rhs) const;
     };
