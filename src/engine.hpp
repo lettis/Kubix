@@ -150,6 +150,7 @@ class Evaluation {
 class Game {
   public:
     Game(PlayMode mode, size_t aiDepth, Strategy strategy);
+    friend std::ostream& operator<<(std::ostream& out, const Game&);
 
     bool moveIsValid(Move move);
     void makeMove(Move move, bool storeMove = true);

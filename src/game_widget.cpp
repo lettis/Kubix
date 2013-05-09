@@ -352,10 +352,12 @@ void GameWidget::userSelect(Model* obj) {
     if (path) {
       // move die along this path
       Move mv = path->getMove();
+      std::cerr << "board before user move: " << std::endl << *(this->_game);
       this->_performMove(mv);
       if (pathIsTempObj && (path != NULL)) {
         delete path;
       }
+      std::cerr << "board after user move: " << std::endl << *(this->_game);
     }
   }
 }
@@ -406,8 +408,6 @@ void GameWidget::reloadSettings() {
 
 void GameWidget::_performMove(Move m) {
   int dieId = m.dieIndex;
-  this->_scene->setMovingDie(dieId);
-  this->_scene->getDie(dieId)->rollOverFields(m.rel);
   int oldX = this->_game->getDie(dieId)->x();
   int oldY = this->_game->getDie(dieId)->y();
   int capturedDie = this->_game->getDieId(oldX + m.rel.dx, oldY + m.rel.dy);
@@ -415,6 +415,8 @@ void GameWidget::_performMove(Move m) {
     // remove captured die from board
     this->_scene->removeDie(capturedDie);
   }
+  this->_scene->setMovingDie(dieId);
+  this->_scene->getDie(dieId)->rollOverFields(m.rel);
   // update engine
   this->_game->makeMove(m);
   this->_clearDieSelection();
@@ -435,7 +437,11 @@ void GameWidget::update() {
       }
       if (engineToMove) {
         //TODO: parallelize this
+        //TODO: remove debug output
+        //FIXME: evaluation 'eats' dice (e.g.: move out left die 5 forward.: what happens to die no 9?)
+        std::cerr << "board before evaluation: " << std::endl << *(this->_game);
         Move m = this->_game->evaluateNext();
+        std::cerr << "board after evaluation: " << std::endl << *(this->_game);
         if ( !(m == Move())) {
           this->_performMove(m);
         } else {

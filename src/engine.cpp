@@ -687,6 +687,18 @@ float Game::_rateDiceRatio(PlayColor color) {
   return rating;
 }
 
+
+std::ostream& operator<<(std::ostream& out, const Game& game){
+  for (int i=8; i>=0; i--){
+    for (int j=0; j<9; j++){
+      out << game._fields[j][i] << "\t";
+    }
+    out << std::endl;
+  }
+  return out;
+}
+
+
 /// proceed (read version)
 /**
  walk forward in the stream by one entry
