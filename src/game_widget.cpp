@@ -352,12 +352,10 @@ void GameWidget::userSelect(Model* obj) {
     if (path) {
       // move die along this path
       Move mv = path->getMove();
-      std::cerr << "board before user move: " << std::endl << *(this->_game);
       this->_performMove(mv);
       if (pathIsTempObj && (path != NULL)) {
         delete path;
       }
-      std::cerr << "board after user move: " << std::endl << *(this->_game);
     }
   }
 }
@@ -402,7 +400,8 @@ void GameWidget::load() {
 
 void GameWidget::reloadSettings() {
   Config c;
-  this->_game->setAiDepth(c.aiDepth() * 2);
+  // AI depth is per default min. 2 (== Level 1) and always even
+  this->_game->setAiDepth(c.aiDepth()*2);
   this->_game->setPlayMode(c.playMode());
 }
 
@@ -437,11 +436,7 @@ void GameWidget::update() {
       }
       if (engineToMove) {
         //TODO: parallelize this
-        //TODO: remove debug output
-        //FIXME: evaluation 'eats' dice (e.g.: move out left die 5 forward.: what happens to die no 9?)
-        std::cerr << "board before evaluation: " << std::endl << *(this->_game);
         Move m = this->_game->evaluateNext();
-        std::cerr << "board after evaluation: " << std::endl << *(this->_game);
         if ( !(m == Move())) {
           this->_performMove(m);
         } else {

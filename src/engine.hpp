@@ -145,6 +145,11 @@ class Evaluation {
     Evaluation(float rating, Move move);
     float rating;
     Move move;
+
+    class greater {
+      public:
+        bool operator()(const Evaluation& lhs, const Evaluation& rhs) const;
+    };
 };
 
 class Game {
