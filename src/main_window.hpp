@@ -8,6 +8,8 @@
 #ifndef MAINWINDOW_HPP_
 #define MAINWINDOW_HPP_
 
+#include <QLabel>
+
 #include "ui_mainWindow.h"
 
 class MainWindow: public QMainWindow {
@@ -20,12 +22,14 @@ class MainWindow: public QMainWindow {
     void showAboutDialog();
     void showPreferencesDialog();
     void reloadSettings();
+    void setStatus(bool engineRunning);
 
   signals:
     void settingsChanged();
 
   private:
     Ui::MainWindow ui;
+    QLabel _statusMsg;
 };
 
 #endif /* MAINWINDOW_HPP_ */

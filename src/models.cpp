@@ -295,7 +295,8 @@ Die::Die(Scene* scene, Vec pos, size_t dieId)
     : Model(scene, pos),
       IS_KING((dieId == 4) || (dieId == 13)),
       _tile(NULL),
-      _dieId(dieId) {
+      _dieId(dieId),
+      _isMoving(false){
   Die::loadTextures();
   if (this->_dieId < 9) {
     this->_playColor = WHITE;
@@ -311,7 +312,7 @@ size_t Die::getId() {
   return this->_dieId;
 }
 
-PlayColor Die::getPlayColor(){
+PlayColor Die::getPlayColor() {
   return this->_playColor;
 }
 
@@ -351,10 +352,10 @@ void Die::setTile(Tile* t) {
   }
 }
 
-void Die::setTileNext(Direction d){
+void Die::setTileNext(Direction d) {
   int x = this->_tile->getX();
   int y = this->_tile->getY();
-  switch(d){
+  switch (d) {
     case NORTH:
       y++;
       break;
@@ -503,6 +504,7 @@ void Die::_animate() {
       this->_animationQueue.front().progress();
     }
   } else {
+    this->_isMoving = false;
     this->_scene->disableAutoUpdate();
   }
 }
@@ -589,63 +591,63 @@ bool Die::RollAnimation::isFinished() {
   }
 }
 
-void Die::rollOneField(Direction d) {
-  this->_animationQueue.push(Die::RollAnimation( *this, d));
-}
-
-void Die::rollOverFields(RelativeMove relMove){
+void Die::rollOverFields(RelativeMove relMove) {
+  this->_isMoving = true;
   // generate vertical and horizontal roll animations
   std::queue< Die::RollAnimation > horizontal;
   std::queue< Die::RollAnimation > vertical;
   Direction d;
-  if(relMove.dx < 0){
+  if (relMove.dx < 0) {
     d = WEST;
   } else {
     d = EAST;
   }
-  for(int i=0; i<abs(relMove.dx); i++){
+  for (int i = 0; i < abs(relMove.dx); i++) {
     horizontal.push(Die::RollAnimation( *this, d));
   }
-  if(relMove.dy < 0){
+  if (relMove.dy < 0) {
     d = SOUTH;
   } else {
     d = NORTH;
   }
-  for(int i=0; i<abs(relMove.dy); i++){
+  for (int i = 0; i < abs(relMove.dy); i++) {
     vertical.push(Die::RollAnimation( *this, d));
   }
   // add single roll animations to animation queue
-  if(relMove.firstX){
-    while(!horizontal.empty()){
+  if (relMove.firstX) {
+    while ( !horizontal.empty()) {
       this->_animationQueue.push(horizontal.front());
       horizontal.pop();
     }
-    while(!vertical.empty()){
-          this->_animationQueue.push(vertical.front());
-          vertical.pop();
+    while ( !vertical.empty()) {
+      this->_animationQueue.push(vertical.front());
+      vertical.pop();
     }
   } else {
-    while(!vertical.empty()){
-          this->_animationQueue.push(vertical.front());
-          vertical.pop();
+    while ( !vertical.empty()) {
+      this->_animationQueue.push(vertical.front());
+      vertical.pop();
     }
-    while(!horizontal.empty()){
+    while ( !horizontal.empty()) {
       this->_animationQueue.push(horizontal.front());
       horizontal.pop();
     }
   }
 }
 
+bool Die::isMoving(){
+  return this->_isMoving;
+}
 
 //const Color Path::MAIN_COLOR = ColorTable::GREEN;
 const Color Path::NORMAL_COLOR = ColorTable::YELLOW;
 
 Path::Path(Scene* scene, Vec posFrom, Move move)
     : Model(scene, posFrom),
-      _move(move){
+      _move(move) {
 }
 
-Move Path::getMove(){
+Move Path::getMove() {
   return this->_move;
 }
 
@@ -660,7 +662,7 @@ void Path::_setColor() {
 //  if (this->_isMainPath) {
 //    Path::MAIN_COLOR.setAsGlColor();
 //  } else {
-    Path::NORMAL_COLOR.setAsGlColor();
+  Path::NORMAL_COLOR.setAsGlColor();
 //  }
 }
 
@@ -972,14 +974,13 @@ Die* Tile::getDie() {
   return this->_die;
 }
 
-int Tile::getX(){
+int Tile::getX() {
   return this->_x;
 }
 
-int Tile::getY(){
+int Tile::getY() {
   return this->_y;
 }
-
 
 /// clear all object states
 /**
@@ -1014,7 +1015,8 @@ Scene::Scene(GameWidget* act)
       _cam(Vec(0, -50, 70), Vec(0, 0, 0)),
       _markX(4),
       _markY(4),
-      _messages("Scene") {
+      _messages("Scene"),
+      _movingDie(-1) {
   this->setup();
 }
 
@@ -1130,6 +1132,14 @@ void Scene::changed() {
   this->_act->changed();
 }
 
+int Scene::movingDie() {
+  return this->_movingDie;
+}
+
+void Scene::setMovingDie(int movingDie) {
+  this->_movingDie = movingDie;
+}
+
 /// render the scene
 void Scene::_render() {
   // clear the graphics buffer
@@ -1172,15 +1182,19 @@ void Scene::remove(size_t objId) {
   this->_objList[objId] = NULL;
 }
 
-void Scene::removeDie(int dieId){
+void Scene::removeDie(int dieId) {
   size_t objId = this->_dieObjIds[dieId];
   Die* d = dynamic_cast< Die* >(this->_objList[objId]);
   d->setTile(NULL);
   this->remove(objId);
 }
 
-Tile* Scene::getTile(int x, int y){
-  return this->_board->getTile(x,y);
+Die* Scene::getDie(int dieId) {
+  return this->_dice[dieId];
+}
+
+Tile* Scene::getTile(int x, int y) {
+  return this->_board->getTile(x, y);
 }
 
 /// rotate the scene

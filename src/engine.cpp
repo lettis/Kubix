@@ -65,6 +65,14 @@ RelativeMove RelativeMove::invert() {
   return RelativeMove( -dx, -dy, !this->firstX);
 }
 
+bool RelativeMove::operator==(const RelativeMove& other){
+  if ((this->dx == other.dx) && (this->dy == other.dy) && (this->firstX == other.firstX)){
+    return true;
+  } else {
+    return false;
+  }
+}
+
 Move::Move()
     : dieIndex( -1),
       rel(RelativeMove()) {
@@ -73,6 +81,14 @@ Move::Move()
 Move::Move(size_t dieIndex, RelativeMove rel)
     : dieIndex(dieIndex),
       rel(rel) {
+}
+
+bool Move::operator==(const Move& other){
+  if((this->dieIndex == other.dieIndex) && (this->rel == other.rel)){
+    return true;
+  } else {
+    return false;
+  }
 }
 
 /// initialize a die's state
@@ -509,7 +525,7 @@ DieState* Game::getDie(size_t x, size_t y) {
  Rate the board for a specified side with all rating functions and
  value the single ratings based on the defined strategy.
  */
-float Game::rate(PlayColor color) {
+float Game::_rate(PlayColor color) {
   PlayColor winner;
   // check, if game is over
   winner = this->getWinner();
@@ -522,7 +538,7 @@ float Game::rate(PlayColor color) {
     }
   }
   float rating = 0;
-  rating += this->_strategy.coeffDiceRatio * this->rateDiceRatio(color);
+  rating += this->_strategy.coeffDiceRatio * this->_rateDiceRatio(color);
   return rating;
 }
 /// return list of all possible moves of selected die in current board setting
@@ -539,17 +555,17 @@ std::list< Move > Game::possibleMoves(size_t dieId) {
   return moves;
 }
 /// return next evaluated move
-Move Game::evaluateNext(int level) {
-  Move bestMove;
-  //TODO: implement
-  return bestMove;
+Move Game::evaluateNext() {
+  //TODO: return vector with several moves of same rating to choose from
+  Evaluation eval = this->_evaluateMoves(this->_aiDepth, 0.0f, 100.0f, true);
+  return eval.move;
 }
 /// evaluate best possible move up to a certain level
 /**
  TODO: document return value
  this is done recursively by a form of the NegaMax algorithm with alpha-beta pruning
  */
-Evaluation Game::evaluateMoves(int level, float alpha, float beta, bool initialCall) {
+Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initialCall) {
   // container for best move candidates
   std::vector< Evaluation > bestCandidates;
   // limit indices to significant color
@@ -584,10 +600,10 @@ Evaluation Game::evaluateMoves(int level, float alpha, float beta, bool initialC
         // or by recursive call
         float rating;
         if (level == 1) {
-          rating = this->rate(this->_nextPlayer);
+          rating = this->_rate(this->_nextPlayer);
         } else {
           // recursive call for next step (negative weighting, since it is opponent's turn)
-          rating = -this->evaluateMoves(level - 1, -beta, -alpha, false).rating;
+          rating = -this->_evaluateMoves(level - 1, -beta, -alpha, false).rating;
         }
         // undo move
         this->makeMove(Move(d, moveBack));
@@ -627,6 +643,22 @@ void Game::reset() {
   this->_setup();
 }
 
+PlayMode Game::playMode(){
+  return this->_mode;
+}
+
+void Game::setPlayMode(PlayMode mode){
+  this->_mode = mode;
+}
+
+size_t Game::aiDepth(){
+  return this->_aiDepth;
+}
+
+void Game::setAiDepth(size_t aiDepth){
+  this->_aiDepth = aiDepth;
+}
+
 /// rate dice ratio
 /**
  rate according to the ratio of the number of dice on the board
@@ -634,7 +666,7 @@ void Game::reset() {
  100%: only own dices on board
  0%:   only opponent's dices on board
  */
-float Game::rateDiceRatio(PlayColor color) {
+float Game::_rateDiceRatio(PlayColor color) {
   // default rating: 50%
   float rating = 50;
   for (size_t i = 0; i <= 17; i++) {

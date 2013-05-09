@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
      <widget class="KBX::GameWidget" name="game" native="true">
       <property name="minimumSize">
@@ -132,6 +132,7 @@
    <header>game_widget.hpp</header>
    <container>1</container>
    <slots>
+    <signal>statusChanged(bool)</signal>
     <slot>newGame()</slot>
     <slot>save()</slot>
     <slot>load()</slot>
@@ -253,11 +254,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>game</sender>
+   <signal>statusChanged(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setStatus(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>479</x>
+     <y>396</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>404</x>
+     <y>396</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>settingsChanged()</signal>
   <slot>showAboutDialog()</slot>
   <slot>showPreferencesDialog()</slot>
   <slot>reloadSettings()</slot>
+  <slot>setStatus(bool)</slot>
  </slots>
 </ui>

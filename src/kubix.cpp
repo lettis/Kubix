@@ -27,9 +27,13 @@ int main(int argc, char** argv){
   Q_INIT_RESOURCE(res);
 
   // enable logging
-  KBX::Logger::enableInfos();
+//  KBX::Logger::enableInfos();
   KBX::Logger::enableWarnings();
   KBX::Logger::enableErrors();
+
+  KBX::Logger::enableDebug();
+
+  KBX::Logger::filter("die._animate");
 
   try{
     QApplication app(argc, argv);

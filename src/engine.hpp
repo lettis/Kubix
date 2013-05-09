@@ -21,6 +21,7 @@
 #include <stddef.h>
 #include <list>
 #include <iostream>
+#include <vector>
 
 namespace KBX {
 
@@ -90,6 +91,7 @@ class RelativeMove {
     RelativeMove();
     RelativeMove(int dx, int dy, bool FIRST_X);
     RelativeMove invert();
+    bool operator==(const RelativeMove& other);
     bool write(std::ostream& out) const;
     bool read(std::istream& in);
 };
@@ -100,6 +102,7 @@ class Move {
     RelativeMove rel;
     Move();
     Move(size_t dieIndex, RelativeMove rel);
+    bool operator==(const Move& other);
     bool write(std::ostream& out) const;
     bool read(std::istream& in);
 };
@@ -158,20 +161,28 @@ class Game {
     PlayColor getNext();
     void reset();
 
+    PlayMode playMode();
+    void setPlayMode(PlayMode mode);
+
+    size_t aiDepth();
+    void setAiDepth(size_t aiDepth);
+
     DieState* getDie(size_t id);
     DieState* getDie(size_t x, size_t y);
     int getDieId(size_t x, size_t y);
-    float rate(PlayColor color);
-    //TODO: implement
-    Move evaluateNext(int level);
-    Evaluation evaluateMoves(int level, float alpha, float beta, bool initialCall);
+
+    Move evaluateNext();
+
     //TODO: replace read/write by stream operators <<
     bool write(std::ostream& out) const;
     bool read(std::istream& in);
-    // rating functions
-    float rateDiceRatio(PlayColor color);
+
 
   private:
+    Evaluation _evaluateMoves(int level, float alpha, float beta, bool initialCall);
+    // rating functions
+    float _rateDiceRatio(PlayColor color);
+    float _rate(PlayColor color);
     int _fields[9][9];
     DieState _dice[18];
     PlayMode _mode;

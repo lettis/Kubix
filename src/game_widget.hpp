@@ -47,6 +47,10 @@ class GameWidget: public QGLWidget {
     void save();
     void load();
     void reloadSettings();
+    void update();
+
+  signals:
+    void statusChanged(bool engineRunning);
 
   protected:
     void initializeGL();
@@ -76,8 +80,10 @@ class GameWidget: public QGLWidget {
     Model* _pickObject(QPoint p);
     std::list< size_t > _paths;
     void _clearDieSelection();
+    void _performMove(Move m);
     bool _relativeMarking;
     Logger _log;
+    Move _moveToPerform;
 };
 
 } // end namespace KBX

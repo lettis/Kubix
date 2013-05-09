@@ -137,17 +137,17 @@ class Model {
 class Die: public Model {
   public:
     const bool IS_KING;
+    Die(Scene* scene, Vec pos, size_t dieId);
 
     void setTile(Tile* t);
     void setTileNext(Direction d);
     Tile* getTile();
 
-    Die(Scene* scene, Vec pos, size_t dieId);
     size_t getId();
     PlayColor getPlayColor();
 
-    void rollOneField(Direction d);
     void rollOverFields(RelativeMove relMove);
+    bool isMoving();
 
   private:
     static GLuint textures[];
@@ -181,6 +181,7 @@ class Die: public Model {
 
     std::queue< RollAnimation > _animationQueue;
     void _animate();
+    bool _isMoving;
 };
 
 /// Path
@@ -265,6 +266,8 @@ class Scene: public Model {
     size_t add(Model* obj);
     void remove(size_t objId);
     void removeDie(int dieId);
+
+    Die* getDie(int dieId);
     Tile* getTile(int x, int y);
 
     void wipe();
@@ -285,6 +288,9 @@ class Scene: public Model {
     void disableAutoUpdate();
     void changed();
 
+    int movingDie();
+    void setMovingDie(int dieId);
+
     bool inObjPickingMode;
     size_t uniqueColorId;
   protected:
@@ -300,6 +306,7 @@ class Scene: public Model {
     void _setRenderingColor();
     std::vector< Die* > _dice;
     std::map< int, size_t > _dieObjIds;
+    int _movingDie;
 };
 
 } // end namespace KBX

@@ -24,9 +24,9 @@ void GameWidget::newGame() {
   this->_clearDieSelection();
   this->_scene->wipe();
   // create new game instance
-  // TODO: this is just a dummy for now, please replace by something that makes more sense!
   delete this->_game;
-  this->_game = new Game(HUMAN_AI, 3, Strategy(1));
+  Config c;
+  this->_game = new Game(c.playMode(), c.aiDepth(), Strategy(1));
   // setup board and make change known to renderer
   this->_scene->setup();
   this->changed();
@@ -44,6 +44,9 @@ GameWidget::GameWidget(QWidget *parent)
       _bfChange(0),
       _relativeMarking(false),
       _log("act") {
+  // load settings from config
+//  this->reloadSettings();
+
   setMouseTracking(false);
   // TODO: this is just a dummy for now, please replace by something that makes more sense!
   this->_game = new Game(HUMAN_AI, 3, Strategy(1));
@@ -349,19 +352,8 @@ void GameWidget::userSelect(Model* obj) {
   }
   if (path) {
     // move die along this path
-    this->_selectedDie->rollOverFields(path->getMove().rel);
-    int movingDie = this->_selectedDie->getId();
-    int oldX = this->_game->getDie(movingDie)->x();
-    int oldY = this->_game->getDie(movingDie)->y();
     Move mv = path->getMove();
-    int capturedDie = this->_game->getDieId(oldX + mv.rel.dx, oldY + mv.rel.dy);
-    if (capturedDie != CLEAR) {
-      // remove captured die from board
-      this->_scene->removeDie(capturedDie);
-    }
-    // update engine
-    this->_game->makeMove(path->getMove());
-    this->_clearDieSelection();
+    this->_performMove(mv);
     if (pathIsTempObj && (path != NULL)) {
       delete path;
     }
@@ -406,11 +398,52 @@ void GameWidget::load() {
   }
 }
 
-void GameWidget::reloadSettings(){
-  //TODO: implement reaction on setting change
-  this->_log.debug("got signal 'reload settings'");
+void GameWidget::reloadSettings() {
   Config c;
-  std::cerr << "ai depth is: " << c.value("game/aidepth").toInt() << std::endl;
+  this->_game->setAiDepth(c.aiDepth());
+  this->_game->setPlayMode(c.playMode());
+}
+
+void GameWidget::_performMove(Move m) {
+  int dieId = m.dieIndex;
+  this->_scene->setMovingDie(dieId);
+  this->_scene->getDie(dieId)->rollOverFields(m.rel);
+  int oldX = this->_game->getDie(dieId)->x();
+  int oldY = this->_game->getDie(dieId)->y();
+  int capturedDie = this->_game->getDieId(oldX + m.rel.dx, oldY + m.rel.dy);
+  if (capturedDie != CLEAR) {
+    // remove captured die from board
+    this->_scene->removeDie(capturedDie);
+  }
+  // update engine
+  this->_game->makeMove(m);
+  this->_clearDieSelection();
+}
+
+void GameWidget::update() {
+  if (this->_scene->movingDie() == -1) {
+    bool engineToMove = false;
+    if (this->_game->playMode() == HUMAN_AI) {
+      if (this->_game->getNext() == BLACK) {
+        engineToMove = true;
+      }
+    } else if (this->_game->playMode() == AI_HUMAN) {
+      if (this->_game->getNext() == WHITE) {
+        engineToMove = true;
+      }
+    }
+    if (engineToMove) {
+      //TODO: parallelize this
+      Move m = this->_game->evaluateNext();
+      this->_performMove(m);
+    }
+  } else {
+    // release lock after die has finished moving
+    if (!this->_scene->getDie(this->_scene->movingDie())->isMoving()){
+      this->_scene->setMovingDie(-1);
+    }
+  }
+  QGLWidget::update();
 }
 
 } // end namespace KBX
