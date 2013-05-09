@@ -98,10 +98,10 @@ class RelativeMove {
 
 class Move {
   public:
-    size_t dieIndex;
+    int dieIndex;
     RelativeMove rel;
     Move();
-    Move(size_t dieIndex, RelativeMove rel);
+    Move(int dieIndex, RelativeMove rel);
     bool operator==(const Move& other);
     bool write(std::ostream& out) const;
     bool read(std::istream& in);
@@ -160,6 +160,8 @@ class Game {
     PlayColor getWinner();
     PlayColor getNext();
     void reset();
+    void setFinished(bool finished);
+    bool finished();
 
     PlayMode playMode();
     void setPlayMode(PlayMode mode);
@@ -191,6 +193,7 @@ class Game {
     std::list< Move > _moveList;
     std::list< Move >::iterator _lastMove;
     PlayColor _nextPlayer;
+    bool _finished;
     void _setup();
 };
 

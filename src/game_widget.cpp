@@ -44,12 +44,10 @@ GameWidget::GameWidget(QWidget *parent)
       _bfChange(0),
       _relativeMarking(false),
       _log("act") {
-  // load settings from config
-//  this->reloadSettings();
-
   setMouseTracking(false);
-  // TODO: this is just a dummy for now, please replace by something that makes more sense!
-  this->_game = new Game(HUMAN_AI, 3, Strategy(1));
+  this->_game = new Game(HUMAN_AI, 2, Strategy(1));
+  // load settings from config
+  this->reloadSettings();
 }
 
 void GameWidget::setBackgroundColor() {
@@ -293,69 +291,71 @@ void GameWidget::keyPressEvent(QKeyEvent* event) {
 void GameWidget::userSelect(Model* obj) {
   //FIXME: this function is currently only working with mouse interaction
   KBX::Logger log("userSelect");
-  // dynamically select clicked object
-  Die* die = dynamic_cast< Die* >(obj);
-  Tile* tile = dynamic_cast< Tile* >(obj);
-  Path* path = dynamic_cast< Path* >(obj);
+  if ( !this->_game->finished()) {
+    // dynamically select clicked object
+    Die* die = dynamic_cast< Die* >(obj);
+    Tile* tile = dynamic_cast< Tile* >(obj);
+    Path* path = dynamic_cast< Path* >(obj);
 
-  bool pathIsTempObj = false;
-  if (die) {
-    if (die->getPlayColor() == this->_game->getNext()) {
-      this->_clearDieSelection();
-      // die of current player: render paths, i.e. move possibilities
-      std::list< Move > moves = this->_game->possibleMoves(die->getId());
-      log.info(stringprintf("# of possible moves: %d", moves.size()));
-      for (std::list< Move >::iterator mv = moves.begin(); mv != moves.end(); mv++) {
-        log.info(
-            stringprintf("possible move [dx, dy, firstX]: %d, %d, %s", mv->rel.dx, mv->rel.dy,
-                mv->rel.firstX ? "true" : "false"));
-        this->_paths.push_back(this->_scene->add(new Path(this->_scene, die->getPosition(), *mv)));
-      }
-      this->_selectedDie = die;
-    } else {
-      if (this->_selectedDie) {
-        // die of other player: get tile below die and treat with 'tile-code' below
-        tile = die->getTile();
-      }
-    }
-  }
-  if (tile) {
-    if (this->_selectedDie) {
-      int oldX = this->_game->getDie(this->_selectedDie->getId())->x();
-      int oldY = this->_game->getDie(this->_selectedDie->getId())->y();
-      // check if selected die can move to this field. if yes: move (or draw remaining paths)
-      std::list< Move > moves = this->_game->possibleMoves(this->_selectedDie->getId());
-      std::list< Move > filteredMoves;
-      for (std::list< Move >::iterator mv = moves.begin(); mv != moves.end(); mv++) {
-        if ((mv->rel.dx + oldX == tile->getX()) && (mv->rel.dy + oldY == tile->getY())) {
-          // move lands on selected tile
-          filteredMoves.push_back( *mv);
+    bool pathIsTempObj = false;
+    if (die) {
+      if (die->getPlayColor() == this->_game->getNext()) {
+        this->_clearDieSelection();
+        // die of current player: render paths, i.e. move possibilities
+        std::list< Move > moves = this->_game->possibleMoves(die->getId());
+        log.info(stringprintf("# of possible moves: %d", moves.size()));
+        for (std::list< Move >::iterator mv = moves.begin(); mv != moves.end(); mv++) {
+          log.info(
+              stringprintf("possible move [dx, dy, firstX]: %d, %d, %s", mv->rel.dx, mv->rel.dy,
+                  mv->rel.firstX ? "true" : "false"));
+          this->_paths.push_back(this->_scene->add(new Path(this->_scene, die->getPosition(), *mv)));
+        }
+        this->_selectedDie = die;
+      } else {
+        if (this->_selectedDie) {
+          // die of other player: get tile below die and treat with 'tile-code' below
+          tile = die->getTile();
         }
       }
-      if (filteredMoves.size() == 1) {
-        // only one move possible: perform move directly
-        path = new Path(this->_scene, this->_selectedDie->getPosition(), filteredMoves.front());
-        pathIsTempObj = true;
-      } else if (filteredMoves.size() == 2) {
-        // clear old paths, but keep selected die
-        Die* sel = this->_selectedDie;
-        this->_clearDieSelection();
-        this->_selectedDie = sel;
-        // two moves possible: draw paths
-        this->_paths.push_back(this->_scene->add(new Path(this->_scene, sel->getPosition(), filteredMoves.front())));
-        this->_paths.push_back(this->_scene->add(new Path(this->_scene, sel->getPosition(), filteredMoves.back())));
-      } else {
-        // no move possible: just clear selection
-        this->_clearDieSelection();
+    }
+    if (tile) {
+      if (this->_selectedDie) {
+        int oldX = this->_game->getDie(this->_selectedDie->getId())->x();
+        int oldY = this->_game->getDie(this->_selectedDie->getId())->y();
+        // check if selected die can move to this field. if yes: move (or draw remaining paths)
+        std::list< Move > moves = this->_game->possibleMoves(this->_selectedDie->getId());
+        std::list< Move > filteredMoves;
+        for (std::list< Move >::iterator mv = moves.begin(); mv != moves.end(); mv++) {
+          if ((mv->rel.dx + oldX == tile->getX()) && (mv->rel.dy + oldY == tile->getY())) {
+            // move lands on selected tile
+            filteredMoves.push_back( *mv);
+          }
+        }
+        if (filteredMoves.size() == 1) {
+          // only one move possible: perform move directly
+          path = new Path(this->_scene, this->_selectedDie->getPosition(), filteredMoves.front());
+          pathIsTempObj = true;
+        } else if (filteredMoves.size() == 2) {
+          // clear old paths, but keep selected die
+          Die* sel = this->_selectedDie;
+          this->_clearDieSelection();
+          this->_selectedDie = sel;
+          // two moves possible: draw paths
+          this->_paths.push_back(this->_scene->add(new Path(this->_scene, sel->getPosition(), filteredMoves.front())));
+          this->_paths.push_back(this->_scene->add(new Path(this->_scene, sel->getPosition(), filteredMoves.back())));
+        } else {
+          // no move possible: just clear selection
+          this->_clearDieSelection();
+        }
       }
     }
-  }
-  if (path) {
-    // move die along this path
-    Move mv = path->getMove();
-    this->_performMove(mv);
-    if (pathIsTempObj && (path != NULL)) {
-      delete path;
+    if (path) {
+      // move die along this path
+      Move mv = path->getMove();
+      this->_performMove(mv);
+      if (pathIsTempObj && (path != NULL)) {
+        delete path;
+      }
     }
   }
 }
@@ -400,7 +400,7 @@ void GameWidget::load() {
 
 void GameWidget::reloadSettings() {
   Config c;
-  this->_game->setAiDepth(c.aiDepth());
+  this->_game->setAiDepth(c.aiDepth() * 2);
   this->_game->setPlayMode(c.playMode());
 }
 
@@ -421,26 +421,35 @@ void GameWidget::_performMove(Move m) {
 }
 
 void GameWidget::update() {
-  if (this->_scene->movingDie() == -1) {
-    bool engineToMove = false;
-    if (this->_game->playMode() == HUMAN_AI) {
-      if (this->_game->getNext() == BLACK) {
-        engineToMove = true;
+  if ( !this->_game->finished()) {
+    if (this->_scene->movingDie() == -1) {
+      bool engineToMove = false;
+      if (this->_game->playMode() == HUMAN_AI) {
+        if (this->_game->getNext() == BLACK) {
+          engineToMove = true;
+        }
+      } else if (this->_game->playMode() == AI_HUMAN) {
+        if (this->_game->getNext() == WHITE) {
+          engineToMove = true;
+        }
       }
-    } else if (this->_game->playMode() == AI_HUMAN) {
-      if (this->_game->getNext() == WHITE) {
-        engineToMove = true;
+      if (engineToMove) {
+        //TODO: parallelize this
+        Move m = this->_game->evaluateNext();
+        if ( !(m == Move())) {
+          this->_performMove(m);
+        } else {
+          QMessageBox msgBox;
+          msgBox.setText("engine found no move.");
+          msgBox.exec();
+          this->_game->setFinished(true);
+        }
       }
-    }
-    if (engineToMove) {
-      //TODO: parallelize this
-      Move m = this->_game->evaluateNext();
-      this->_performMove(m);
-    }
-  } else {
-    // release lock after die has finished moving
-    if (!this->_scene->getDie(this->_scene->movingDie())->isMoving()){
-      this->_scene->setMovingDie(-1);
+    } else {
+      // release lock after die has finished moving
+      if ( !this->_scene->getDie(this->_scene->movingDie())->isMoving()) {
+        this->_scene->setMovingDie( -1);
+      }
     }
   }
   QGLWidget::update();

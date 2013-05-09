@@ -62,7 +62,7 @@ RelativeMove::RelativeMove(int dx, int dy, bool FIRST_X)
 }
 /// invert the move (ie move back and reset to former position/orientation)
 RelativeMove RelativeMove::invert() {
-  return RelativeMove( -dx, -dy, !this->firstX);
+  return RelativeMove( -this->dx, -this->dy, !this->firstX);
 }
 
 bool RelativeMove::operator==(const RelativeMove& other){
@@ -78,7 +78,7 @@ Move::Move()
       rel(RelativeMove()) {
 }
 
-Move::Move(size_t dieIndex, RelativeMove rel)
+Move::Move(int dieIndex, RelativeMove rel)
     : dieIndex(dieIndex),
       rel(rel) {
 }
@@ -252,7 +252,8 @@ Game::Game(PlayMode mode, size_t aiDepth, Strategy strategy)
     : _mode(mode),
       _aiDepth(aiDepth),
       _strategy(strategy),
-      _nextPlayer(WHITE) {
+      _nextPlayer(WHITE),
+      _finished(false){
   this->_setup();
 }
 /// setup board to starting conditions
@@ -561,10 +562,7 @@ Move Game::evaluateNext() {
   return eval.move;
 }
 /// evaluate best possible move up to a certain level
-/**
- TODO: document return value
- this is done recursively by a form of the NegaMax algorithm with alpha-beta pruning
- */
+/// this is done recursively by a form of the NegaMax algorithm with alpha-beta pruning
 Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initialCall) {
   // container for best move candidates
   std::vector< Evaluation > bestCandidates;
@@ -591,13 +589,9 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
         RelativeMove moveBack = move.invert();
         // kill the die lying on the target field
         int idDieOnTarget = this->_fields[this->_dice[d].x() + move.dx][this->_dice[d].y() + move.dy];
-        if (idDieOnTarget != CLEAR) {
-          this->_dice[idDieOnTarget].kill();
-        }
         // perform move
         this->makeMove(Move(d, move));
-        // get rating, either directly
-        // or by recursive call
+        // get rating, either directly or by recursive call
         float rating;
         if (level == 1) {
           rating = this->_rate(this->_nextPlayer);
@@ -642,6 +636,15 @@ void Game::reset() {
   this->_moveList.clear();
   this->_setup();
 }
+
+void Game::setFinished(bool finished){
+  this->_finished = finished;
+}
+
+bool Game::finished(){
+  return this->_finished;
+}
+
 
 PlayMode Game::playMode(){
   return this->_mode;
@@ -940,7 +943,7 @@ bool Move::write(std::ostream& out) const {
 
 /// deserializer
 bool Move::read(std::istream& in) {
-  if ( !readEntry< size_t >(in, this->dieIndex)){
+  if ( !readEntry< int >(in, this->dieIndex)){
     return false;
   }
   if ( !this->rel.read(in)){
