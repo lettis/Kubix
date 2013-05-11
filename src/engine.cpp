@@ -248,8 +248,8 @@ Evaluation::Evaluation(float rating, Move move)
       move(move) {
 }
 
-bool Evaluation::lessOrEqual::operator()(const Evaluation& lhs, const Evaluation& rhs) const {
-  if (lhs.rating <= rhs.rating) {
+bool Evaluation::less::operator()(const Evaluation& lhs, const Evaluation& rhs) const {
+  if (lhs.rating < rhs.rating) {
     return true;
   } else {
     return false;
@@ -403,8 +403,6 @@ Move Game::redoMove() {
  \returns true, if the move is valid, else false
  */
 bool Game::moveIsValid(Move move) {
-  //TODO/FIXME: not all moves are correctly identified
-
   DieState dieState = this->_dice[move.dieIndex];
   // check, if die is from player with next move
   if (dieState.getColor() != this->_nextPlayer) {
@@ -433,7 +431,7 @@ bool Game::moveIsValid(Move move) {
       }
     }
     // iterate over y-values
-    for (int i = 1; i <= abs(move.rel.dy); i++) {
+    for (int i = 1; i <= abs(move.rel.dy) -1; i++) {
       if (this->_fields[dieState.x() + move.rel.dx][dieState.y() + i * sgn(move.rel.dy)] != CLEAR) {
         // there is a die on the way => move is not possible
         return false;
@@ -456,6 +454,7 @@ bool Game::moveIsValid(Move move) {
       int xVal = dieState.x() + i * sgn(move.rel.dx);
       int yVal = dieState.y() + move.rel.dy;
       //TODO: perform this boundary check for other field-lookups as well
+      //TODO: think about above todo statement: isn't this done already above?
       if (0 <= xVal && xVal <= 8 && 0 <= yVal && yVal <= 8) {
         if (this->_fields[xVal][yVal] != CLEAR) {
           // there is a die on the way => move is not possible
@@ -543,18 +542,15 @@ float Game::_rate(PlayColor color) {
     if (winner == color) {
       return 100.0f;
     } else {
-      return 0.0f;
+      return -100.0f;
     }
   }
-  float rating = 0;
+  float rating = 0.0f;
   rating += this->_strategy.coeffDiceRatio * this->_rateDiceRatio(color);
   return rating;
 }
 /// return list of all possible moves of selected die in current board setting
 std::list< Move > Game::possibleMoves(size_t dieId) {
-
-  //TODO: this function does not give ALL possible moves
-
   std::list< Move > moves;
   int val = this->_dice[dieId].getValue();
   std::vector< RelativeMove >::const_iterator relMv;
@@ -568,24 +564,21 @@ std::list< Move > Game::possibleMoves(size_t dieId) {
 }
 /// return next evaluated move
 Move Game::evaluateNext() {
-  //TODO: return vector with several moves of same rating to choose from
-  Evaluation eval = this->_evaluateMoves(this->_aiDepth, -100.0f, 100.0f, true);
+  // always add one to the AI depth for evaluation (i.e. check out at least first move of opponent).
+  // e.g.: AI depth == 1 -> level == 3 (first own move, second opponent's move, third rating)
+  Evaluation eval = this->_evaluateMoves(this->_aiDepth+2, -100.0f, 100.0f, true);
   return eval.move;
 }
 /// evaluate best possible move up to a certain level
 /// this is done recursively by a form of the NegaMax algorithm with alpha-beta pruning
 Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initialCall) {
-
-  //TODO: debug evaluation
-
   if (level == 1) {
-    std::cerr << "next player: " << this->_nextPlayer << std::endl;
     return Evaluation(this->_rate(this->_nextPlayer));
   }
   // get rating, either directly or by recursive call
   float rating;
   // container for best move candidates
-  std::priority_queue< Evaluation, std::vector< Evaluation >, Evaluation::lessOrEqual > candidates;
+  std::priority_queue< Evaluation, std::vector< Evaluation >, Evaluation::less > candidates;
   // limit indices to significant color
   size_t from, to;
   if (this->_nextPlayer == WHITE) {
@@ -603,7 +596,6 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
     for (size_t i = 0; i < DieState::nPossibleMoves[value]; i++) {
       // check if this specific move is valid
       RelativeMove move = DieState::possibleMoves[value][i];
-
       if (this->moveIsValid(Move(d, move))) {
         // store all data to undo move later
         RelativeMove moveBack = move.invert();
@@ -636,25 +628,18 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
   }
   if (initialCall == true) {
     size_t max = 6;
-    size_t n;
+    size_t n=0;
     std::vector< Evaluation > best;
-    if (candidates.size() < max) {
-      n = candidates.size();
-    } else {
-      n = max;
-    }
-    for (size_t i = 0; i < n; i++) {
+    // select move randomly from the list of candidates (if ratings are equally good)
+    best.push_back(candidates.top());
+    candidates.pop();
+    while(best[0].rating == candidates.top().rating && n < max){
       best.push_back(candidates.top());
-      candidates.pop();
+          candidates.pop();
+          n++;
     }
-    // select move randomly from the list (if ratings are equal)
-    //TODO: add checking of ratings before shuffling
-//    std::random_shuffle(best.begin(), best.end());
     if ( !best.empty()) {
-      //TODO: remove debug code
-      for (size_t i = 0; i < best.size(); i++) {
-        std::cerr << "move " << i << ": " << best[i].rating << std::endl;
-      }
+      std::random_shuffle(best.begin(), best.end());
       return best[0];
     }
   }
@@ -699,8 +684,8 @@ void Game::setAiDepth(size_t aiDepth) {
  0%:   only opponent's dices on board
  */
 float Game::_rateDiceRatio(PlayColor color) {
-  // default rating: 50%
-  float rating = 50.0f;
+  // default rating: 0.0; [-100.0, 100.0]
+  float rating = 0.0f;
   for (size_t i = 0; i <= 17; i++) {
     if (this->_dice[i].gotKilled()) {
       // i from 0  to 8 resembles white dice, from 9 to 17 black dice

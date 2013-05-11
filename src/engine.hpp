@@ -150,6 +150,16 @@ class Evaluation {
       public:
         bool operator()(const Evaluation& lhs, const Evaluation& rhs) const;
     };
+
+    class less {
+      public:
+        bool operator()(const Evaluation& lhs, const Evaluation& rhs) const;
+    };
+
+    class more {
+      public:
+        bool operator()(const Evaluation& lhs, const Evaluation& rhs) const;
+    };
 };
 
 class Game {

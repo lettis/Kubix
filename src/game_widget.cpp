@@ -400,9 +400,7 @@ void GameWidget::load() {
 
 void GameWidget::reloadSettings() {
   Config c;
-  //TODO: adapt comment
-  // AI depth is per default min. 2 (== Level 1) and always even
-  this->_game->setAiDepth(c.aiDepth()*2+1);
+  this->_game->setAiDepth(c.aiDepth());
   this->_game->setPlayMode(c.playMode());
 }
 
