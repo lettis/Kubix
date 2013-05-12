@@ -666,9 +666,11 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
     size_t n = 0;
     std::vector< Evaluation > best;
     // select move randomly from the list of candidates (if ratings are equally good)
-    best.push_back(candidates.top());
-    candidates.pop();
-    while (best[0].rating == candidates.top().rating && n < max) {
+    if ( !candidates.empty()) {
+      best.push_back(candidates.top());
+      candidates.pop();
+    }
+    while ( !candidates.empty() && (best[0].rating == candidates.top().rating) && (n < max)) {
       best.push_back(candidates.top());
       candidates.pop();
       n++;

@@ -435,10 +435,10 @@ void GameWidget::performEvaluatedMove(){
   if ( !(m == Move())) {
     this->_performMove(m);
   } else {
+    this->_game->setFinished(true);
     QMessageBox msgBox;
     msgBox.setText("computer gives up. you win.");
     msgBox.exec();
-    this->_game->setFinished(true);
   }
 }
 
