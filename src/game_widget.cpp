@@ -13,24 +13,8 @@
 
 namespace KBX {
 
-GameEvaluationThread::GameEvaluationThread()
-    : QThread(),
-      _game(NULL) {
-}
-
-void GameEvaluationThread::setGameReference(Game* game) {
-  this->_game = game;
-}
-
-Move GameEvaluationThread::getResult() {
-  return this->_result;
-}
-
-void GameEvaluationThread::run() {
-  if (this->_game) {
-    Game workingCopy( *(this->_game));
-    this->_result = workingCopy.evaluateNext();
-  }
+Move evaluatorFunc(Game game) {
+  return game.evaluateNext();
 }
 
 //TODO: add menu items / preferences for
@@ -47,8 +31,6 @@ void GameWidget::newGame() {
   delete this->_game;
   Config c;
   this->_game = new Game(c.playMode(), c.aiDepth(), Strategy(1));
-  // renew game reference in evaluator
-  this->_evalThread.setGameReference(this->_game);
   // setup board and make change known to renderer
   this->_scene->setup();
   this->changed();
@@ -71,10 +53,10 @@ GameWidget::GameWidget(QWidget *parent)
   this->_game = new Game(HUMAN_AI, 1, Strategy(1));
   // load settings from config
   this->reloadSettings();
-  this->_evalThread.setGameReference(this->_game);
-  // show evaluation thread state in status bar
-  connect( &(this->_evalThread), SIGNAL(started()), this, SLOT(setEngineRunning()));
-  connect( &(this->_evalThread), SIGNAL(finished()), this, SLOT(setEngineFinished()));
+  // handle evaluation threads
+  connect( &(this->_watcher), SIGNAL(started()), this, SLOT(setEngineRunning()));
+  connect( &(this->_watcher), SIGNAL(finished()), this, SLOT(setEngineFinished()));
+  connect( &(this->_watcher), SIGNAL(finished()), this, SLOT(performEvaluatedMove()));
 }
 
 void GameWidget::setBackgroundColor() {
@@ -447,42 +429,50 @@ void GameWidget::_performMove(Move m) {
   this->_clearDieSelection();
 }
 
+
+void GameWidget::performEvaluatedMove(){
+  Move m = this->_eval.result();
+  if ( !(m == Move())) {
+    this->_performMove(m);
+  } else {
+    QMessageBox msgBox;
+    msgBox.setText("computer gives up. you win.");
+    msgBox.exec();
+    this->_game->setFinished(true);
+  }
+}
+
+
 void GameWidget::update() {
+  //TODO: rewrite this function to fully support all play modes, game states, etc
   if ( !this->_game->finished()) {
-    if (this->_evalThread.isFinished()) {
-      Move m = this->_evalThread.getResult();
-      if ( !(m == Move())) {
-        this->_performMove(m);
-      } else {
-        QMessageBox msgBox;
-        msgBox.setText("computer gives up. you win.");
-        msgBox.exec();
-        this->_game->setFinished(true);
-      }
-    } else if (this->_scene->movingDie() == -1) {
-      bool engineToMove = false;
-      if (this->_game->playMode() == HUMAN_AI) {
-        if (this->_game->getNext() == BLACK) {
-          engineToMove = true;
-        }
-      } else if (this->_game->playMode() == AI_HUMAN) {
-        if (this->_game->getNext() == WHITE) {
-          engineToMove = true;
-        }
-      }
-      if (engineToMove) {
+    if (this->_scene->movingDie() == -1) {
+      if (this->_engineMoves() && !this->_watcher.isRunning()) {
         // encapsulate move evaluation by engine
         // in separate thread to keep UI reactive
-        this->_evalThread.start();
+        this->_eval = QtConcurrent::run(evaluatorFunc, *(this->_game));
+        this->_watcher.setFuture(this->_eval);
       }
-    } else {
+    } else if ( !this->_scene->getDie(this->_scene->movingDie())->isMoving()) {
       // release lock after die has finished moving
-      if ( !this->_scene->getDie(this->_scene->movingDie())->isMoving()) {
-        this->_scene->setMovingDie( -1);
-      }
+      this->_scene->setMovingDie( -1);
     }
   }
   QGLWidget::update();
+}
+
+bool GameWidget::_engineMoves() {
+  bool engineMoves = false;
+  if (this->_game->playMode() == HUMAN_AI) {
+    if (this->_game->getNext() == BLACK) {
+      engineMoves = true;
+    }
+  } else if (this->_game->playMode() == AI_HUMAN) {
+    if (this->_game->getNext() == WHITE) {
+      engineMoves = true;
+    }
+  }
+  return engineMoves;
 }
 
 void GameWidget::setEngineRunning() {

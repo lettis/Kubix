@@ -21,7 +21,10 @@
 #include <QtOpenGL/QGLWidget>
 #include <QTimer>
 #include <QWheelEvent>
-#include <QThread>
+#include <QFuture>
+#include <QFutureWatcher>
+#include <QtConcurrentRun>
+#include <QMutex>
 
 #include <list>
 
@@ -29,20 +32,9 @@
 
 namespace KBX {
 
-
-class GameEvaluationThread : public QThread {
-    Q_OBJECT
-
-  public:
-    GameEvaluationThread();
-    void setGameReference(Game* game);
-    Move getResult();
-
-  private:
-    void run();
-    Game* _game;
-    Move _result;
-};
+// use this function to run as worker
+// to evaluate moves in separate thread
+Move evaluatorFunc(Game game);
 
 
 class GameWidget: public QGLWidget {
@@ -68,6 +60,7 @@ class GameWidget: public QGLWidget {
     void update();
     void setEngineRunning();
     void setEngineFinished();
+    void performEvaluatedMove();
 
   signals:
     void newStatus(QString msg);
@@ -104,7 +97,9 @@ class GameWidget: public QGLWidget {
     bool _relativeMarking;
     Logger _log;
     Move _moveToPerform;
-    GameEvaluationThread _evalThread;
+    QFuture<Move> _eval;
+    QFutureWatcher<Move> _watcher;
+    bool _engineMoves();
 };
 
 } // end namespace KBX
