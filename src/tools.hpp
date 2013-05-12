@@ -69,6 +69,8 @@ class Logger {
     void error(std::string msg);
 };
 
+
+
 /// defines a simple vector in 3d-cartesian coordinates
 class Vec {
   public:

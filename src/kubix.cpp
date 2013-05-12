@@ -45,9 +45,8 @@ int main(int argc, char** argv) {
   // enable logging
 //  KBX::Logger::enableInfos();
 //  KBX::Logger::enableWarnings();
-  KBX::Logger::enableErrors();
+//  KBX::Logger::enableErrors();
 //  KBX::Logger::enableDebug();
-
 //  KBX::Logger::filter("DieState");
 
   try {

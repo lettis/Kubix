@@ -601,12 +601,14 @@ std::list< Move > Game::possibleMoves(size_t dieId) {
 Move Game::evaluateNext() {
   // always add one to the AI depth for evaluation (i.e. check out at least first move of opponent).
   // e.g.: AI depth == 1 -> level == 2 (first own move, second opponent's move)
-  Evaluation eval = this->_evaluateMoves(this->_aiDepth + 1, -100.0f, 100.0f, true);
+  Evaluation eval = this->_evaluateMoves(this->_aiDepth + 1, -1000.0f, 1000.0f, true);
   return eval.move;
 }
 /// evaluate best possible move up to a certain level
 /// this is done recursively by a form of the NegaMax algorithm with alpha-beta pruning
 Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initialCall) {
+  KBX::Logger log("evaluation");
+
   if (level == 0) {
     return Evaluation(this->_rate(this->_nextPlayer));
   }
@@ -636,10 +638,23 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
         RelativeMove moveBack = move.invert();
         // kill the die lying on the target field
         int idDieOnTarget = this->_fields[this->_dice[d].x() + move.dx][this->_dice[d].y() + move.dy];
+
+//        std::cerr << (this->_nextPlayer == WHITE ? "W" : "B") << " ";
+
         // perform move
         this->makeMove(Move(d, move));
+
+//        for (int z=0; z<level; z++) std::cerr << "\t";
+//        std::cerr << level << " " << d << " " << move.dx << " " << move.dy << " " << move.firstX << std::endl;
+
         // recursive call for next step (negative weighting, since it is opponent's turn)
         rating = -this->_evaluateMoves(level - 1, -beta, -alpha, false).rating;
+
+//        std::cerr << (this->_nextPlayer == WHITE ? "W" : "B") << " ";
+        for (int z = 0; z < level; z++)
+          std::cerr << "\t";
+//        std::cerr << rating << std::endl;
+
         // undo move
         this->makeMove(Move(d, moveBack));
         // revive killed die on target field
@@ -653,31 +668,17 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
         }
         if (rating > alpha) {
           alpha = rating;
-        }
-        if (initialCall == true) {
-          // add move to candidate list
-          candidates.push(Evaluation(rating, Move(d, move)));
+          if (initialCall == true) {
+            // add move to candidate list
+            candidates.push(Evaluation(rating, Move(d, move)));
+          }
         }
       }
     }
   }
   if (initialCall == true) {
-    size_t max = 6;
-    size_t n = 0;
-    std::vector< Evaluation > best;
-    // select move randomly from the list of candidates (if ratings are equally good)
     if ( !candidates.empty()) {
-      best.push_back(candidates.top());
-      candidates.pop();
-    }
-    while ( !candidates.empty() && (best[0].rating == candidates.top().rating) && (n < max)) {
-      best.push_back(candidates.top());
-      candidates.pop();
-      n++;
-    }
-    if ( !best.empty()) {
-      std::random_shuffle(best.begin(), best.end());
-      return best[0];
+      return candidates.top();
     }
   }
   return Evaluation(alpha);
@@ -725,7 +726,7 @@ float Game::_rateDiceRatio(PlayColor color) {
   float rating = 0.0f;
   for (size_t i = 0; i <= 17; i++) {
     if (this->_dice[i].gotKilled()) {
-      // i from 0  to 8 resembles white dice, from 9 to 17 black dice
+      // i from 0 to 8 are white dice, from 9 to 17 black dice
       if ((i <= 8 && color == WHITE) || (i >= 9 && color == BLACK)) {
         // subtract 5.5% for lost dice
         rating -= 5.5;
