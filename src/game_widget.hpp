@@ -21,12 +21,30 @@
 #include <QtOpenGL/QGLWidget>
 #include <QTimer>
 #include <QWheelEvent>
+#include <QThread>
 
 #include <list>
 
 #include "models.hpp"
 
 namespace KBX {
+
+
+class GameEvaluationThread : public QThread {
+    Q_OBJECT
+
+  public:
+    GameEvaluationThread();
+    void setGameReference(Game* game);
+    Move getResult();
+
+  private:
+    void run();
+    Game* _game;
+    Move _result;
+};
+
+
 class GameWidget: public QGLWidget {
   Q_OBJECT
 
@@ -48,9 +66,11 @@ class GameWidget: public QGLWidget {
     void load();
     void reloadSettings();
     void update();
+    void setEngineRunning();
+    void setEngineFinished();
 
   signals:
-    void statusChanged(bool engineRunning);
+    void newStatus(QString msg);
 
   protected:
     void initializeGL();
@@ -84,6 +104,7 @@ class GameWidget: public QGLWidget {
     bool _relativeMarking;
     Logger _log;
     Move _moveToPerform;
+    GameEvaluationThread _evalThread;
 };
 
 } // end namespace KBX

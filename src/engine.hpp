@@ -146,17 +146,7 @@ class Evaluation {
     float rating;
     Move move;
 
-    class lessOrEqual {
-      public:
-        bool operator()(const Evaluation& lhs, const Evaluation& rhs) const;
-    };
-
     class less {
-      public:
-        bool operator()(const Evaluation& lhs, const Evaluation& rhs) const;
-    };
-
-    class more {
       public:
         bool operator()(const Evaluation& lhs, const Evaluation& rhs) const;
     };
@@ -164,7 +154,13 @@ class Evaluation {
 
 class Game {
   public:
+    Game(const Game& other);
     Game(PlayMode mode, size_t aiDepth, Strategy strategy);
+    //TODO: implement copy assignment operator
+    Game& operator=(const Game& other);
+    //TODO: implement destructor
+    ~Game();
+
     friend std::ostream& operator<<(std::ostream& out, const Game&);
 
     bool moveIsValid(Move move);
@@ -185,6 +181,7 @@ class Game {
     size_t aiDepth();
     void setAiDepth(size_t aiDepth);
 
+    //TODO: check: is it necessary to return pointers?
     DieState* getDie(size_t id);
     DieState* getDie(size_t x, size_t y);
     int getDieId(size_t x, size_t y);
@@ -201,8 +198,8 @@ class Game {
     // rating functions
     float _rateDiceRatio(PlayColor color);
     float _rate(PlayColor color);
-    int _fields[9][9];
-    DieState _dice[18];
+    std::vector< std::vector<int> > _fields; // [9][9]
+    std::vector< DieState > _dice; // [18]
     PlayMode _mode;
     size_t _aiDepth;
     Strategy _strategy;

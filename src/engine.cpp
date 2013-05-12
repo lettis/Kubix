@@ -256,15 +256,50 @@ bool Evaluation::less::operator()(const Evaluation& lhs, const Evaluation& rhs) 
   }
 }
 
-/// initialize game
 Game::Game(PlayMode mode, size_t aiDepth, Strategy strategy)
-    : _mode(mode),
+    : _fields(9, std::vector< int >(9, 0)),
+      _dice(18, DieState()),
+      _mode(mode),
       _aiDepth(aiDepth),
       _strategy(strategy),
       _nextPlayer(WHITE),
       _finished(false) {
   this->_setup();
 }
+
+// implement the 'big 3' to get clean copies of a game object
+
+Game::Game(const Game& other)
+    : _fields(other._fields),
+      _dice(other._dice),
+      _mode(other._mode),
+      _aiDepth(other._aiDepth),
+      _strategy(other._strategy),
+      _moveList(other._moveList),
+      _nextPlayer(other._nextPlayer),
+      _finished(other._finished) {
+  this->_lastMove = this->_moveList.begin();
+}
+
+Game& Game::operator=(const Game& other) {
+  // protect against self-assignment
+  if (this != &other) {
+    this->_fields = other._fields;
+    this->_dice = other._dice;
+    this->_mode = other._mode;
+    this->_aiDepth = other._aiDepth;
+    this->_strategy = other._strategy;
+    this->_moveList = other._moveList;
+    this->_nextPlayer = other._nextPlayer;
+    this->_finished = other._finished;
+    this->_lastMove = this->_moveList.begin();
+  }
+  return *this;
+}
+
+Game::~Game() {
+}
+
 /// setup board to starting conditions
 void Game::_setup() {
   this->_nextPlayer = WHITE;
@@ -431,7 +466,7 @@ bool Game::moveIsValid(Move move) {
       }
     }
     // iterate over y-values
-    for (int i = 1; i <= abs(move.rel.dy) -1; i++) {
+    for (int i = 1; i <= abs(move.rel.dy) - 1; i++) {
       if (this->_fields[dieState.x() + move.rel.dx][dieState.y() + i * sgn(move.rel.dy)] != CLEAR) {
         // there is a die on the way => move is not possible
         return false;
@@ -565,14 +600,14 @@ std::list< Move > Game::possibleMoves(size_t dieId) {
 /// return next evaluated move
 Move Game::evaluateNext() {
   // always add one to the AI depth for evaluation (i.e. check out at least first move of opponent).
-  // e.g.: AI depth == 1 -> level == 3 (first own move, second opponent's move, third rating)
-  Evaluation eval = this->_evaluateMoves(this->_aiDepth+2, -100.0f, 100.0f, true);
+  // e.g.: AI depth == 1 -> level == 2 (first own move, second opponent's move)
+  Evaluation eval = this->_evaluateMoves(this->_aiDepth + 1, -100.0f, 100.0f, true);
   return eval.move;
 }
 /// evaluate best possible move up to a certain level
 /// this is done recursively by a form of the NegaMax algorithm with alpha-beta pruning
 Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initialCall) {
-  if (level == 1) {
+  if (level == 0) {
     return Evaluation(this->_rate(this->_nextPlayer));
   }
   // get rating, either directly or by recursive call
@@ -628,15 +663,15 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
   }
   if (initialCall == true) {
     size_t max = 6;
-    size_t n=0;
+    size_t n = 0;
     std::vector< Evaluation > best;
     // select move randomly from the list of candidates (if ratings are equally good)
     best.push_back(candidates.top());
     candidates.pop();
-    while(best[0].rating == candidates.top().rating && n < max){
+    while (best[0].rating == candidates.top().rating && n < max) {
       best.push_back(candidates.top());
-          candidates.pop();
-          n++;
+      candidates.pop();
+      n++;
     }
     if ( !best.empty()) {
       std::random_shuffle(best.begin(), best.end());
@@ -984,84 +1019,3 @@ bool Move::read(std::istream& in) {
 }
 
 } // end namespace KBX
-
-// TODO: all lines below seem not to be needed anymore: delete
-
-//int filterMoves(int *returnBuffer, int diceKey, Board* board ){
-//	int i,v=0;
-//	/* value of given dice */
-//	int value = state[ (*board).dices[diceKey].state ][VALUE];
-//	Move move;
-//	move.dice = diceKey;
-//
-//	/* iterate over max number of moves for given dice value (stored in state-array) */
-//	for (i=0; i<numberOfPosMoves[ value ]; i++){
-//		/* check if this specific move is valid */
-//		move.relMove = &possibleMoves[value][i];
-//		if( moveIsValid( &move, board ) == 1 ){
-//			/* ok, move is valid */
-//			returnBuffer[v] = i;
-//			v++;
-//		}
-//	}
-//					/* stop signal for list iteration */
-//	if ( v < numberOfPosMoves[value] )	returnBuffer[v] = -1;
-//
-//	return 0;
-//}
-
-//* TODO: keep defaults in config file */
-//* set defaults */
-//(*config).mode = HUMAN_VS_CPU;
-//(*config).cpuColor = BLACK;
-//(*config).cpuLevel = 4;
-//(*config).strategy.coeffDiceRatio = 1;
-//int main(int argc, char* argv[]){
-//	int i;
-//	int errorCode;
-//	Config config;
-//
-//	/* the tactix-board
-//	   Board consists of two elements:
-//	  	1. fields: resemble the single fields of the board, is of type int [81]
-//	  	2. dices:  list of dices */
-//	Board board;
-//
-//	/* parse command line arguments */
-//	errorCode = parseArgs( argc, argv, &config );
-//
-//	if ( errorCode != OK ){
-//		if ( errorCode == EXIT ){
-//			return OK;
-//		}else{
-//			return errorCode;
-//		}
-//	}
-//
-//	/* 'possibleMoves' describes all theoretically possible moves of a dice
-//	   dependent on its value. the description is not dependent on the position
-//	   of the dice or the current game situation, this has to be filtered in another
-//	   function. advantages are, that one has not to recalculate every move, but
-//	   just to iterate over the possible moves of the dice and check these. */
-//	initializeMoveArray();
-//
-//	/* the states array defines the current state of a dice.
-//	   its attributes are the value of the dice and keys of other entries
-//	   in the states array, dependent on the direction the dice is rolled.
-//	   that way wo do not have to calculate the state of the dice every move,
-//	   but rather follow a list of keys */
-//	initializeDiceStates();
-//
-//
-//	/* select game mode */
-//	switch(config.mode){
-//		case HUMAN_VS_CPU:
-//			errorCode = terminalGameController(&board, &config);
-//			break;
-//		default:
-//			printf( \n"ERROR: unknown game mode\n" );
-//			return EXIT_UNKNOWN_COMMAND;
-//	}
-//
-//	return errorCode;
-//}

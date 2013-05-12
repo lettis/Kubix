@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <widget class="KBX::GameWidget" name="game" native="true">
+     <widget class="KBX::GameWidget" name="gameWidget" native="true">
       <property name="minimumSize">
        <size>
         <width>640</width>
@@ -132,7 +132,7 @@
    <header>game_widget.hpp</header>
    <container>1</container>
    <slots>
-    <signal>statusChanged(bool)</signal>
+    <signal>newStatus(QString)</signal>
     <slot>newGame()</slot>
     <slot>save()</slot>
     <slot>load()</slot>
@@ -177,7 +177,7 @@
   <connection>
    <sender>action_New_Game</sender>
    <signal>triggered()</signal>
-   <receiver>game</receiver>
+   <receiver>gameWidget</receiver>
    <slot>newGame()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -193,7 +193,7 @@
   <connection>
    <sender>action_Open_File</sender>
    <signal>triggered()</signal>
-   <receiver>game</receiver>
+   <receiver>gameWidget</receiver>
    <slot>load()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -209,7 +209,7 @@
   <connection>
    <sender>action_Save_Game</sender>
    <signal>triggered()</signal>
-   <receiver>game</receiver>
+   <receiver>gameWidget</receiver>
    <slot>save()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -241,7 +241,7 @@
   <connection>
    <sender>MainWindow</sender>
    <signal>settingsChanged()</signal>
-   <receiver>game</receiver>
+   <receiver>gameWidget</receiver>
    <slot>reloadSettings()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -255,10 +255,10 @@
    </hints>
   </connection>
   <connection>
-   <sender>game</sender>
-   <signal>statusChanged(bool)</signal>
+   <sender>gameWidget</sender>
+   <signal>newStatus(QString)</signal>
    <receiver>MainWindow</receiver>
-   <slot>setStatus(bool)</slot>
+   <slot>setStatus(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>479</x>
@@ -276,6 +276,6 @@
   <slot>showAboutDialog()</slot>
   <slot>showPreferencesDialog()</slot>
   <slot>reloadSettings()</slot>
-  <slot>setStatus(bool)</slot>
+  <slot>setStatus(QString)</slot>
  </slots>
 </ui>

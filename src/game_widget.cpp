@@ -13,6 +13,26 @@
 
 namespace KBX {
 
+GameEvaluationThread::GameEvaluationThread()
+    : QThread(),
+      _game(NULL) {
+}
+
+void GameEvaluationThread::setGameReference(Game* game) {
+  this->_game = game;
+}
+
+Move GameEvaluationThread::getResult() {
+  return this->_result;
+}
+
+void GameEvaluationThread::run() {
+  if (this->_game) {
+    Game workingCopy( *(this->_game));
+    this->_result = workingCopy.evaluateNext();
+  }
+}
+
 //TODO: add menu items / preferences for
 //      autoRefresh and relativeMarking
 
@@ -27,6 +47,8 @@ void GameWidget::newGame() {
   delete this->_game;
   Config c;
   this->_game = new Game(c.playMode(), c.aiDepth(), Strategy(1));
+  // renew game reference in evaluator
+  this->_evalThread.setGameReference(this->_game);
   // setup board and make change known to renderer
   this->_scene->setup();
   this->changed();
@@ -45,9 +67,14 @@ GameWidget::GameWidget(QWidget *parent)
       _relativeMarking(false),
       _log("act") {
   setMouseTracking(false);
-  this->_game = new Game(HUMAN_AI, 2, Strategy(1));
+  // initialize game with some stupid defaults in case there is no config
+  this->_game = new Game(HUMAN_AI, 1, Strategy(1));
   // load settings from config
   this->reloadSettings();
+  this->_evalThread.setGameReference(this->_game);
+  // show evaluation thread state in status bar
+  connect( &(this->_evalThread), SIGNAL(started()), this, SLOT(setEngineRunning()));
+  connect( &(this->_evalThread), SIGNAL(finished()), this, SLOT(setEngineFinished()));
 }
 
 void GameWidget::setBackgroundColor() {
@@ -422,7 +449,17 @@ void GameWidget::_performMove(Move m) {
 
 void GameWidget::update() {
   if ( !this->_game->finished()) {
-    if (this->_scene->movingDie() == -1) {
+    if (this->_evalThread.isFinished()) {
+      Move m = this->_evalThread.getResult();
+      if ( !(m == Move())) {
+        this->_performMove(m);
+      } else {
+        QMessageBox msgBox;
+        msgBox.setText("computer gives up. you win.");
+        msgBox.exec();
+        this->_game->setFinished(true);
+      }
+    } else if (this->_scene->movingDie() == -1) {
       bool engineToMove = false;
       if (this->_game->playMode() == HUMAN_AI) {
         if (this->_game->getNext() == BLACK) {
@@ -434,16 +471,9 @@ void GameWidget::update() {
         }
       }
       if (engineToMove) {
-        //TODO: parallelize this
-        Move m = this->_game->evaluateNext();
-        if ( !(m == Move())) {
-          this->_performMove(m);
-        } else {
-          QMessageBox msgBox;
-          msgBox.setText("engine found no move.");
-          msgBox.exec();
-          this->_game->setFinished(true);
-        }
+        // encapsulate move evaluation by engine
+        // in separate thread to keep UI reactive
+        this->_evalThread.start();
       }
     } else {
       // release lock after die has finished moving
@@ -453,6 +483,14 @@ void GameWidget::update() {
     }
   }
   QGLWidget::update();
+}
+
+void GameWidget::setEngineRunning() {
+  emit this->newStatus("Kubix is computing next move.");
+}
+
+void GameWidget::setEngineFinished() {
+  emit this->newStatus("Kubix is waiting for your move.");
 }
 
 } // end namespace KBX

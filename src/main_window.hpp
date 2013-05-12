@@ -22,7 +22,7 @@ class MainWindow: public QMainWindow {
     void showAboutDialog();
     void showPreferencesDialog();
     void reloadSettings();
-    void setStatus(bool engineRunning);
+    void setStatus(QString msg);
 
   signals:
     void settingsChanged();
