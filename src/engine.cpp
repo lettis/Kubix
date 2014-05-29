@@ -523,8 +523,8 @@ PlayColor Game::getWinner() {
   }
   if (kingB.gotKilled()) {
     return WHITE;
-    // winning by conquering opponents king field
   }
+  // winning by conquering opponents king field
   if ((kingW.x() == 8) && (kingW.y() == 4)) {
     return WHITE;
   }
@@ -538,6 +538,22 @@ PlayColor Game::getWinner() {
 PlayColor Game::getNext() {
   return this->_nextPlayer;
 }
+
+PlayColor Game::getAiColor() {
+  if (this->_mode == HUMAN_AI) {
+    return BLACK;
+  } else if (this->_mode == AI_HUMAN) {
+    return WHITE;
+  } else {
+    return NONE_OF_BOTH;
+  }
+}
+
+PlayColor Game::getHumanColor() {
+  return inverse(this->getAiColor());
+}
+
+
 /// get die state of die with given id
 DieState* Game::getDie(size_t id) {
   if (id < 18) {

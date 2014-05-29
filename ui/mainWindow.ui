@@ -36,7 +36,7 @@
      <x>0</x>
      <y>0</y>
      <width>809</width>
-     <height>22</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_Game">
@@ -44,6 +44,8 @@
      <string>&amp;Game</string>
     </property>
     <addaction name="action_New_Game"/>
+    <addaction name="action_Give_Up"/>
+    <addaction name="separator"/>
     <addaction name="action_Open_File"/>
     <addaction name="action_Save_Game"/>
     <addaction name="separator"/>
@@ -124,6 +126,11 @@
     <string>Ctrl+P</string>
    </property>
   </action>
+  <action name="action_Give_Up">
+   <property name="text">
+    <string>&amp;Give Up</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -137,6 +144,7 @@
     <slot>save()</slot>
     <slot>load()</slot>
     <slot>reloadSettings()</slot>
+    <slot>giveUp()</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -267,6 +275,22 @@
     <hint type="destinationlabel">
      <x>404</x>
      <y>396</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Give_Up</sender>
+   <signal>triggered()</signal>
+   <receiver>gameWidget</receiver>
+   <slot>giveUp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>479</x>
+     <y>399</y>
     </hint>
    </hints>
   </connection>

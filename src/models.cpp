@@ -681,8 +681,8 @@ void Path::_render() {
   float w = 0.2f;
   // height over board (should be higher than dice!)
   float h = 0.6f;
-  // spacer width
-  float wSpacer = 0.5f - w;
+  // (half) thickness
+  float t = 0.5f * 0.05f;
   // incremental angle to draw curves
   float incrementalAngle = 90.0f / curveResolution;
 
@@ -701,56 +701,152 @@ void Path::_render() {
   float sgnX = sgnP(dx);
   float sgnY = sgnP(dy);
 
-  Vec a(sgnX * w, sgnY * w, h);
-  Vec r(0.0f, sgnY * ( -2.0f * w), 0.0f);
   // draw first straight path (to curve or goal)
   if (fabs(dx) > 1.0f) {
     glBegin(GL_QUADS);
-    Vec(sgnX * 0.5f, w, h).setAsGlVertex3f();
-    Vec(sgnX * 0.5f, -w, h).setAsGlVertex3f();
-    Vec(dx - sgnX * 0.5f, -w, h).setAsGlVertex3f();
-    Vec(dx - sgnX * 0.5f, w, h).setAsGlVertex3f();
+    // top
+    Vec(sgnX * 0.5f, w, h+t).setAsGlVertex3f();
+    Vec(sgnX * 0.5f, -w, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, -w, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, w, h+t).setAsGlVertex3f();
+    // bottom
+    Vec(sgnX * 0.5f, w, h-t).setAsGlVertex3f();
+    Vec(sgnX * 0.5f, -w, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, -w, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, w, h-t).setAsGlVertex3f();
+    // side +w
+    Vec(sgnX * 0.5f, w, h+t).setAsGlVertex3f();
+    Vec(sgnX * 0.5f, w, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, w, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, w, h+t).setAsGlVertex3f();
+    // side -w
+    Vec(sgnX * 0.5f, -w, h+t).setAsGlVertex3f();
+    Vec(sgnX * 0.5f, -w, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, -w, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, -w, h+t).setAsGlVertex3f();
     glEnd();
   }
+
   // draw curve if necessary
   if ((fabs(dy) > 0.0f && fabs(dx) > 0.0f) || (fabs(dx) > 0.0f && fabs(dy) > 0.0f)) {
-    a = Vec(dx - sgnX * 0.5f, sgnY * w, h);
-
     glBegin(GL_QUADS);
-    a.setAsGlVertex3f();
-    (a + r).setAsGlVertex3f();
-    a = a + Vec(sgnX * wSpacer, 0.0f, 0.0f);
-    (a + r).setAsGlVertex3f();
-    a.setAsGlVertex3f();
+    // top
+    Vec(dx - sgnX * 0.5f, sgnY * w, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, -sgnY * w, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, -sgnY * w, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, sgnY * w, h+t).setAsGlVertex3f();
+    // bottom
+    Vec(dx - sgnX * 0.5f, sgnY * w, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, -sgnY * w, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, -sgnY * w, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, sgnY * w, h-t).setAsGlVertex3f();
+    // sides
+    Vec(dx - sgnX * 0.5f, sgnY * w, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, sgnY * w, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, sgnY * w, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, sgnY * w, h+t).setAsGlVertex3f();
+
+    Vec(dx - sgnX * 0.5f, -sgnY * w, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, -sgnY * w, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, -sgnY * w, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, -sgnY * w, h+t).setAsGlVertex3f();
     glEnd();
 
+    Vec r;
+    Vec a(dx - sgnX * w, sgnY * w, h);
+    Vec dz(0.0f, 0.0f, t);
+
     glBegin(GL_TRIANGLE_FAN);
-    a.setAsGlVertex3f();
+    // top
+    r = Vec(0.0f, sgnY * ( -2.0f * w), 0.0f);
+    (a+dz).setAsGlVertex3f();
     for (int i = 0; i <= curveResolution; i++) {
-      (a + r).setAsGlVertex3f();
+      (a + r + dz).setAsGlVertex3f();
+      r = r.rotate(NormalVectors::Z, sgnX * sgnY * incrementalAngle);
+    }
+    glEnd();
+    glBegin(GL_TRIANGLE_FAN);
+    // bottom
+    r = Vec(0.0f, sgnY * ( -2.0f * w), 0.0f);
+    (a - dz).setAsGlVertex3f();
+    for (int i = 0; i <= curveResolution; i++) {
+      (a + r - dz).setAsGlVertex3f();
+      r = r.rotate(NormalVectors::Z, sgnX * sgnY * incrementalAngle);
+    }
+    glEnd();
+    glBegin(GL_QUADS);
+    // sides
+    r = Vec(0.0f, sgnY * ( -2.0f * w), 0.0f);
+    Vec r_old = r;
+    r = r.rotate(NormalVectors::Z, sgnX * sgnY * incrementalAngle);
+    //a.setAsGlVertex3f();
+    for (int i = 1; i <= curveResolution; i++) {
+      //(a + r).setAsGlVertex3f();
+      (a+r+dz).setAsGlVertex3f();
+      (a+r-dz).setAsGlVertex3f();
+      (a+r_old-dz).setAsGlVertex3f();
+      (a+r_old+dz).setAsGlVertex3f();
+      r_old = r;
       r = r.rotate(NormalVectors::Z, sgnX * sgnY * incrementalAngle);
     }
     glEnd();
 
     glBegin(GL_QUADS);
-    a.setAsGlVertex3f();
-    r = Vec(sgnX * 2.0f * w, 0.0f, 0.0f);
-    (a + r).setAsGlVertex3f();
-    a = a + Vec(0.0f, sgnY * wSpacer, 0.0f);
-    (a + r).setAsGlVertex3f();
-    a.setAsGlVertex3f();
+    // top
+    Vec(dx - sgnX * w, sgnY * w, h+t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, sgnY * w, h+t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, sgnY * 0.5, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, sgnY * 0.5, h+t).setAsGlVertex3f();
+    // bottom
+    Vec(dx - sgnX * w, sgnY * w, h-t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, sgnY * w, h-t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, sgnY * 0.5, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, sgnY * 0.5, h-t).setAsGlVertex3f();
+    // sides
+    Vec(dx - sgnX * w, sgnY * w, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, sgnY * w, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, sgnY * 0.5, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, sgnY * 0.5, h+t).setAsGlVertex3f();
+
+    Vec(dx + sgnX * w, sgnY * w, h+t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, sgnY * w, h-t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, sgnY * 0.5, h-t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, sgnY * 0.5, h+t).setAsGlVertex3f();
+    // back
+    Vec(dx - sgnX * w, sgnY * 0.5, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, sgnY * 0.5, h-t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, sgnY * 0.5, h-t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, sgnY * 0.5, h+t).setAsGlVertex3f();
     glEnd();
   }
-
   // draw second straight line (if necessary)
   if (fabs(dy) > 1.0f) {
-    a = Vec(dx - sgnX * w, sgnY * 0.5f, h);
     glBegin(GL_QUADS);
-    a.setAsGlVertex3f();
-    (a + Vec(sgnX * 2.0f * w, 0.0f, 0.0f)).setAsGlVertex3f();
-    a = a + Vec(0.0f, sgnY * (fabs(dy) - 1.0f), 0.0f);
-    (a + Vec(sgnX * 2.0f * w, 0.0f, 0.0f)).setAsGlVertex3f();
-    a.setAsGlVertex3f();
+    // top
+    Vec(dx - sgnX * w, sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
+    // bottom
+    Vec(dx - sgnX * w, sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
+    // side +w
+    Vec(dx + sgnX * w, sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
+    // side -w
+    Vec(dx - sgnX * w, sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
+    // back
+    Vec(dx + sgnX * w, sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx + sgnX * w, sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * w, sgnY * 0.5f, h+t).setAsGlVertex3f();
     glEnd();
   }
 
@@ -762,22 +858,63 @@ void Path::_render() {
     sgnY *= -1;
     glTranslatef( -dx, -dy, 0.0f);
   }
-
   if ((dx == 0) || (dy != 0 && this->_move.rel.firstX)) {
-    // vertical
-    a = Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h);
+   // vertical
     glBegin(GL_TRIANGLES);
-    a.setAsGlVertex3f();
-    (a + Vec(sgnX, 0.0f, 0.0f)).setAsGlVertex3f();
-    (a + Vec(0.5f * sgnX, 0.2f * sgnY, 0.0f)).setAsGlVertex3f();
+    // top
+    Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx + sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx, dy - sgnY * 0.3f, h+t).setAsGlVertex3f();
+    // bottom
+    Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx + sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx, dy - sgnY * 0.3f, h-t).setAsGlVertex3f();
+    glEnd();
+    glBegin(GL_QUADS);
+    // back
+    Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx + sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx + sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
+    // sides
+    Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx, dy - sgnY * 0.3f, h-t).setAsGlVertex3f();
+    Vec(dx, dy - sgnY * 0.3f, h+t).setAsGlVertex3f();
+    
+    Vec(dx + sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx + sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx, dy - sgnY * 0.3f, h-t).setAsGlVertex3f();
+    Vec(dx, dy - sgnY * 0.3f, h+t).setAsGlVertex3f();
     glEnd();
   } else {
-    // horizontal
-    a = Vec(dx - sgnX * 0.5f, dy + sgnY * 0.5f, h);
+   // horizontal
     glBegin(GL_TRIANGLES);
-    a.setAsGlVertex3f();
-    (a + Vec(0.0f, -sgnY, 0.0f)).setAsGlVertex3f();
-    (a + Vec(0.2f * sgnX, -0.5f * sgnY, 0.0f)).setAsGlVertex3f();
+    // top
+    Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, dy + sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.3f, dy, h+t).setAsGlVertex3f();
+    // bottom
+    Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, dy + sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.3f, dy, h-t).setAsGlVertex3f();
+    glEnd();
+    glBegin(GL_QUADS);
+    // back
+    Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, dy + sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, dy + sgnY * 0.5f, h+t).setAsGlVertex3f();
+    // sides
+    Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.3f, dy, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.3f, dy, h+t).setAsGlVertex3f();
+
+    Vec(dx - sgnX * 0.5f, dy + sgnY * 0.5f, h+t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.5f, dy + sgnY * 0.5f, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.3f, dy, h-t).setAsGlVertex3f();
+    Vec(dx - sgnX * 0.3f, dy, h+t).setAsGlVertex3f();
     glEnd();
   }
 }

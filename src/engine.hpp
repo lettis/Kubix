@@ -171,6 +171,8 @@ class Game {
 
     PlayColor getWinner();
     PlayColor getNext();
+    PlayColor getAiColor();
+    PlayColor getHumanColor();
     void reset();
     void setFinished(bool finished);
     bool finished();

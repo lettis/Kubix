@@ -369,6 +369,10 @@ void GameWidget::userSelect(Model* obj) {
   }
 }
 
+void GameWidget::giveUp() {
+  this->_performMove(Move());
+}
+
 void GameWidget::save() {
   QString ofname = QFileDialog::getSaveFileName(this, "Save game", "", "Kubix Savegames (*.kbx)").simplified();
   if (ofname != "") {
@@ -414,32 +418,53 @@ void GameWidget::reloadSettings() {
 }
 
 void GameWidget::_performMove(Move m) {
-  int dieId = m.dieIndex;
-  int oldX = this->_game->getDie(dieId)->x();
-  int oldY = this->_game->getDie(dieId)->y();
-  int capturedDie = this->_game->getDieId(oldX + m.rel.dx, oldY + m.rel.dy);
-  if (capturedDie != CLEAR) {
-    // remove captured die from board
-    this->_scene->removeDie(capturedDie);
-  }
-  this->_scene->setMovingDie(dieId);
-  this->_scene->getDie(dieId)->rollOverFields(m.rel);
-  // update engine
-  this->_game->makeMove(m);
-  this->_clearDieSelection();
-}
+  QMessageBox msgBox;
+  if (m == Move()) {
+    // empty move: 'next player' loses
+    PlayColor next = this->_game->getNext();
+    if (next == this->_game->getAiColor()) {
+      msgBox.setText("computer gives up. you win.");
+    } else {
+      msgBox.setText("you give up. loser!");
+    }
+    msgBox.exec();
+    this->_game->setFinished(true);
+  } else {
+    int dieId = m.dieIndex;
+    int oldX = this->_game->getDie(dieId)->x();
+    int oldY = this->_game->getDie(dieId)->y();
+    int capturedDie = this->_game->getDieId(oldX + m.rel.dx, oldY + m.rel.dy);
+    if (capturedDie != CLEAR) {
+      // remove captured die from board
+      this->_scene->removeDie(capturedDie);
+    }
+    this->_scene->setMovingDie(dieId);
+    this->_scene->getDie(dieId)->rollOverFields(m.rel);
+    // update engine
+    this->_game->makeMove(m);
+    this->_clearDieSelection();
 
+    // has anybody won?
+    PlayColor winner = this->_game->getWinner();
+    if (winner != NONE_OF_BOTH) {
+      if (winner == this->_game->getAiColor()) {
+        msgBox.setText("computer wins.");
+      } else if (winner == this->_game->getHumanColor()) {
+        msgBox.setText("you win.");
+      } else if (winner == WHITE) {
+        msgBox.setText("white wins.");
+      } else {
+        msgBox.setText("black wins.");
+      }
+      msgBox.exec();
+      this->_game->setFinished(true);
+    }
+  }
+}
 
 void GameWidget::performEvaluatedMove(){
   Move m = this->_eval.result();
-  if ( !(m == Move())) {
-    this->_performMove(m);
-  } else {
-    this->_game->setFinished(true);
-    QMessageBox msgBox;
-    msgBox.setText("computer gives up. you win.");
-    msgBox.exec();
-  }
+  this->_performMove(m);
 }
 
 

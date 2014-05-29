@@ -61,6 +61,7 @@ class GameWidget: public QGLWidget {
     void setEngineRunning();
     void setEngineFinished();
     void performEvaluatedMove();
+    void giveUp();
 
   signals:
     void newStatus(QString msg);
