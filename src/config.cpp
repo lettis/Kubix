@@ -1,9 +1,41 @@
 #include "config.hpp"
 
+
+void GameConfig::setAiDepth(size_t aiDepth){
+  this->_aiDepth = aiDepth;
+}
+
+size_t GameConfig::getAiDepth() const {
+  return this->_aiDepth;
+}
+
+KBX::PlayMode GameConfig::getPlayMode() const {
+  return this->_playMode;
+}
+
+void GameConfig::setPlayMode(KBX::PlayMode mode){
+  this->_playMode = mode;
+}
+
+void GameConfig::setAiStrategy(KBX::Strategy s){
+  this->_aiStrategy = s;
+}
+
+KBX::Strategy GameConfig::getAiStrategy() const {
+  return this->_aiStrategy;
+}
+
+GameConfig::GameConfig(const GameConfig& other) :
+  _aiDepth(other.getAiDepth()),
+  _aiStrategy(other.getAiStrategy()),
+  _playMode(other.getPlayMode())
+{
+}
+
 Config::Config(QObject * parent)
     // call parent constructor with predefined organization/application strings
     // (setting these to some value is necessary)
-    : QSettings("lettis", "Kubix", parent) {
+  : QSettings("lettis", "Kubix", parent), GameConfig(*this) {
 }
 
 void Config::setValue(const QString & key, const QVariant & value) {
@@ -17,11 +49,11 @@ void Config::setAiDepth(size_t aiDepth){
   this->setValue("game/aiDepth", (unsigned int) aiDepth);
 }
 
-size_t Config::aiDepth(){
+size_t Config::getAiDepth() const {
   return (size_t) this->value("game/aidepth").toUInt();
 }
 
-KBX::PlayMode Config::playMode(){
+KBX::PlayMode Config::getPlayMode() const {
   QString val = this->value("game/playMode").toString();
   if (val == "HUMAN_AI"){
     return KBX::HUMAN_AI;

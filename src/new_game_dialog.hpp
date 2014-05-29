@@ -15,7 +15,7 @@ class NewGameDialog: public QDialog {
     void accept();
 
   signals:
-    void newGame(Config c);
+    void newGame(GameConfig c);
 
   private:
     Ui::NewGameDialog _ui;

@@ -54,7 +54,7 @@ class GameWidget: public QGLWidget {
     void setAutoRefresh(bool newAutoRefresh);
     void setRelativeMarking(bool newRelativeMarking);
 
-    void newGame(Config c);
+    void newGame(GameConfig c);
     void save();
     void load();
     void reloadSettings();

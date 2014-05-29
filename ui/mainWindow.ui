@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>809</width>
+    <width>795</width>
     <height>794</height>
    </rect>
   </property>
@@ -35,8 +35,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>809</width>
-     <height>28</height>
+     <width>795</width>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_Game">
@@ -140,7 +140,7 @@
    <container>1</container>
    <slots>
     <signal>newStatus(QString)</signal>
-    <slot>newGame()</slot>
+    <slot>newGame(GameConfig)</slot>
     <slot>save()</slot>
     <slot>load()</slot>
     <slot>reloadSettings()</slot>
@@ -186,15 +186,15 @@
   <connection>
    <sender>action_New_Game</sender>
    <signal>triggered()</signal>
-   <receiver>gameWidget</receiver>
-   <slot>newGame()</slot>
+   <receiver>MainWindow</receiver>
+   <slot>showNewGameDialog()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
      <y>-1</y>
     </hint>
     <hint type="destinationlabel">
-     <x>507</x>
+     <x>404</x>
      <y>396</y>
     </hint>
    </hints>
@@ -311,13 +311,31 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>MainWindow</sender>
+   <signal>newGame(GameConfig)</signal>
+   <receiver>gameWidget</receiver>
+   <slot>newGame(GameConfig)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>790</x>
+     <y>34</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>751</x>
+     <y>39</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>settingsChanged()</signal>
   <signal>exitGame()</signal>
+  <signal>newGame(GameConfig)</signal>
   <slot>showAboutDialog()</slot>
   <slot>showPreferencesDialog()</slot>
   <slot>reloadSettings()</slot>
   <slot>setStatus(QString)</slot>
+  <slot>showNewGameDialog()</slot>
  </slots>
 </ui>

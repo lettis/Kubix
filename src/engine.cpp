@@ -40,15 +40,9 @@ PlayColor inverse(PlayColor color) {
   }
 }
 
-Strategy::Strategy(float coeffDiceRatio)
-    : coeffDiceRatio(coeffDiceRatio) {
+Strategy::Strategy()
+  : coeffDiceRatio(1.) {
 }
-
-//Config::Config(PlayMode mode, size_t cpuLevel, Strategy strategy)
-//    : mode(mode),
-//      cpuLevel(cpuLevel),
-//      strategy(strategy) {
-//}
 
 /// initialize a move
 RelativeMove::RelativeMove()
@@ -255,16 +249,16 @@ bool Evaluation::less::operator()(const Evaluation& lhs, const Evaluation& rhs) 
     return false;
   }
 }
-
-Game::Game(PlayMode mode, size_t aiDepth, Strategy strategy)
-    : _fields(9, std::vector< int >(9, 0)),
-      _dice(18, DieState()),
-      _mode(mode),
-      _aiDepth(aiDepth),
-      _strategy(strategy),
-      _nextPlayer(WHITE),
-      _finished(false) {
-  this->_setup();
+  
+Game::Game(GameConfig c)
+  : _fields(9, std::vector< int >(9, 0)),
+    _dice(18, DieState()),
+    _mode(c.getPlayMode()),
+    _aiDepth(c.getAiDepth()),
+    _strategy(c.getAiStrategy()),
+    _nextPlayer(WHITE),
+    _finished(false) {
+    this->_setup();
 }
 
 // implement the 'big 3' to get clean copies of a game object

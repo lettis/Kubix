@@ -41,9 +41,10 @@ void MainWindow::showNewGameDialog() {
 }
 
 
-//void MainWindow::startNewGame(Config c) {
-//  //TODO  ??
-//}
+void MainWindow::startNewGame(GameConfig c) {
+  // just send the signal on to the game widget
+  emit this->newGame(c);
+}
 
 void MainWindow::reloadSettings() {
   // just send the signal on to the game widget

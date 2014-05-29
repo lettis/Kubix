@@ -116,5 +116,38 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>NewGameDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>330</x>
+     <y>101</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>188</x>
+     <y>9</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>NewGameDialog</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>406</x>
+     <y>91</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>351</x>
+     <y>19</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

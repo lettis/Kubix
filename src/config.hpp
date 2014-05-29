@@ -3,9 +3,29 @@
 
 #include <QSettings>
 
-#include "engine.hpp"
+#include "global.hpp"
 
-class Config: public QSettings {
+class GameConfig {
+  protected:
+    size_t _aiDepth;
+    KBX::Strategy _aiStrategy;
+    KBX::PlayMode _playMode;
+
+  public:
+    GameConfig(const GameConfig& other);
+
+    virtual void setAiStrategy(KBX::Strategy s);
+    virtual KBX::Strategy getAiStrategy() const;
+
+    virtual void setAiDepth(size_t aiDepth);
+    virtual size_t getAiDepth() const;
+    
+    virtual void setPlayMode(KBX::PlayMode mode);
+    virtual KBX::PlayMode getPlayMode() const;
+
+};
+  
+class Config: public QSettings, public GameConfig {
   Q_OBJECT
 
   public:
@@ -13,11 +33,11 @@ class Config: public QSettings {
     // overwrite this to emit signal 'changed'
     void setValue(const QString & key, const QVariant & value);
 
-    void setAiDepth(size_t aiDepth);
-    size_t aiDepth();
+    void setAiDepth(size_t aiDepth) override;
+    size_t getAiDepth() const override;
 
-    void setPlayMode(KBX::PlayMode mode);
-    KBX::PlayMode playMode();
+    void setPlayMode(KBX::PlayMode mode) override;
+    KBX::PlayMode getPlayMode() const override;
 
   signals:
     void changed();

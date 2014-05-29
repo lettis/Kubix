@@ -2,6 +2,7 @@
 #include "tools.hpp"
 #include "models.hpp"
 #include "config.hpp"
+#include "main_window.hpp"
 
 #include <GL/glu.h>
 #include <QtGui>
@@ -20,7 +21,7 @@ Move evaluatorFunc(Game game) {
 //TODO: add menu items / preferences for
 //      autoRefresh and relativeMarking
 
-void GameWidget::newGame(Config c) {
+void GameWidget::newGame(GameConfig c) {
   // clear paths and wipe scene for new game
   // attention: order is important because of
   //            references in path list to
@@ -29,7 +30,7 @@ void GameWidget::newGame(Config c) {
   this->_scene->wipe();
   // create new game instance
   delete this->_game;
-  this->_game = new Game(c.playMode(), c.aiDepth(), Strategy(1));
+  this->_game = new Game(c);
   // setup board and make change known to renderer
   this->_scene->setup();
   this->changed();
@@ -48,8 +49,10 @@ GameWidget::GameWidget(QWidget *parent)
       _relativeMarking(false),
       _log("act") {
   setMouseTracking(false);
+  parent->dumpObjectTree();
   // initialize game with some stupid defaults in case there is no config
-  this->_game = new Game(HUMAN_AI, 1, Strategy(1));
+  Config c;
+  this->_game = new Game(c);
   // load settings from config
   this->reloadSettings();
   // handle evaluation threads
@@ -417,9 +420,7 @@ void GameWidget::load() {
 }
 
 void GameWidget::reloadSettings() {
-  Config c;
-  this->_game->setAiDepth(c.aiDepth());
-  this->_game->setPlayMode(c.playMode());
+
 }
 
 void GameWidget::_performMove(Move m) {
