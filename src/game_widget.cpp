@@ -20,7 +20,7 @@ Move evaluatorFunc(Game game) {
 //TODO: add menu items / preferences for
 //      autoRefresh and relativeMarking
 
-void GameWidget::newGame() {
+void GameWidget::newGame(Config c) {
   // clear paths and wipe scene for new game
   // attention: order is important because of
   //            references in path list to
@@ -29,7 +29,6 @@ void GameWidget::newGame() {
   this->_scene->wipe();
   // create new game instance
   delete this->_game;
-  Config c;
   this->_game = new Game(c.playMode(), c.aiDepth(), Strategy(1));
   // setup board and make change known to renderer
   this->_scene->setup();
@@ -58,6 +57,12 @@ GameWidget::GameWidget(QWidget *parent)
   connect( &(this->_watcher), SIGNAL(finished()), this, SLOT(setEngineFinished()));
   connect( &(this->_watcher), SIGNAL(finished()), this, SLOT(performEvaluatedMove()));
 }
+
+void GameWidget::cancelEvaluation() {
+//TODO shit not working with concurrent::run
+  this->_eval.cancel();
+}
+
 
 void GameWidget::setBackgroundColor() {
   glClearColor(this->bgColor.r, this->bgColor.g, this->bgColor.b, 0.0f);
@@ -470,7 +475,12 @@ void GameWidget::performEvaluatedMove(){
 
 void GameWidget::update() {
   //TODO: rewrite this function to fully support all play modes, game states, etc
+
+
+
+
   if ( !this->_game->finished()) {
+    // TODO: quit extra thread when window closes
     if (this->_scene->movingDie() == -1) {
       if (this->_engineMoves() && !this->_watcher.isRunning()) {
         // encapsulate move evaluation by engine

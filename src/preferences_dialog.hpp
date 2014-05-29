@@ -1,10 +1,3 @@
-/*
- * mainWindow.hpp
- *
- *  Created on: Apr 26, 2013
- *      Author: flosit
- */
-
 #ifndef PREFERENCES_HPP_
 #define PREFERENCES_HPP_
 
@@ -25,4 +18,4 @@ class Preferences: public QDialog {
     KBX::PlayMode _mode;
 };
 
-#endif /* MAINWINDOW_HPP_ */
+#endif

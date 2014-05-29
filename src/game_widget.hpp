@@ -29,6 +29,7 @@
 #include <list>
 
 #include "models.hpp"
+#include "config.hpp"
 
 namespace KBX {
 
@@ -53,7 +54,7 @@ class GameWidget: public QGLWidget {
     void setAutoRefresh(bool newAutoRefresh);
     void setRelativeMarking(bool newRelativeMarking);
 
-    void newGame();
+    void newGame(Config c);
     void save();
     void load();
     void reloadSettings();
@@ -62,6 +63,7 @@ class GameWidget: public QGLWidget {
     void setEngineFinished();
     void performEvaluatedMove();
     void giveUp();
+    void cancelEvaluation();
 
   signals:
     void newStatus(QString msg);

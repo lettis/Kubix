@@ -145,6 +145,7 @@
     <slot>load()</slot>
     <slot>reloadSettings()</slot>
     <slot>giveUp()</slot>
+    <slot>cancelEvaluation()</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -294,9 +295,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>MainWindow</sender>
+   <signal>exitGame()</signal>
+   <receiver>gameWidget</receiver>
+   <slot>cancelEvaluation()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>404</x>
+     <y>396</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>479</x>
+     <y>399</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>settingsChanged()</signal>
+  <signal>exitGame()</signal>
   <slot>showAboutDialog()</slot>
   <slot>showPreferencesDialog()</slot>
   <slot>reloadSettings()</slot>

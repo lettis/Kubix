@@ -1,5 +1,6 @@
 #include "main_window.hpp"
 #include "preferences_dialog.hpp"
+#include "new_game_dialog.hpp"
 
 #include "ui_aboutDialog.h"
 
@@ -16,6 +17,12 @@ MainWindow::MainWindow(QWidget *parent)
   ui.chatDock->setVisible(false);
 }
 
+void MainWindow::closeEvent(QCloseEvent* event) {
+  emit this->exitGame();
+  QMainWindow::closeEvent(event);
+}
+
+
 void MainWindow::showAboutDialog() {
   Ui::AboutDialog dialog;
   QDialog d;
@@ -27,6 +34,16 @@ void MainWindow::showPreferencesDialog() {
   Preferences p(this);
   p.exec();
 }
+
+void MainWindow::showNewGameDialog() {
+  NewGameDialog ng(this);
+  ng.exec();
+}
+
+
+//void MainWindow::startNewGame(Config c) {
+//  //TODO  ??
+//}
 
 void MainWindow::reloadSettings() {
   // just send the signal on to the game widget

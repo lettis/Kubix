@@ -1,10 +1,3 @@
-/*
- * mainWindow.hpp
- *
- *  Created on: Apr 26, 2013
- *      Author: flosit
- */
-
 #ifndef MAINWINDOW_HPP_
 #define MAINWINDOW_HPP_
 
@@ -21,15 +14,22 @@ class MainWindow: public QMainWindow {
   public slots:
     void showAboutDialog();
     void showPreferencesDialog();
+    void showNewGameDialog();
     void reloadSettings();
+//    void startNewGame(Config c);
     void setStatus(QString msg);
 
   signals:
     void settingsChanged();
+//    void newGameStarted(Config c);
+    void exitGame();
+
+  protected:
+    void closeEvent(QCloseEvent* event);
 
   private:
     Ui::MainWindow ui;
     QLabel _statusMsg;
 };
 
-#endif /* MAINWINDOW_HPP_ */
+#endif

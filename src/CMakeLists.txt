@@ -13,6 +13,7 @@ set(KBX_MOC_HDRS
   game_widget.hpp
   main_window.hpp
   preferences_dialog.hpp
+  new_game_dialog.hpp
 )
 QT4_WRAP_CPP(KBX_MOC_OUTFILES ${KBX_MOC_HDRS})
 
@@ -21,7 +22,7 @@ SET(KBX_RESOURCES ../res.qrc)
 QT4_ADD_RESOURCES(KBX_RESOURCES_RCC ${KBX_RESOURCES})
 
 # UI creation
-SET(KBX_FORMS ../ui/mainWindow.ui ../ui/aboutDialog.ui ../ui/preferencesDialog.ui)
+SET(KBX_FORMS ../ui/mainWindow.ui ../ui/aboutDialog.ui ../ui/preferencesDialog.ui ../ui/newGameDialog.ui)
 QT4_WRAP_UI(KBX_FORMS_HEADERS ${KBX_FORMS})
 
 ADD_EXECUTABLE(../Kubix
@@ -29,6 +30,7 @@ ADD_EXECUTABLE(../Kubix
   config.cpp
   main_window.cpp
   preferences_dialog.cpp
+  new_game_dialog.cpp
   engine.cpp
   game_widget.cpp
   models.cpp
