@@ -639,8 +639,7 @@ bool Die::isMoving(){
   return this->_isMoving;
 }
 
-//const Color Path::MAIN_COLOR = ColorTable::GREEN;
-const Color Path::NORMAL_COLOR = ColorTable::YELLOW;
+Color Path::NORMAL_COLOR = ColorTable::YELLOW;
 
 Path::Path(Scene* scene, Vec posFrom, Move move)
     : Model(scene, posFrom),

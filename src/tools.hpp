@@ -24,6 +24,7 @@
 #include <math.h>
 
 #include <QtOpenGL/QGLWidget>
+#include <QColor> 
 
 namespace KBX {
 template< class NumType > int sgn(NumType n);
@@ -120,8 +121,12 @@ class Color {
     Color(unsigned char r, unsigned char g, unsigned char b);
     Color(int r, int g, int b);
     Color(float r, float g, float b);
+    Color(const QColor& qcolor);
+    void setTo(const QColor& qcolor);
     size_t id() const;
     void setAsGlColor() const;
+
+    Color& operator = (const QColor& qcolor);
 };
 
 namespace ColorTable {

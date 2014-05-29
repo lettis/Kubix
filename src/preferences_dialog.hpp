@@ -3,6 +3,7 @@
 
 #include "ui_preferencesDialog.h"
 #include "engine.hpp"
+#include <QColor>
 
 class Preferences: public QDialog {
   Q_OBJECT
@@ -12,6 +13,9 @@ class Preferences: public QDialog {
 
   public slots:
     void accept();
+
+    void showPathColorSelectDialog();
+    void setPathColor(QColor color);
 
   private:
     Ui::PreferencesDialog _ui;

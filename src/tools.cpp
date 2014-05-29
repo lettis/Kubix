@@ -214,6 +214,22 @@ std::string stringprintf(std::string str, ...) {
 }
 
 // define different versions of the Color constructor depending on parameters
+
+Color::Color(const QColor& qcolor) {
+  this->setTo(qcolor);
+}
+
+void Color::setTo(const QColor& qcolor) {
+  this->r = qcolor.redF();
+  this->g = qcolor.greenF();
+  this->b = qcolor.blueF();
+}
+
+Color& Color::operator = (const QColor& qcolor){
+  this->setTo(qcolor);
+  return *this;
+}
+
 Color::Color() {
   this->r = 0;
   this->g = 0;

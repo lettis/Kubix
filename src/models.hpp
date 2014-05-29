@@ -21,7 +21,6 @@
 #include <vector>
 #include <queue>
 #include <map>
-
 #include <QTime> // for animations
 // forward declaration for KBX::Scene
 namespace KBX {
@@ -193,9 +192,9 @@ class Path: public Model {
 //    Path(Scene* scene, Vec posFrom, Move move, bool isMainPath);
 //    void setAsMainPath();
 //    void setAsNormalPath();
+    static Color NORMAL_COLOR;
   private:
     //    static const Color MAIN_COLOR;
-    static const Color NORMAL_COLOR;
     Move _move;
     //    bool _isMainPath;
     void _render();
