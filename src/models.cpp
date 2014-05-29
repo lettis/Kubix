@@ -410,6 +410,7 @@ void Die::_render() {
     }
   }
   glBegin(GL_QUADS);
+  glNormal3f( 0., 0., -1.);
   glTexCoord2f(0.0, 1.0);
   glVertex3f( -0.5, -0.5, -0.5);
   glTexCoord2f(1.0, 1.0);
@@ -425,6 +426,7 @@ void Die::_render() {
   }
   glBegin(GL_QUADS);
   glTexCoord2f(0.0, 1.0);
+  glNormal3f( 0., -1., 0.);
   glVertex3f( -0.5, -0.5, -0.5);
   glTexCoord2f(1.0, 1.0);
   glVertex3f( +0.5, -0.5, -0.5);
@@ -438,6 +440,7 @@ void Die::_render() {
     glBindTexture(GL_TEXTURE_2D, Die::textures[4 + b]);
   }
   glBegin(GL_QUADS);
+  glNormal3f( -1., 0., 0.);
   glTexCoord2f(0.0, 1.0);
   glVertex3f( -0.5, -0.5, -0.5);
   glTexCoord2f(1.0, 1.0);
@@ -453,6 +456,7 @@ void Die::_render() {
 
   }
   glBegin(GL_QUADS);
+  glNormal3f( 1., 0., 0.);
   glTexCoord2f(0.0, 1.0);
   glVertex3f( +0.5, -0.5, -0.5);
   glTexCoord2f(1.0, 1.0);
@@ -467,6 +471,7 @@ void Die::_render() {
     glBindTexture(GL_TEXTURE_2D, Die::textures[8 + b]);
   }
   glBegin(GL_QUADS);
+  glNormal3f( 0., 1., 0.);
   glTexCoord2f(0.0, 1.0);
   glVertex3f( -0.5, +0.5, -0.5);
   glTexCoord2f(1.0, 1.0);
@@ -481,6 +486,7 @@ void Die::_render() {
     glBindTexture(GL_TEXTURE_2D, Die::textures[10 + b]);
   }
   glBegin(GL_QUADS);
+  glNormal3f( 0., 0., 1.);
   glTexCoord2f(0.0, 1.0);
   glVertex3f( -0.5, -0.5, +0.5);
   glTexCoord2f(1.0, 1.0);
@@ -704,21 +710,25 @@ void Path::_render() {
   if (fabs(dx) > 1.0f) {
     glBegin(GL_QUADS);
     // top
+    glNormal3f( 0., 0., 1.);
     Vec(sgnX * 0.5f, w, h+t).setAsGlVertex3f();
     Vec(sgnX * 0.5f, -w, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, -w, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, w, h+t).setAsGlVertex3f();
     // bottom
+    glNormal3f( 0., 0., -1.);
     Vec(sgnX * 0.5f, w, h-t).setAsGlVertex3f();
     Vec(sgnX * 0.5f, -w, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, -w, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, w, h-t).setAsGlVertex3f();
     // side +w
+    glNormal3f( 0., 1., 0.);
     Vec(sgnX * 0.5f, w, h+t).setAsGlVertex3f();
     Vec(sgnX * 0.5f, w, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, w, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, w, h+t).setAsGlVertex3f();
     // side -w
+    glNormal3f( 0., -1., 0.);
     Vec(sgnX * 0.5f, -w, h+t).setAsGlVertex3f();
     Vec(sgnX * 0.5f, -w, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, -w, h-t).setAsGlVertex3f();
@@ -730,21 +740,25 @@ void Path::_render() {
   if ((fabs(dy) > 0.0f && fabs(dx) > 0.0f) || (fabs(dx) > 0.0f && fabs(dy) > 0.0f)) {
     glBegin(GL_QUADS);
     // top
+    glNormal3f( 0., 0., 1.);
     Vec(dx - sgnX * 0.5f, sgnY * w, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, -sgnY * w, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * w, -sgnY * w, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * w, sgnY * w, h+t).setAsGlVertex3f();
     // bottom
+    glNormal3f( 0., 0., -1.);
     Vec(dx - sgnX * 0.5f, sgnY * w, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, -sgnY * w, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * w, -sgnY * w, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * w, sgnY * w, h-t).setAsGlVertex3f();
     // sides
+    glNormal3f( 0., sgnY, 0.);
     Vec(dx - sgnX * 0.5f, sgnY * w, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, sgnY * w, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * w, sgnY * w, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * w, sgnY * w, h+t).setAsGlVertex3f();
 
+    glNormal3f( 0., -sgnY, 0.);
     Vec(dx - sgnX * 0.5f, -sgnY * w, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, -sgnY * w, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * w, -sgnY * w, h-t).setAsGlVertex3f();
@@ -757,6 +771,7 @@ void Path::_render() {
 
     glBegin(GL_TRIANGLE_FAN);
     // top
+    glNormal3f( 0., 0., 1.);
     r = Vec(0.0f, sgnY * ( -2.0f * w), 0.0f);
     (a+dz).setAsGlVertex3f();
     for (int i = 0; i <= curveResolution; i++) {
@@ -766,6 +781,7 @@ void Path::_render() {
     glEnd();
     glBegin(GL_TRIANGLE_FAN);
     // bottom
+    glNormal3f( 0., 0., -1.);
     r = Vec(0.0f, sgnY * ( -2.0f * w), 0.0f);
     (a - dz).setAsGlVertex3f();
     for (int i = 0; i <= curveResolution; i++) {
@@ -781,6 +797,8 @@ void Path::_render() {
     //a.setAsGlVertex3f();
     for (int i = 1; i <= curveResolution; i++) {
       //(a + r).setAsGlVertex3f();
+      Vec m((r+r_old).normalized());
+      glNormal3f( m.x, m.y, m.z);
       (a+r+dz).setAsGlVertex3f();
       (a+r-dz).setAsGlVertex3f();
       (a+r_old-dz).setAsGlVertex3f();
@@ -792,26 +810,30 @@ void Path::_render() {
 
     glBegin(GL_QUADS);
     // top
+    glNormal3f( 0., 0., 1.);
     Vec(dx - sgnX * w, sgnY * w, h+t).setAsGlVertex3f();
     Vec(dx + sgnX * w, sgnY * w, h+t).setAsGlVertex3f();
     Vec(dx + sgnX * w, sgnY * 0.5, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * w, sgnY * 0.5, h+t).setAsGlVertex3f();
     // bottom
+    glNormal3f( 0., 0., -1.);
     Vec(dx - sgnX * w, sgnY * w, h-t).setAsGlVertex3f();
     Vec(dx + sgnX * w, sgnY * w, h-t).setAsGlVertex3f();
     Vec(dx + sgnX * w, sgnY * 0.5, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * w, sgnY * 0.5, h-t).setAsGlVertex3f();
     // sides
+    glNormal3f( -sgnX, 0., 0.);
     Vec(dx - sgnX * w, sgnY * w, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * w, sgnY * w, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * w, sgnY * 0.5, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * w, sgnY * 0.5, h+t).setAsGlVertex3f();
-
+    glNormal3f( sgnX, 0., 0.);
     Vec(dx + sgnX * w, sgnY * w, h+t).setAsGlVertex3f();
     Vec(dx + sgnX * w, sgnY * w, h-t).setAsGlVertex3f();
     Vec(dx + sgnX * w, sgnY * 0.5, h-t).setAsGlVertex3f();
     Vec(dx + sgnX * w, sgnY * 0.5, h+t).setAsGlVertex3f();
     // back
+    glNormal3f( 0., sgnY, 0.);
     Vec(dx - sgnX * w, sgnY * 0.5, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * w, sgnY * 0.5, h-t).setAsGlVertex3f();
     Vec(dx + sgnX * w, sgnY * 0.5, h-t).setAsGlVertex3f();
@@ -822,26 +844,31 @@ void Path::_render() {
   if (fabs(dy) > 1.0f) {
     glBegin(GL_QUADS);
     // top
+    glNormal3f( 0., 0., 1.);
     Vec(dx - sgnX * w, sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx + sgnX * w, sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx + sgnX * w, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * w, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
     // bottom
+    glNormal3f( 0., 0., -1.);
     Vec(dx - sgnX * w, sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx + sgnX * w, sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx + sgnX * w, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * w, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
     // side +w
+    glNormal3f( sgnX, 0., 0.);
     Vec(dx + sgnX * w, sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx + sgnX * w, sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx + sgnX * w, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx + sgnX * w, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
     // side -w
+    glNormal3f( -sgnX, 0., 0.);
     Vec(dx - sgnX * w, sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * w, sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * w, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * w, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
     // back
+    glNormal3f( 0., sgnY, 0.);
     Vec(dx + sgnX * w, sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx + sgnX * w, sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * w, sgnY * 0.5f, h-t).setAsGlVertex3f();
@@ -858,29 +885,33 @@ void Path::_render() {
     glTranslatef( -dx, -dy, 0.0f);
   }
   if ((dx == 0) || (dy != 0 && this->_move.rel.firstX)) {
-   // vertical
+    // vertical
     glBegin(GL_TRIANGLES);
     // top
+    glNormal3f( 0., 0., 1.);
     Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx + sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx, dy - sgnY * 0.3f, h+t).setAsGlVertex3f();
     // bottom
+    glNormal3f( 0., 0., -1.);
     Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx + sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx, dy - sgnY * 0.3f, h-t).setAsGlVertex3f();
     glEnd();
     glBegin(GL_QUADS);
     // back
+    glNormal3f( 0., -sgnY, 0.);
     Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx + sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx + sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
     // sides
+    glNormal3f( -8.25335614909678328e-01*sgnX, 5.64642473395035371e-01*sgnY, 0.);
     Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx, dy - sgnY * 0.3f, h-t).setAsGlVertex3f();
     Vec(dx, dy - sgnY * 0.3f, h+t).setAsGlVertex3f();
-    
+    glNormal3f( +8.25335614909678328e-01*sgnX, 5.64642473395035371e-01*sgnY, 0.);
     Vec(dx + sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx + sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx, dy - sgnY * 0.3f, h-t).setAsGlVertex3f();
@@ -890,26 +921,30 @@ void Path::_render() {
    // horizontal
     glBegin(GL_TRIANGLES);
     // top
+    glNormal3f( 0., 0., 1.);
     Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, dy + sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.3f, dy, h+t).setAsGlVertex3f();
     // bottom
+    glNormal3f( 0., 0., -1.);
     Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, dy + sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.3f, dy, h-t).setAsGlVertex3f();
     glEnd();
     glBegin(GL_QUADS);
     // back
+    glNormal3f( -sgnX, 0., 0.);
     Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, dy + sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, dy + sgnY * 0.5f, h+t).setAsGlVertex3f();
     // sides
+    glNormal3f( 5.64642473395035371e-01*sgnX, -8.25335614909678328e-01*sgnY, 0.);
     Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, dy - sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.3f, dy, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.3f, dy, h+t).setAsGlVertex3f();
-
+    glNormal3f( 5.64642473395035371e-01*sgnX, +8.25335614909678328e-01*sgnY, 0.);
     Vec(dx - sgnX * 0.5f, dy + sgnY * 0.5f, h+t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.5f, dy + sgnY * 0.5f, h-t).setAsGlVertex3f();
     Vec(dx - sgnX * 0.3f, dy, h-t).setAsGlVertex3f();
@@ -1032,31 +1067,37 @@ void Tile::_render() {
   Logger log("Tile::_render");
   glBegin(GL_QUADS);
   // upper face
+  glNormal3f( 0., 0., 1.);
   glVertex3f( -0.5, -0.5, 0.0);
   glVertex3f(0.5, -0.5, 0.0);
   glVertex3f(0.5, 0.5, 0.0);
   glVertex3f( -0.5, 0.5, 0.0);
   // lower face
+  glNormal3f( 0., 0., -1.);
   glVertex3f( -0.5, -0.5, -0.1);
   glVertex3f(0.5, -0.5, -0.1);
   glVertex3f(0.5, 0.5, -0.1);
   glVertex3f( -0.5, 0.5, -0.1);
   // sides
+  glNormal3f( 0., -1., 0.);
   glVertex3f( -0.5, -0.5, 0.0);
   glVertex3f(0.5, -0.5, 0.0);
   glVertex3f(0.5, -0.5, -0.1);
   glVertex3f( -0.5, -0.5, -0.1);
 
+  glNormal3f( 0., 1., 0.);
   glVertex3f( -0.5, 0.5, 0.0);
   glVertex3f(0.5, 0.5, 0.0);
   glVertex3f(0.5, 0.5, -0.1);
   glVertex3f( -0.5, 0.5, -0.1);
 
+  glNormal3f( -1., 0., 0.);
   glVertex3f( -0.5, -0.5, 0.0);
   glVertex3f( -0.5, 0.5, 0.0);
   glVertex3f( -0.5, 0.5, -0.1);
   glVertex3f( -0.5, -0.5, -0.1);
 
+  glNormal3f( 1., 0., 0.);
   glVertex3f(0.5, -0.5, 0.0);
   glVertex3f(0.5, 0.5, 0.0);
   glVertex3f(0.5, 0.5, -0.1);
@@ -1284,6 +1325,28 @@ void Scene::_render() {
   glMatrixMode(GL_MODELVIEW);
   // reset the drawing perspective
   glLoadIdentity();
+  // set the correct lighting
+  if(this->inObjPickingMode){
+    glDisable(GL_LIGHTING);
+  } else {
+    // TODO: make this code bettern and nicer!
+    GLfloat mat_specular[] = { 0.0, 0.0, 0.0, 0.0 };
+    GLfloat mat_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat mat_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
+    GLfloat mat_shininess[] = { 50. };
+    GLfloat light_position[] = { 0.0, 0.0, 1.0, 0.0 };
+    glShadeModel (GL_SMOOTH);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE ) ;
+    glEnable (GL_COLOR_MATERIAL) ;
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_DEPTH_TEST);
+  }
   // set correct camera position/view
   this->_cam.updateView();
   // call every object's display method to draw
