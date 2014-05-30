@@ -82,6 +82,8 @@ class Model {
     void display();
     // return position
     Vec getPosition();
+    // return the scene
+    Scene* getScene();
   protected:
     // primary orientation is per default along positive x-axis
     Vec _primaryOrientation;
@@ -158,10 +160,20 @@ class Die: public Model {
     size_t _dieId;
     PlayColor _playColor;
 
-    class RollAnimation {
+  public:
+    class Animation {
+      protected:
+        Die& _parent;
+      public:
+	Animation(Die& d);
+	virtual ~Animation();
+        virtual void progress() = 0;
+        virtual bool isFinished() = 0;
+    };
+
+    class RollAnimation : public Animation{
         static const Vec _radials[];
 
-        Die& _parent;
         Direction _d;
         QTime _timer;
         int _animationIntervall; // [ms]
@@ -174,13 +186,31 @@ class Die: public Model {
         Vec _newPos;
       public:
         RollAnimation(Die& die, Direction d);
-        void progress();
-        bool isFinished();
+        void progress() override;
+        bool isFinished() override;
     };
 
-    std::queue< RollAnimation > _animationQueue;
+    class KillAnimation : public Animation{
+        QTime _timer;
+        int _animationIntervall; // [ms]
+        int _animationSteps;
+        int _stepsDone;
+
+      public:
+        KillAnimation(Die& die);
+        void progress() override;
+        bool isFinished() override;
+    };
+
+  private:
+    std::queue< Animation* > _animationQueue;
     void _animate();
     bool _isMoving;
+
+  public:
+    void addAnimation(Animation* a);
+
+
 };
 
 /// Path
@@ -265,6 +295,7 @@ class Scene: public Model {
     size_t add(Model* obj);
     void remove(size_t objId);
     void removeDie(int dieId);
+    void killDie(int dieId);
 
     Die* getDie(int dieId);
     Tile* getTile(int x, int y);

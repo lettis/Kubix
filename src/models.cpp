@@ -179,6 +179,10 @@ Model::Model(Scene* scene, Vec pos)
 Model::~Model() {
 }
 
+Scene* Model::getScene(){
+  return this->_scene;
+}
+
 void Model::setOrientation(Vec primary, Vec secondary) {
   this->_primaryOrientation = primary.normalized();
   this->_secondaryOrientation = secondary.normalized();
@@ -503,11 +507,13 @@ void Die::_render() {
 void Die::_animate() {
   if ( !this->_animationQueue.empty()) {
     this->_scene->enableAutoUpdate();
-    if (this->_animationQueue.front().isFinished()) {
+    Animation* a = this->_animationQueue.front();
+    if (a->isFinished()) {
       this->_animationQueue.pop();
+      delete a;
       this->_animate();
     } else {
-      this->_animationQueue.front().progress();
+      a->progress();
     }
   } else {
     this->_isMoving = false;
@@ -522,13 +528,48 @@ const Vec Die::RollAnimation::_radials[] = {Vec(), // dummy for base-1 array (Di
     Vec( -0.5f, 0.0f, -0.5f) // WEST
     };
 
-Die::RollAnimation::RollAnimation(Die& die, Direction d)
-    : _parent(die),
-      _d(d),
-      _animationIntervall(20),
-      _animationSteps(15),
-      _stepsDone(0),
-      _rotAngle(0.0f) {
+
+Die::Animation::Animation(Die& die) :
+  _parent(die)
+{
+}
+
+Die::Animation:: ~Animation(){
+}
+
+Die::KillAnimation::KillAnimation(Die& die) :
+  Animation(die),
+  _animationIntervall(20),
+  _animationSteps(15),
+  _stepsDone(0)
+{
+  this->_timer.start();
+}
+
+void Die::KillAnimation::progress(){
+  if (this->_timer.elapsed() >= this->_animationIntervall) {
+    this->_parent._pos.z -= 0.1;
+    this->_stepsDone++;
+    this->_timer.restart();
+  }
+}
+
+bool Die::KillAnimation::isFinished(){
+  if (this->_stepsDone >= this->_animationSteps) {
+    this->_parent.getScene()->removeDie(this->_parent.getId());
+    return true;
+  } else {
+    return false;
+  }
+}
+
+Die::RollAnimation::RollAnimation(Die& die, Direction d) :
+  Animation(die),
+  _d(d),
+  _animationIntervall(20),
+  _animationSteps(15),
+  _stepsDone(0),
+  _rotAngle(0.0f) {
   this->_radial = Die::RollAnimation::_radials[d];
   this->_timer.start();
 }
@@ -597,11 +638,15 @@ bool Die::RollAnimation::isFinished() {
   }
 }
 
+void Die::addAnimation(Animation* a){
+  this->_animationQueue.push(a);
+}
+
 void Die::rollOverFields(RelativeMove relMove) {
   this->_isMoving = true;
   // generate vertical and horizontal roll animations
-  std::queue< Die::RollAnimation > horizontal;
-  std::queue< Die::RollAnimation > vertical;
+  std::queue< Die::RollAnimation* > horizontal;
+  std::queue< Die::RollAnimation* > vertical;
   Direction d;
   if (relMove.dx < 0) {
     d = WEST;
@@ -609,7 +654,7 @@ void Die::rollOverFields(RelativeMove relMove) {
     d = EAST;
   }
   for (int i = 0; i < abs(relMove.dx); i++) {
-    horizontal.push(Die::RollAnimation( *this, d));
+    horizontal.push(new Die::RollAnimation( *this, d));
   }
   if (relMove.dy < 0) {
     d = SOUTH;
@@ -617,7 +662,7 @@ void Die::rollOverFields(RelativeMove relMove) {
     d = NORTH;
   }
   for (int i = 0; i < abs(relMove.dy); i++) {
-    vertical.push(Die::RollAnimation( *this, d));
+    vertical.push(new Die::RollAnimation( *this, d));
   }
   // add single roll animations to animation queue
   if (relMove.firstX) {
@@ -1379,6 +1424,13 @@ size_t Scene::add(Model* obj) {
 void Scene::remove(size_t objId) {
   delete this->_objList[objId];
   this->_objList[objId] = NULL;
+}
+
+void Scene::killDie(int dieId){
+  size_t objId = this->_dieObjIds[dieId];
+  Die* d = dynamic_cast< Die* >(this->_objList[objId]);
+  d->setTile(NULL);
+  d->addAnimation(new Die::KillAnimation(*d));
 }
 
 void Scene::removeDie(int dieId) {

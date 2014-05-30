@@ -442,7 +442,7 @@ void GameWidget::_performMove(Move m) {
     int capturedDie = this->_game->getDieId(oldX + m.rel.dx, oldY + m.rel.dy);
     if (capturedDie != CLEAR) {
       // remove captured die from board
-      this->_scene->removeDie(capturedDie);
+      this->_scene->killDie(capturedDie);
     }
     this->_scene->setMovingDie(dieId);
     this->_scene->getDie(dieId)->rollOverFields(m.rel);
