@@ -12,7 +12,9 @@ class GameConfig {
     KBX::PlayMode _playMode;
 
   public:
+    GameConfig();
     GameConfig(const GameConfig& other);
+    GameConfig(const GameConfig* other);
 
     virtual void setAiStrategy(KBX::Strategy s);
     virtual KBX::Strategy getAiStrategy() const;

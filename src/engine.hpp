@@ -132,6 +132,9 @@ class Game {
     DieState* getDie(size_t x, size_t y);
     int getDieId(size_t x, size_t y);
 
+    void printEvaluation(const Evaluation& eval);
+    Strategy& getStrategy();
+
     Move evaluateNext();
 
     //TODO: replace read/write by stream operators <<

@@ -41,7 +41,23 @@ PlayColor inverse(PlayColor color) {
 }
 
 Strategy::Strategy()
-  : coeffDiceRatio(1.) {
+  : name("default"),
+    coeffDiceRatio(1.),
+    patience(.95)
+{
+}
+
+Strategy::Strategy(const Strategy& other)
+  : name(other.name),
+    coeffDiceRatio(other.coeffDiceRatio),
+    patience(other.patience)
+{
+}
+
+void Strategy::print() const {
+  std::cout << "Strategy '" << this->name << "'" << std::endl;
+  std::cout << "dice ratio coefficient: " << this->coeffDiceRatio << std::endl;
+  std::cout << "patience: " << this->patience << std::endl;
 }
 
 /// initialize a move
@@ -504,6 +520,11 @@ bool Game::moveIsValid(Move move) {
   // everything is ok, move possible
   return true;
 }
+
+Strategy& Game::getStrategy(){
+  return this->_strategy;
+}
+
 /// get winner of game (black or white)
 /**
  \returns black or white; null if nobody has won yet
@@ -612,16 +633,25 @@ Move Game::evaluateNext() {
   // always add one to the AI depth for evaluation (i.e. check out at least first move of opponent).
   // e.g.: AI depth == 1 -> level == 2 -> rating == 3 (i.e. first own move, second opponent's move, third rating)
   Evaluation eval = this->_evaluateMoves(this->_aiDepth + 2, -1000.0f, 1000.0f, true);
+  this->printEvaluation(eval);
   return eval.move;
 }
+
+/// print an evaluation
+void Game::printEvaluation(const Evaluation& eval){
+  DieState* die = this->getDie(eval.move.dieIndex);
+  std::cout << "moving die " << eval.move.dieIndex << " from " << die->x() << "/" << die->y() << " to " << die->x()+eval.move.rel.dx << "/" << die->y()+eval.move.rel.dy << " received rating " << eval.rating << std::endl;
+}
+
 /// evaluate best possible move up to a certain level
 /// this is done recursively by a form of the NegaMax algorithm with alpha-beta pruning
 Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initialCall) {
   KBX::Logger log("evaluation");
 
-  if (level == 0) {
+  if ((level == 0) || (this->getWinner() != NONE_OF_BOTH)) {
     return Evaluation(this->_rate(this->_nextPlayer));
   }
+  
   // get rating, either directly or by recursive call
   float rating;
   // container for best move candidates
@@ -658,8 +688,7 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
 //        std::cerr << level << " " << d << " " << move.dx << " " << move.dy << " " << move.firstX << std::endl;
 
         // recursive call for next step (negative weighting, since it is opponent's turn)
-        rating = -this->_evaluateMoves(level - 1, -beta, -alpha, false).rating;
-
+        rating = - this->_strategy.patience * this->_evaluateMoves(level - 1, -beta, -alpha, false).rating;
 //        std::cerr << (this->_nextPlayer == WHITE ? "W" : "B") << " ";
         for (int z = 0; z < level; z++)
           std::cerr << "\t";
@@ -810,7 +839,7 @@ bool readEntry(std::istream& in, T& t) {
   if (buffer.size() == 0) {
     return false;
   }
-  t = (T) atoi(buffer.c_str());
+  t = (T) atof(buffer.c_str());
   return true;
 }
 
@@ -972,7 +1001,7 @@ bool Strategy::write(std::ostream& out) const {
 
 /// deserializer
 bool Strategy::read(std::istream& in) {
-  if ( !readEntry< int >(in, this->coeffDiceRatio)) {
+  if ( !readEntry< double >(in, this->coeffDiceRatio)) {
     return false;
   }
   if ( !proceed(in)) {
@@ -980,6 +1009,8 @@ bool Strategy::read(std::istream& in) {
   }
   return true;
 }
+
+
 
 /// serializer
 bool RelativeMove::write(std::ostream& out) const {

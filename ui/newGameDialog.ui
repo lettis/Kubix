@@ -91,12 +91,12 @@
        </item>
        <item>
         <property name="text">
-         <string>human (white) vs. human (black)</string>
+         <string>AI (white) vs. human (black)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>AI (white) vs. human (black)</string>
+         <string>human (white) vs. human (black)</string>
         </property>
        </item>
       </widget>

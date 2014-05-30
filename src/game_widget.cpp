@@ -49,9 +49,8 @@ GameWidget::GameWidget(QWidget *parent)
       _relativeMarking(false),
       _log("act") {
   setMouseTracking(false);
-  parent->dumpObjectTree();
   // initialize game with some stupid defaults in case there is no config
-  Config c;
+  Config c(this);
   this->_game = new Game(c);
   // load settings from config
   this->reloadSettings();
@@ -424,6 +423,7 @@ void GameWidget::reloadSettings() {
 }
 
 void GameWidget::_performMove(Move m) {
+  if(this->_game->finished()) return;
   QMessageBox msgBox;
   if (m == Move()) {
     // empty move: 'next player' loses
@@ -476,16 +476,13 @@ void GameWidget::performEvaluatedMove(){
 
 void GameWidget::update() {
   //TODO: rewrite this function to fully support all play modes, game states, etc
-
-
-
-
   if ( !this->_game->finished()) {
     // TODO: quit extra thread when window closes
     if (this->_scene->movingDie() == -1) {
       if (this->_engineMoves() && !this->_watcher.isRunning()) {
         // encapsulate move evaluation by engine
         // in separate thread to keep UI reactive
+	this->_game->getStrategy().print();
         this->_eval = QtConcurrent::run(evaluatorFunc, *(this->_game));
         this->_watcher.setFuture(this->_eval);
       }
