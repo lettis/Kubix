@@ -147,6 +147,9 @@ class Die: public Model {
     void setTileNext(Direction d);
     Tile* getTile();
 
+    void dissociate();
+    void reassociate();
+
     size_t getId();
     PlayColor getPlayColor();
 
@@ -256,6 +259,8 @@ class Tile: public Model {
 
     Die* getDie();
     void setDie(Die* d);
+
+    bool isFree();
 
     int getX();
     int getY();

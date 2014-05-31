@@ -30,6 +30,7 @@ void GameWidget::newGame(GameConfig c) {
   this->_scene->wipe();
   // create new game instance
   delete this->_game;
+  this->_allowUndoRedo = c.getAllowUndoRedo();
   this->_game = new Game(c);
   // setup board and make change known to renderer
   this->_scene->setup();
@@ -44,6 +45,7 @@ GameWidget::GameWidget(QWidget *parent)
       _updateTimer(NULL),
       _autoRefresh(false),
       _autoUpdate(false),
+      _allowUndoRedo(true),
       _nBuffers(2),
       _bfChange(0),
       _relativeMarking(false),
@@ -66,21 +68,36 @@ void GameWidget::cancelEvaluation() {
 }
 
 void GameWidget::undoLastMove(){
+  if(!this->_allowUndoRedo) return;
   this->cancelEvaluation();
-  std::cout << "Undo!" << std::endl;
   int victim = this->_game->getLastMovesVictim();
   Move m = this->_game->undoMove();
   if(m){
+    std::cout << "Undo!" << std::endl;
     int dieId = m.dieIndex;
     this->_scene->setMovingDie(dieId);
     KBX::Die* die = this->_scene->getDie(dieId);
     die->rollOverFields(m.rel);
     if(victim != CLEAR) this->_scene->resurrectDie(victim);
+  } else {
+    std::cout << "Nothing to undo!" << std::endl;
   }
 }
 void GameWidget::redoLastMove(){
+  if(!this->_allowUndoRedo) return;
   this->cancelEvaluation();
-  std::cout << "Redo!" << std::endl;
+  Move m = this->_game->redoMove();
+  int victim = this->_game->getLastMovesVictim();
+  if(m){
+    std::cout << "Redo!" << std::endl;
+    int dieId = m.dieIndex;
+    this->_scene->setMovingDie(dieId);
+    KBX::Die* die = this->_scene->getDie(dieId);
+    die->rollOverFields(m.rel);
+    if(victim != CLEAR) this->_scene->killDie(victim);
+  } else {
+    std::cout << "Nothing to redo!" << std::endl;
+  }
 }
 
 

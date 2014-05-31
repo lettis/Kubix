@@ -88,6 +88,7 @@ class GameWidget: public QGLWidget {
     QTimer* _updateTimer;
     bool _autoRefresh;
     bool _autoUpdate;
+    bool _allowUndoRedo;
     int _nBuffers;
     // _bfChange keeps track of the changes of the scene
     // _bfChange  > 0: perform a redraw for the next bfChange frames

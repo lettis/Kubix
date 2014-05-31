@@ -340,6 +340,14 @@ void Die::loadTextures() {
   }
 }
 
+void Die::dissociate(){
+  this->_tile->setDie(NULL);
+}
+
+void Die::reassociate(){
+  this->_tile->setDie(this);
+}
+
 /// set the tile belonging to this die
 /**
  \param t new tile to be associated to this die
@@ -347,14 +355,14 @@ void Die::loadTextures() {
 void Die::setTile(Tile* t) {
   if (this->_tile) {
     if (this->_tile->getDie() != this) {
-      throw "Error: trying to dissociate die from unassociated tile!";
+      throw "trying to dissociate die from unassociated tile!";
     }
     this->_tile->setDie(NULL);
   }
   this->_tile = t;
   if (this->_tile) {
     if (this->_tile->getDie() != NULL) {
-      throw "Error: trying to associate die to already occupied tile!";
+      throw "trying to associate die to already occupied tile!";
     }
     this->_tile->setDie(this);
   }
@@ -547,6 +555,7 @@ Die::KillAnimation::KillAnimation(Die& die) :
   _animationSteps(15),
   _stepsDone(0)
 {
+  this->_parent.dissociate();
   this->_timer.start();
 }
 
@@ -573,20 +582,23 @@ Die::ResurrectAnimation::ResurrectAnimation(Die& die) :
   _animationSteps(15),
   _stepsDone(0)
 {
-  this->_timer.start();
   this->_parent.setVisibleState(true);
+  this->_timer.start();
 }
 
 void Die::ResurrectAnimation::progress(){
   if (this->_timer.elapsed() >= this->_animationIntervall) {
-    this->_parent._pos.z += 0.1;
-    this->_stepsDone++;
+    if(this->_parent.getTile()->isFree()){
+      this->_parent._pos.z += 0.1;
+      this->_stepsDone++;
+    }
     this->_timer.restart();
   }
 }
 
 bool Die::ResurrectAnimation::isFinished(){
   if (this->_stepsDone >= this->_animationSteps) {
+    this->_parent.reassociate();
     return true;
   } else {
     return false;
@@ -1234,6 +1246,10 @@ int Tile::getY() {
   return this->_y;
 }
 
+bool Tile::isFree(){
+  return (this->_die == NULL);
+}
+
 
 /// clear all object states
 /**
@@ -1410,7 +1426,7 @@ void Scene::_render() {
   if(this->inObjPickingMode){
     glDisable(GL_LIGHTING);
   } else {
-    // TODO: make this code bettern and nicer!
+    // TODO: make this code better and nicer!
     GLfloat mat_specular[] = { 0.0, 0.0, 0.0, 0.0 };
     GLfloat mat_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
     GLfloat mat_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
@@ -1466,14 +1482,12 @@ void Scene::remove(size_t objId) {
 void Scene::killDie(int dieId){
   size_t objId = this->_dieObjIds[dieId];
   Die* d = dynamic_cast< Die* >(this->_objList[objId]);
-  d->getTile()->setDie(NULL);
   d->addAnimation(new Die::KillAnimation(*d));
 }
 
 void Scene::resurrectDie(int dieId){
   size_t objId = this->_dieObjIds[dieId];
   Die* d = dynamic_cast< Die* >(this->_objList[objId]);
-  d->getTile()->setDie(d);
   d->addAnimation(new Die::ResurrectAnimation(*d));
 }
 

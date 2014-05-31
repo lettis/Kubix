@@ -93,7 +93,7 @@ void Logger::setErr(std::ostream* err) {
 bool Logger::_infosEnabled = false;
 bool Logger::_debugEnabled = false;
 bool Logger::_warningsEnabled = false;
-bool Logger::_errorsEnabled = false;
+bool Logger::_errorsEnabled = true;
 /// use this method to enable info logging
 void Logger::enableInfos() {
   Logger::_infosEnabled = true;

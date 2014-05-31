@@ -29,12 +29,16 @@ class App: public QApplication {
     }
     bool notify(QObject * receiver, QEvent * event) {
       KBX::Logger log("events");
+      bool done = true;
       try {
-        return QApplication::notify(receiver, event);
-      } catch (std::exception& e) {
+        done = QApplication::notify(receiver, event);
+      } catch (const std::exception& e) {
         log.error(KBX::stringprintf("Exception thrown: %s", e.what()));
-        return true;
+      } catch (const char* s){
+	log.error(s);
+	exit(1);
       }
+      return done;
     }
 };
 

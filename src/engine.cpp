@@ -433,14 +433,13 @@ Move Game::redoMove() {
   //TODO: untested
   if(_moveStackPending.empty()) return Move();
   Move reMove = this->_moveStackPending.top();
-  int victim = this->_moveStackPending.top();
+  int victim = this->_deathStackPending.top();
   this->_moveStackPending.pop();
   this->_deathStackPending.pop();
   this->_moveStack.push(reMove);
   this->_deathStack.push(victim);
   this->makeMove(reMove, false);
   return reMove;
-
 }
 
 /// check if a given move is valid
