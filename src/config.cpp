@@ -24,9 +24,18 @@ void GameConfig::setAiStrategy(KBX::Strategy s){
 KBX::Strategy GameConfig::getAiStrategy() const {
   return this->_aiStrategy;
 }
-#include <iostream>
+
+void GameConfig::setAllowUndoRedo(bool allow){
+  this->_allowUndoRedo = allow;
+}
+
+bool GameConfig::getAllowUndoRedo() const {
+  return this->_allowUndoRedo;
+}
+
 GameConfig::GameConfig(const GameConfig& other) :
   _aiDepth(other.getAiDepth()),
+  _allowUndoRedo(other.getAllowUndoRedo()),
   _aiStrategy(other.getAiStrategy()),
   _playMode(other.getPlayMode())
 {
@@ -34,6 +43,7 @@ GameConfig::GameConfig(const GameConfig& other) :
 
 GameConfig::GameConfig(const GameConfig* other) :
   _aiDepth(other ? other->getAiDepth() : 1),
+  _allowUndoRedo(other ? other->getAllowUndoRedo() : true),
   _aiStrategy(other ? other->getAiStrategy() : KBX::Strategy()),
   _playMode(other ? other->getPlayMode() : KBX::HUMAN_AI)
 {
@@ -41,6 +51,7 @@ GameConfig::GameConfig(const GameConfig* other) :
 
 GameConfig::GameConfig() :
   _aiDepth(1),
+  _allowUndoRedo(true),
   _aiStrategy(),
   _playMode(KBX::HUMAN_AI)
 {
@@ -66,6 +77,15 @@ void Config::setAiDepth(size_t aiDepth){
 size_t Config::getAiDepth() const {
   size_t aiDepth = this->value("game/aidepth").toUInt();
   return aiDepth;
+}
+
+void Config::setAllowUndoRedo(bool allow){
+  this->setValue("game/allowUndoRedo", allow);
+}
+
+bool Config::getAllowUndoRedo() const {
+  size_t allow = this->value("game/allowUndoRedo").toBool();
+  return allow;
 }
 
 KBX::PlayMode Config::getPlayMode() const {

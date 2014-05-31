@@ -65,6 +65,24 @@ void GameWidget::cancelEvaluation() {
   this->_eval.cancel();
 }
 
+void GameWidget::undoLastMove(){
+  this->cancelEvaluation();
+  std::cout << "Undo!" << std::endl;
+  int victim = this->_game->getLastMovesVictim();
+  Move m = this->_game->undoMove();
+  if(m){
+    int dieId = m.dieIndex;
+    this->_scene->setMovingDie(dieId);
+    KBX::Die* die = this->_scene->getDie(dieId);
+    die->rollOverFields(m.rel);
+    if(victim != CLEAR) this->_scene->resurrectDie(victim);
+  }
+}
+void GameWidget::redoLastMove(){
+  this->cancelEvaluation();
+  std::cout << "Redo!" << std::endl;
+}
+
 
 void GameWidget::setBackgroundColor() {
   glClearColor(this->bgColor.r, this->bgColor.g, this->bgColor.b, 0.0f);

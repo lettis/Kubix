@@ -148,8 +148,9 @@ Color Model::cMarked = Color(255, 0, 0);
 Color Model::cHighlighted = Color(0, 255, 255);
 
 /// default constructor
-Model::Model(Scene* scene)
-    : _primaryOrientation(NormalVectors::X),
+  Model::Model(Scene* scene)
+    : _id((scene && scene != this) ? scene->newId() : -1),
+      _primaryOrientation(NormalVectors::X),
       _secondaryOrientation(NormalVectors::Y),
       _pos(Vec(0, 0, 0)),
       _isVisible(true),
@@ -165,7 +166,8 @@ Model::Model(Scene* scene)
 
 /// constructor setting the object's position
 Model::Model(Scene* scene, Vec pos)
-    : _primaryOrientation(NormalVectors::X),
+    : _id((scene && scene != this) ? scene->newId() : -1),
+      _primaryOrientation(NormalVectors::X),
       _secondaryOrientation(NormalVectors::Y),
       _pos(pos),
       _isVisible(true),
@@ -195,6 +197,9 @@ void Model::rotate(Vec axis, float angle) {
 void Model::setSelectedState(bool selected) {
   this->_isSelected = selected;
 }
+void Model::setVisibleState(bool visible) {
+  this->_isVisible = visible;
+}
 void Model::setMarkedState(bool marked) {
   this->_isMarked = marked;
 }
@@ -202,10 +207,9 @@ void Model::setHighlightedState(bool highlighted) {
   this->_isHighlighted = highlighted;
 }
 Model* Model::clicked(size_t id) {
-  if (this->_scene->uniqueColorId == id) {
+  if (this->_id.id() == id) {
     return this;
   } else {
-    this->_scene->uniqueColorId++;
     return NULL;
   }
 }
@@ -228,6 +232,7 @@ void Model::_translate() {
 }
 /// display the object
 void Model::display() {
+  if(!this->_isVisible) return;
   // save transformations done before
   glPushMatrix();
   this->_setRenderingColor();
@@ -243,8 +248,7 @@ void Model::_setRenderingColor() {
   if (this->_scene->inObjPickingMode) {
     // render object with unique color mode for object picking
     // (click on obj -> click on unique color -> identify object)
-    Color(this->_scene->uniqueColorId).setAsGlColor();
-    this->_scene->uniqueColorId++;
+    this->_id.setAsGlColor();
   } else {
     // render object with true color (for view)
     this->_setColor();
@@ -556,7 +560,33 @@ void Die::KillAnimation::progress(){
 
 bool Die::KillAnimation::isFinished(){
   if (this->_stepsDone >= this->_animationSteps) {
-    this->_parent.getScene()->removeDie(this->_parent.getId());
+    this->_parent.setVisibleState(false);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+Die::ResurrectAnimation::ResurrectAnimation(Die& die) :
+  Animation(die),
+  _animationIntervall(20),
+  _animationSteps(15),
+  _stepsDone(0)
+{
+  this->_timer.start();
+  this->_parent.setVisibleState(true);
+}
+
+void Die::ResurrectAnimation::progress(){
+  if (this->_timer.elapsed() >= this->_animationIntervall) {
+    this->_parent._pos.z += 0.1;
+    this->_stepsDone++;
+    this->_timer.restart();
+  }
+}
+
+bool Die::ResurrectAnimation::isFinished(){
+  if (this->_stepsDone >= this->_animationSteps) {
     return true;
   } else {
     return false;
@@ -1204,6 +1234,7 @@ int Tile::getY() {
   return this->_y;
 }
 
+
 /// clear all object states
 /**
  set all objects isSelected, isMarked and isHighlighted state to false
@@ -1230,8 +1261,8 @@ void Scene::wipe() {
 Scene::Scene(GameWidget* act)
     : Model(this),
       inObjPickingMode(false),
-      uniqueColorId(0),
       _act(act),
+      _idCounter(0),
       _board(NULL),
       _selected(NULL),
       _cam(Vec(0, -50, 70), Vec(0, 0, 0)),
@@ -1240,6 +1271,11 @@ Scene::Scene(GameWidget* act)
       _messages("Scene"),
       _movingDie(-1) {
   this->setup();
+}
+
+size_t Scene::newId(){
+  this->_idCounter++;
+  return this->_idCounter;
 }
 
 void Scene::setup() {
@@ -1414,8 +1450,9 @@ void Scene::_setRenderingColor() {
  */
 size_t Scene::add(Model* obj) {
   if (obj) {
+    size_t idx = this->_objList.size();
     this->_objList.push_back(obj);
-    return this->_objList.size() - 1;
+    return idx;
   } else {
     throw "unable to add object to scene (null-reference)";
   }
@@ -1429,15 +1466,15 @@ void Scene::remove(size_t objId) {
 void Scene::killDie(int dieId){
   size_t objId = this->_dieObjIds[dieId];
   Die* d = dynamic_cast< Die* >(this->_objList[objId]);
-  d->setTile(NULL);
+  d->getTile()->setDie(NULL);
   d->addAnimation(new Die::KillAnimation(*d));
 }
 
-void Scene::removeDie(int dieId) {
+void Scene::resurrectDie(int dieId){
   size_t objId = this->_dieObjIds[dieId];
   Die* d = dynamic_cast< Die* >(this->_objList[objId]);
-  d->setTile(NULL);
-  this->remove(objId);
+  d->getTile()->setDie(d);
+  d->addAnimation(new Die::ResurrectAnimation(*d));
 }
 
 Die* Scene::getDie(int dieId) {
@@ -1477,7 +1514,6 @@ void Scene::zoom(float factor) {
  by the color of the pixel clicked.
  */
 void Scene::display_picking() {
-  this->uniqueColorId = 0;
   this->inObjPickingMode = true;
   glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
   this->display();
@@ -1499,7 +1535,6 @@ Model* Scene::pickObject(QPoint p) {
   // Important: gl (0,0) is bottom left but window coords (0,0) are top left -> have to subtract y from height
   glReadPixels(p.x(), viewport[3] - p.y(), 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
   size_t id = Color(pixel[0], pixel[1], pixel[2]).id();
-  this->uniqueColorId = 0;
   this->_messages.info(stringprintf("clicked object id: %d", (int) id));
   Model* obj = this->clicked(id);
   if (obj) {

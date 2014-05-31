@@ -8,6 +8,7 @@
 class GameConfig {
   protected:
     size_t _aiDepth;
+    bool _allowUndoRedo;
     KBX::Strategy _aiStrategy;
     KBX::PlayMode _playMode;
 
@@ -15,6 +16,9 @@ class GameConfig {
     GameConfig();
     GameConfig(const GameConfig& other);
     GameConfig(const GameConfig* other);
+
+    virtual void setAllowUndoRedo(bool allow);
+    virtual bool getAllowUndoRedo() const;
 
     virtual void setAiStrategy(KBX::Strategy s);
     virtual KBX::Strategy getAiStrategy() const;
@@ -34,6 +38,9 @@ class Config: public QSettings, public GameConfig {
     Config(QObject * parent = 0);
     // overwrite this to emit signal 'changed'
     void setValue(const QString & key, const QVariant & value);
+
+    void setAllowUndoRedo(bool allow) override;
+    bool getAllowUndoRedo() const override;
 
     void setAiDepth(size_t aiDepth) override;
     size_t getAiDepth() const override;

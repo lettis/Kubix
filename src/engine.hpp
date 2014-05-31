@@ -19,9 +19,9 @@
 #define ENGINE__HPP
 
 #include <stddef.h>
-#include <list>
 #include <iostream>
 #include <vector>
+#include <stack>
 #include "global.hpp"
 #include "config.hpp"
 
@@ -49,6 +49,7 @@ class Move {
     bool operator==(const Move& other);
     bool write(std::ostream& out) const;
     bool read(std::istream& in);
+    operator bool() { return (dieIndex >= 0); }
 };
 
 /// defines the current state of a die (i.e. position, orientation, value, color, etc.)
@@ -131,6 +132,8 @@ class Game {
     DieState* getDie(size_t id);
     DieState* getDie(size_t x, size_t y);
     int getDieId(size_t x, size_t y);
+    int getLastActiveDie();
+    int getLastMovesVictim();
 
     void printEvaluation(const Evaluation& eval);
     Strategy& getStrategy();
@@ -152,8 +155,10 @@ class Game {
     PlayMode _mode;
     size_t _aiDepth;
     Strategy _strategy;
-    std::list< Move > _moveList;
-    std::list< Move >::iterator _lastMove;
+    std::stack< Move > _moveStack;
+    std::stack< Move > _moveStackPending;
+    std::stack< int > _deathStack;
+    std::stack< int > _deathStackPending;
     PlayColor _nextPlayer;
     bool _finished;
     void _setup();

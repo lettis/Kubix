@@ -10,6 +10,7 @@ NewGameDialog::NewGameDialog(QWidget *parent)
   Config c(this);
   this->_ui.aiDepth->setValue(c.getAiDepth());
   this->_ui.playMode->setCurrentIndex(c.getPlayMode());
+  this->_ui.allowUndoRedo->setChecked(c.getAllowUndoRedo());
   QObject::connect(this, SIGNAL(newGame(GameConfig)), this->parent(), SLOT(startNewGame(GameConfig)));
 }
 
@@ -19,6 +20,7 @@ void NewGameDialog::accept(){
 
   c.setAiDepth(this->_ui.aiDepth->value());
   c.setPlayMode((KBX::PlayMode)(this->_ui.playMode->currentIndex()));
+  c.setAllowUndoRedo(this->_ui.allowUndoRedo->isChecked());
   // inform main window about changed settings
   emit newGame(c);
   QDialog::accept();

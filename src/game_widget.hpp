@@ -65,6 +65,9 @@ class GameWidget: public QGLWidget {
     void giveUp();
     void cancelEvaluation();
 
+    void undoLastMove();
+    void redoLastMove();
+
   signals:
     void newStatus(QString msg);
 

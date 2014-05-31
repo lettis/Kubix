@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>453</width>
-    <height>121</height>
+    <height>135</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -102,6 +102,16 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="allowUndoRedo">
+     <property name="text">
+      <string>allow Undo and Redo</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

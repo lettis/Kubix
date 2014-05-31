@@ -285,10 +285,12 @@ Game::Game(const Game& other)
       _mode(other._mode),
       _aiDepth(other._aiDepth),
       _strategy(other._strategy),
-      _moveList(other._moveList),
+      _moveStack(other._moveStack),
+      _moveStackPending(other._moveStackPending),
+      _deathStack(other._deathStack),
+      _deathStackPending(other._deathStackPending),
       _nextPlayer(other._nextPlayer),
       _finished(other._finished) {
-  this->_lastMove = this->_moveList.begin();
 }
 
 Game& Game::operator=(const Game& other) {
@@ -299,10 +301,12 @@ Game& Game::operator=(const Game& other) {
     this->_mode = other._mode;
     this->_aiDepth = other._aiDepth;
     this->_strategy = other._strategy;
-    this->_moveList = other._moveList;
+    this->_moveStack = other._moveStack;
+    this->_moveStackPending = other._moveStackPending;
+    this->_deathStack = other._deathStack;
+    this->_deathStackPending = other._deathStackPending;
     this->_nextPlayer = other._nextPlayer;
     this->_finished = other._finished;
-    this->_lastMove = this->_moveList.begin();
   }
   return *this;
 }
@@ -345,29 +349,10 @@ void Game::_setup() {
   for (size_t x = 0; x <= 8; x++) {
     this->_fields[x][8] = x + 9;
   }
-  // initialize last-move iterator
-  this->_lastMove = this->_moveList.begin();
 }
 /// move die over board
 void Game::makeMove(Move move, bool storeMove) {
   //TODO: check correctness! (Game::makeMove)
-  if (storeMove) {
-    // delete moves in list form here to end if lastMove != moveList.end()
-    if (this->_lastMove != this->_moveList.end()) {
-      this->_moveList.erase(this->_lastMove, this->_moveList.end());
-      if (this->_moveList.empty()) {
-        // point to begin
-        this->_lastMove = this->_moveList.begin();
-      } else {
-        // point to last element
-        this->_lastMove = this->_moveList.end();
-        this->_lastMove--;
-      }
-    }
-    // store move in move list and increase last-move pointer
-    this->_moveList.push_back(move);
-    this->_lastMove++;
-  }
   KBX::Logger log("DieState");
   //// perform move
   DieState& dieState = this->_dice[move.dieIndex];
@@ -413,6 +398,15 @@ void Game::makeMove(Move move, bool storeMove) {
   if (keyOldDie != CLEAR) {
     this->_dice[keyOldDie].kill();
   }
+  // if the move should be stored, do so
+  if(storeMove){
+    while(!this->_moveStackPending.empty()){
+      this->_moveStackPending.pop();
+      this->_deathStackPending.pop();
+    }
+    this->_moveStack.push(move);
+    this->_deathStack.push(keyOldDie);
+  }
   // move die to new position
   this->_fields[dieState.x()][dieState.y()] = move.dieIndex;
   this->_nextPlayer = inverse(this->_nextPlayer);
@@ -420,27 +414,33 @@ void Game::makeMove(Move move, bool storeMove) {
 
 Move Game::undoMove() {
   //TODO: untested
-  if (this->_lastMove != this->_moveList.begin()) {
-    Move backMove = *this->_lastMove;
-    backMove.rel = backMove.rel.invert();
-    this->makeMove(backMove, false);
-    this->_lastMove--;
-    return backMove;
-  } else {
-    return Move();
+  if(_moveStack.empty()) return Move();
+  Move backMove = this->_moveStack.top();
+  int victim = this->_deathStack.top();
+  this->_moveStack.pop();
+  this->_deathStack.pop();
+  this->_moveStackPending.push(backMove);
+  this->_deathStackPending.push(victim);
+  backMove.rel = backMove.rel.invert();
+  this->makeMove(backMove, false);
+  if(victim != CLEAR){
+    this->getDie(victim)->revive();
   }
+  return backMove;
 }
 
 Move Game::redoMove() {
   //TODO: untested
-  if (this->_lastMove != this->_moveList.end()) {
-    this->_lastMove++;
-    Move forwardMove = *this->_lastMove;
-    this->makeMove(forwardMove, false);
-    return forwardMove;
-  } else {
-    return Move();
-  }
+  if(_moveStackPending.empty()) return Move();
+  Move reMove = this->_moveStackPending.top();
+  int victim = this->_moveStackPending.top();
+  this->_moveStackPending.pop();
+  this->_deathStackPending.pop();
+  this->_moveStack.push(reMove);
+  this->_deathStack.push(victim);
+  this->makeMove(reMove, false);
+  return reMove;
+
 }
 
 /// check if a given move is valid
@@ -577,6 +577,23 @@ DieState* Game::getDie(size_t id) {
     throw "index error: given index does not define a valid die";
   }
 }
+
+/// get die state of the die that was active last move
+int Game::getLastActiveDie(){
+  if(this->_moveStack.empty()){
+    return CLEAR;
+  }
+  return this->_moveStack.top().dieIndex;
+}
+
+/// get die state of the die that died last move
+int Game::getLastMovesVictim(){
+  if(this->_deathStack.empty()){
+    return CLEAR;
+  }
+  return this->_deathStack.top();
+}
+
 /// get die state of die with given coordinates
 int Game::getDieId(size_t x, size_t y) {
   if (x < 9 && y < 9) {
@@ -725,7 +742,14 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
 
 /// reset the game
 void Game::reset() {
-  this->_moveList.clear();
+  while(!this->_moveStack.empty()){
+    this->_moveStack.pop();
+    this->_deathStack.pop();
+  }
+  while(!this->_moveStackPending.empty()){
+    this->_moveStackPending.pop();
+    this->_deathStackPending.pop();
+  }
   this->_setup();
 }
 
@@ -876,16 +900,17 @@ bool Game::write(std::ostream& out) const {
 //    return false;
 //  }
   size_t mpos = 0;
-  size_t i = 0;
-  for (std::list< Move >::const_iterator m = this->_moveList.begin(); m != this->_moveList.end(); m++) {
-    if ( !m->write(out)) {
-      return false;
-    }
-    i++;
-    if (m == this->_lastMove) {
-      mpos = i;
-    }
-  }
+  // todo: fix this code
+//  size_t i = 0;
+//  for (std::list< Move >::const_iterator m = this->_moveList.begin(); m != this->_moveList.end(); m++) {
+//    if ( !m->write(out)) {
+//      return false;
+//    }
+//    i++;
+//    if (m == this->_lastMove) {
+//      mpos = i;
+//    }
+//  }
   proceed(out);
   writeEntry< int >(out, mpos);
   proceed(out);
@@ -917,20 +942,21 @@ bool Game::read(std::istream& in) {
 //    return false;
 //  }
   Move m;
-  while (m.read(in)) {
-    this->_moveList.push_back(m);
-  }
-  int mpos;
-  if ( !readEntry< int >(in, mpos)) {
-    return false;
-  }
-  if ( !proceed(in)) {
-    return false;
-  }
-  this->_lastMove = this->_moveList.end();
-  for (int i = _moveList.size(); i >= mpos; i--) {
-    this->_lastMove--;
-  }
+  // todo: fix this code
+//  while (m.read(in)) {
+//    this->_moveList.push_back(m);
+//  }
+//  int mpos;
+//  if ( !readEntry< int >(in, mpos)) {
+//    return false;
+//  }
+//  if ( !proceed(in)) {
+//    return false;
+//  }
+//  this->_lastMove = this->_moveList.end();
+//  for (int i = _moveList.size(); i >= mpos; i--) {
+//    this->_lastMove--;
+//  }
   return true;
 }
 

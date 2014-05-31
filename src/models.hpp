@@ -70,6 +70,7 @@ class Model {
     virtual void clearStates();
     void setMarkedState(bool marked);
     void setSelectedState(bool selected);
+    void setVisibleState(bool selected);
     void setHighlightedState(bool highlighted);
     // sets angle and axis to define a rotation
     void rotate(Vec axis, float angle);
@@ -85,6 +86,8 @@ class Model {
     // return the scene
     Scene* getScene();
   protected:
+    // unique id for color picking
+    Color _id;
     // primary orientation is per default along positive x-axis
     Vec _primaryOrientation;
     // secondary orientation is per default along positive y-axis
@@ -202,6 +205,19 @@ class Die: public Model {
         bool isFinished() override;
     };
 
+    class ResurrectAnimation : public Animation{
+        QTime _timer;
+        int _animationIntervall; // [ms]
+        int _animationSteps;
+        int _stepsDone;
+
+      public:
+        ResurrectAnimation(Die& die);
+        void progress() override;
+        bool isFinished() override;
+    };
+
+
   private:
     std::queue< Animation* > _animationQueue;
     void _animate();
@@ -296,6 +312,7 @@ class Scene: public Model {
     void remove(size_t objId);
     void removeDie(int dieId);
     void killDie(int dieId);
+    void resurrectDie(int dieId);
 
     Die* getDie(int dieId);
     Tile* getTile(int x, int y);
@@ -321,10 +338,11 @@ class Scene: public Model {
     int movingDie();
     void setMovingDie(int dieId);
 
+    size_t newId();
     bool inObjPickingMode;
-    size_t uniqueColorId;
   protected:
     GameWidget* _act;
+    size_t _idCounter;
     std::vector< Model* > _objList;
     Board* _board;
     Model* _selected;

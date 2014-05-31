@@ -43,6 +43,9 @@
     <property name="title">
      <string>&amp;Game</string>
     </property>
+    <addaction name="action_Undo"/>
+    <addaction name="action_Redo"/>
+    <addaction name="separator"/>
     <addaction name="action_New_Game"/>
     <addaction name="action_Give_Up"/>
     <addaction name="separator"/>
@@ -131,6 +134,16 @@
     <string>&amp;Give Up</string>
    </property>
   </action>
+  <action name="action_Undo">
+   <property name="text">
+    <string>&amp;Undo</string>
+   </property>
+  </action>
+  <action name="action_Redo">
+   <property name="text">
+    <string>&amp;Redo</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -146,6 +159,8 @@
     <slot>reloadSettings()</slot>
     <slot>giveUp()</slot>
     <slot>cancelEvaluation()</slot>
+    <slot>undoLastMove()</slot>
+    <slot>redoLastMove()</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -324,6 +339,38 @@
     <hint type="destinationlabel">
      <x>751</x>
      <y>39</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Undo</sender>
+   <signal>triggered()</signal>
+   <receiver>gameWidget</receiver>
+   <slot>undoLastMove()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>397</x>
+     <y>396</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>465</x>
+     <y>396</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Redo</sender>
+   <signal>triggered()</signal>
+   <receiver>gameWidget</receiver>
+   <slot>redoLastMove()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>465</x>
+     <y>396</y>
     </hint>
    </hints>
   </connection>
