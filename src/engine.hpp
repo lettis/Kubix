@@ -101,9 +101,7 @@ class Game {
   public:
     Game(const Game& other);
     Game(GameConfig c);
-    //TODO: implement copy assignment operator
     Game& operator=(const Game& other);
-    //TODO: implement destructor
     ~Game();
 
     friend std::ostream& operator<<(std::ostream& out, const Game&);
@@ -143,7 +141,6 @@ class Game {
     //TODO: replace read/write by stream operators <<
     bool write(std::ostream& out) const;
     bool read(std::istream& in);
-
 
   private:
     Evaluation _evaluateMoves(int level, float alpha, float beta, bool initialCall);

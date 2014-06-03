@@ -173,8 +173,8 @@ const std::vector< std::vector< RelativeMove > > DieState::initPossibleMoves() {
  1 up, 6 down, 2 south, 5 north, 3 east, 4 west,
 
  i.e.:
- o-----o
- /  1  /|
+   o-----o
+  /  1  /|
  o-----o |
  |     |3|
  |  2  | o

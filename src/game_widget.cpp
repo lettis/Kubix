@@ -444,6 +444,7 @@ void GameWidget::load() {
       this->_log.warning("Error: cannot open file for reading...");
       return;
     }
+    // TODO reload graphics after loading game ?
     if (this->_game->read(infile)) {
       this->_log.info("Loaded game successfully from file '" + ifname.toStdString() + "'.");
     } else {
@@ -454,7 +455,7 @@ void GameWidget::load() {
 }
 
 void GameWidget::reloadSettings() {
-
+//TODO needed? if yes: implement!
 }
 
 void GameWidget::_performMove(Move m) {
