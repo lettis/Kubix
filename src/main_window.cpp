@@ -46,6 +46,11 @@ void MainWindow::startNewGame(GameConfig c) {
   emit this->newGame(c);
 }
 
+void MainWindow::loadGameFromFile(std::string ifname) {
+  // just send the signal on to the game widget
+  emit this->loadGame(ifname);
+}
+
 void MainWindow::reloadSettings() {
   // just send the signal on to the game widget
   emit this->settingsChanged();

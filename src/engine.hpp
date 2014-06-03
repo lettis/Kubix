@@ -21,7 +21,7 @@
 #include <stddef.h>
 #include <iostream>
 #include <vector>
-#include <stack>
+#include <list>
 #include "global.hpp"
 #include "config.hpp"
 
@@ -36,8 +36,7 @@ class RelativeMove {
     RelativeMove(int dx, int dy, bool FIRST_X);
     RelativeMove invert();
     bool operator==(const RelativeMove& other);
-    bool write(std::ostream& out) const;
-    bool read(std::istream& in);
+    friend std::ostream& operator<< (std::ostream &out, const RelativeMove& move);
 };
 
 class Move {
@@ -47,9 +46,8 @@ class Move {
     Move();
     Move(int dieIndex, RelativeMove rel);
     bool operator==(const Move& other);
-    bool write(std::ostream& out) const;
-    bool read(std::istream& in);
     operator bool() { return (dieIndex >= 0); }
+    friend std::ostream& operator<< (std::ostream &out, const Move& move);
 };
 
 /// defines the current state of a die (i.e. position, orientation, value, color, etc.)
@@ -69,12 +67,13 @@ class DieState {
     bool gotKilled();
     size_t getValue();
     size_t getCurrentState();
+    size_t getFormerState();
     PlayColor getColor();
     int x();
     int y();
-    bool write(std::ostream& out) const;
-    bool read(std::istream& in);
 
+    friend std::ostream& operator<< (std::ostream &out, const DieState& die);
+    friend std::istream& operator>> (std::istream &stream, DieState& d);
   private:
     static const size_t _state[26][5];
     int _x;
@@ -105,6 +104,7 @@ class Game {
     ~Game();
 
     friend std::ostream& operator<<(std::ostream& out, const Game&);
+    friend std::istream& operator>> (std::istream & stream, Game&);
 
     bool moveIsValid(Move move);
     void makeMove(Move move, bool storeMove = true);
@@ -137,10 +137,6 @@ class Game {
 
     Move evaluateNext();
 
-    //TODO: replace read/write by stream operators <<
-    bool write(std::ostream& out) const;
-    bool read(std::istream& in);
-
   private:
     Evaluation _evaluateMoves(int level, float alpha, float beta, bool initialCall);
     // rating functions
@@ -151,10 +147,10 @@ class Game {
     PlayMode _mode;
     size_t _aiDepth;
     Strategy _strategy;
-    std::stack< Move > _moveStack;
-    std::stack< Move > _moveStackPending;
-    std::stack< int > _deathStack;
-    std::stack< int > _deathStackPending;
+    std::list< Move > _moveStack;
+    std::list< Move > _moveStackPending;
+    std::list< int > _deathStack;
+    std::list< int > _deathStackPending;
     PlayColor _nextPlayer;
     bool _finished;
     void _setup();

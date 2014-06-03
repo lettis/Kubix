@@ -22,6 +22,7 @@
 #include <vector>
 #include <queue>
 #include <algorithm>
+#include <sstream>
 
 #include "engine.hpp"
 #include "tools.hpp"
@@ -234,6 +235,9 @@ size_t DieState::getValue() {
 size_t DieState::getCurrentState() {
   return this->_curState;
 }
+size_t DieState::getFormerState() {
+  return this->_formerState;
+}
 /// return color (BLACK or WHITE) of die
 PlayColor DieState::getColor() {
   return this->_color;
@@ -400,12 +404,10 @@ void Game::makeMove(Move move, bool storeMove) {
   }
   // if the move should be stored, do so
   if(storeMove){
-    while(!this->_moveStackPending.empty()){
-      this->_moveStackPending.pop();
-      this->_deathStackPending.pop();
-    }
-    this->_moveStack.push(move);
-    this->_deathStack.push(keyOldDie);
+    this->_moveStackPending.clear();
+    this->_deathStackPending.clear();
+    this->_moveStack.push_front(move);
+    this->_deathStack.push_front(keyOldDie);
   }
   // move die to new position
   this->_fields[dieState.x()][dieState.y()] = move.dieIndex;
@@ -415,12 +417,12 @@ void Game::makeMove(Move move, bool storeMove) {
 Move Game::undoMove() {
   //TODO: untested
   if(_moveStack.empty()) return Move();
-  Move backMove = this->_moveStack.top();
-  int victim = this->_deathStack.top();
-  this->_moveStack.pop();
-  this->_deathStack.pop();
-  this->_moveStackPending.push(backMove);
-  this->_deathStackPending.push(victim);
+  Move backMove = this->_moveStack.front();
+  int victim = this->_deathStack.front();
+  this->_moveStack.pop_front();
+  this->_deathStack.pop_front();
+  this->_moveStackPending.push_front(backMove);
+  this->_deathStackPending.push_front(victim);
   backMove.rel = backMove.rel.invert();
   this->makeMove(backMove, false);
   if(victim != CLEAR){
@@ -432,12 +434,12 @@ Move Game::undoMove() {
 Move Game::redoMove() {
   //TODO: untested
   if(_moveStackPending.empty()) return Move();
-  Move reMove = this->_moveStackPending.top();
-  int victim = this->_deathStackPending.top();
-  this->_moveStackPending.pop();
-  this->_deathStackPending.pop();
-  this->_moveStack.push(reMove);
-  this->_deathStack.push(victim);
+  Move reMove = this->_moveStackPending.front();
+  int victim = this->_deathStackPending.front();
+  this->_moveStackPending.pop_front();
+  this->_deathStackPending.pop_front();
+  this->_moveStack.push_front(reMove);
+  this->_deathStack.push_front(victim);
   this->makeMove(reMove, false);
   return reMove;
 }
@@ -591,7 +593,7 @@ int Game::getLastActiveDie(){
   if(this->_moveStack.empty()){
     return CLEAR;
   }
-  return this->_moveStack.top().dieIndex;
+  return this->_moveStack.front().dieIndex;
 }
 
 /// get die state of the die that died last move
@@ -599,7 +601,7 @@ int Game::getLastMovesVictim(){
   if(this->_deathStack.empty()){
     return CLEAR;
   }
-  return this->_deathStack.top();
+  return this->_deathStack.front();
 }
 
 /// get die state of die with given coordinates
@@ -649,7 +651,6 @@ Move Game::evaluateNext() {
   // always add one to the AI depth for evaluation (i.e. check out at least first move of opponent).
   // e.g.: AI depth == 1 -> level == 2 -> rating == 3 (i.e. first own move, second opponent's move, third rating)
   Evaluation eval = this->_evaluateMoves(this->_aiDepth + 2, -1000.0f, 1000.0f, true);
-  this->printEvaluation(eval);
   return eval.move;
 }
 
@@ -742,12 +743,12 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
 /// reset the game
 void Game::reset() {
   while(!this->_moveStack.empty()){
-    this->_moveStack.pop();
-    this->_deathStack.pop();
+    this->_moveStack.pop_front();
+    this->_deathStack.pop_front();
   }
   while(!this->_moveStackPending.empty()){
-    this->_moveStackPending.pop();
-    this->_deathStackPending.pop();
+    this->_moveStackPending.pop_front();
+    this->_deathStackPending.pop_front();
   }
   this->_setup();
 }
@@ -799,292 +800,6 @@ float Game::_rateDiceRatio(PlayColor color) {
     }
   }
   return rating;
-}
-
-std::ostream& operator<<(std::ostream& out, const Game& game) {
-  for (int i = 8; i >= 0; i--) {
-    for (int j = 0; j < 9; j++) {
-      if (game._fields[j][i] == -1) {
-        out << "|_" << "\t";
-      } else {
-        out << game._fields[j][i] << "\t";
-      }
-    }
-    out << std::endl;
-  }
-  return out;
-}
-
-/// proceed (read version)
-/**
- walk forward in the stream by one entry
- usually used after reading one double-terminated blocks
-
- \param in incoming data stream
- \return true if entry was empty, false otherwise
- */
-bool proceed(std::istream& in) {
-  std::string buffer;
-  getline(in, buffer, KBX::separator);
-  if (buffer.size() != 0) {
-    return false;
-  }
-  return true;
-}
-
-/// proceed (write version)
-/**
- push an empty entry into the data stream
-
- \param out outgoing data stream
- \return true
- */
-bool proceed(std::ostream& out) {
-  out << KBX::separator;
-  return true;
-}
-
-/// read one entry from the stream
-/**
- read one entry from the data stream
- and store it at the given address
-
- ** capability of casting T to int is mandatory **
-
- \param in incoming data stream
- \param t reference to target object
- \return true if reading was successful, false otherwise
- */
-template< class T >
-bool readEntry(std::istream& in, T& t) {
-  std::string buffer;
-  getline(in, buffer, KBX::separator);
-  if (buffer.size() == 0) {
-    return false;
-  }
-  t = (T) atof(buffer.c_str());
-  return true;
-}
-
-/// write one entry to the stream
-/**
- write one entry to the data stream
-
- \param out outgoing data stream
- \param t reference to data object
- \return true
- */
-template< class T >
-bool writeEntry(std::ostream& out, const T& t) {
-  out << t << KBX::separator;
-  return true;
-}
-
-/// serializer
-bool Game::write(std::ostream& out) const {
-  for (size_t i = 0; i < 9; i++) {
-    for (size_t j = 0; j < 9; j++) {
-      writeEntry< int >(out, this->_fields[i][j]);
-    }
-    proceed(out);
-  }
-  proceed(out);
-  for (size_t i = 0; i < 18; i++) {
-    if ( !this->_dice[i].write(out)) {
-      return false;
-    }
-  }
-  //FIXME: rewrite with single config elements (mode, aiDepth, strategy)
-//  if ( !this->_config.write(out)){
-//    return false;
-//  }
-  size_t mpos = 0;
-  // todo: fix this code
-//  size_t i = 0;
-//  for (std::list< Move >::const_iterator m = this->_moveList.begin(); m != this->_moveList.end(); m++) {
-//    if ( !m->write(out)) {
-//      return false;
-//    }
-//    i++;
-//    if (m == this->_lastMove) {
-//      mpos = i;
-//    }
-//  }
-  proceed(out);
-  writeEntry< int >(out, mpos);
-  proceed(out);
-  return true;
-}
-
-/// deserializer
-bool Game::read(std::istream& in) {
-  for (size_t i = 0; i < 9; i++) {
-    for (size_t j = 0; j < 9; j++) {
-      if ( !readEntry< int >(in, this->_fields[i][j])) {
-        return false;
-      }
-    }
-    if ( !proceed(in)) {
-      return false;
-    }
-  }
-  if ( !proceed(in)) {
-    return false;
-  }
-  for (size_t i = 0; i < 18; i++) {
-    if ( !this->_dice[i].read(in)) {
-      return false;
-    }
-  }
-  //FIXME: rewrite with single config elements (mode, aiDepth, strategy)
-//  if ( !this->_config.read(in)){
-//    return false;
-//  }
-  Move m;
-  // todo: fix this code
-//  while (m.read(in)) {
-//    this->_moveList.push_back(m);
-//  }
-//  int mpos;
-//  if ( !readEntry< int >(in, mpos)) {
-//    return false;
-//  }
-//  if ( !proceed(in)) {
-//    return false;
-//  }
-//  this->_lastMove = this->_moveList.end();
-//  for (int i = _moveList.size(); i >= mpos; i--) {
-//    this->_lastMove--;
-//  }
-  return true;
-}
-
-/// serializer
-bool DieState::write(std::ostream& out) const {
-  writeEntry< int >(out, this->_x);
-  writeEntry< int >(out, this->_y);
-  writeEntry< int >(out, this->_color);
-  writeEntry< int >(out, this->_formerState);
-  writeEntry< int >(out, this->_curState);
-  proceed(out);
-  return true;
-}
-
-/// deserializer
-bool DieState::read(std::istream& in) {
-  if ( !readEntry< int >(in, this->_x)) {
-    return false;
-  }
-  if ( !readEntry< int >(in, this->_y)) {
-    return false;
-  }
-  if ( !readEntry< PlayColor >(in, this->_color)) {
-    return false;
-  }
-  if ( !readEntry< size_t >(in, this->_formerState)) {
-    return false;
-  }
-  if ( !readEntry< size_t >(in, this->_curState)) {
-    return false;
-  }
-  if ( !proceed(in)) {
-    return false;
-  }
-  return true;
-}
-
-/// serializer
-//bool Config::write(std::ostream& out) const {
-//  writeEntry< int >(out, this->mode);
-//  writeEntry< int >(out, this->cpuLevel);
-//  this->strategy.write(out);
-//  proceed(out);
-//  return true;
-//}
-
-/// deserializer
-//bool Config::read(std::istream& in) {
-//  if ( !readEntry< PlayMode >(in, this->mode)){
-//    return false;
-//  }
-//  if ( !readEntry< size_t >(in, this->cpuLevel)){
-//    return false;
-//  }
-//  this->strategy.read(in);
-//  if ( !proceed(in)){
-//    return false;
-//  }
-//  return true;
-//}
-
-/// serializer
-bool Strategy::write(std::ostream& out) const {
-  writeEntry< int >(out, this->coeffDiceRatio);
-  proceed(out);
-  return true;
-}
-
-/// deserializer
-bool Strategy::read(std::istream& in) {
-  if ( !readEntry< double >(in, this->coeffDiceRatio)) {
-    return false;
-  }
-  if ( !proceed(in)) {
-    return false;
-  }
-  return true;
-}
-
-
-
-/// serializer
-bool RelativeMove::write(std::ostream& out) const {
-  writeEntry< int >(out, this->dx);
-  writeEntry< int >(out, this->dy);
-  writeEntry< int >(out, this->firstX);
-  proceed(out);
-  return true;
-}
-
-/// deserializer
-bool RelativeMove::read(std::istream& in) {
-  if ( !readEntry< int >(in, this->dx)) {
-    return false;
-  }
-  if ( !readEntry< int >(in, this->dy)) {
-    return false;
-  }
-  if ( !readEntry< bool >(in, this->firstX)) {
-    return false;
-  }
-  if ( !proceed(in)) {
-    return false;
-  }
-  return true;
-}
-
-/// serializer
-bool Move::write(std::ostream& out) const {
-  writeEntry< int >(out, this->dieIndex);
-  if ( !this->rel.write(out)) {
-    return false;
-  }
-  proceed(out);
-  return true;
-}
-
-/// deserializer
-bool Move::read(std::istream& in) {
-  if ( !readEntry< int >(in, this->dieIndex)) {
-    return false;
-  }
-  if ( !this->rel.read(in)) {
-    return false;
-  }
-  if ( !proceed(in)) {
-    return false;
-  }
-  return true;
 }
 
 } // end namespace KBX

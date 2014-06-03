@@ -213,6 +213,49 @@ std::string stringprintf(std::string str, ...) {
   return result;
 }
 
+  void printDieStates() {
+    DieState* state = new DieState(1,1,KBX::WHITE,1);
+    Vec p = NormalVectors::Y;
+    Vec s = NormalVectors::X;
+    
+    for(size_t i=0;i<40; i++){
+      Direction d = i%4 ? NORTH : (i%3 ? EAST : WEST);
+      Vec rotAxis;
+      state->moveOneStep(d);
+
+      switch (d) {
+      case NORTH:
+	rotAxis = NormalVectors::X.rotate(p, s, p.cross(s));
+	break;
+      case SOUTH:
+	rotAxis = NormalVectors::X.rotate(p, s, p.cross(s));
+	break;
+      case EAST:
+	rotAxis = NormalVectors::Y.rotate(p, s, p.cross(s));
+	break;
+      case WEST:
+	rotAxis = NormalVectors::Y.rotate(p, s, p.cross(s));
+	break;
+      }
+
+      switch (d) {
+      case NORTH:
+      case SOUTH:
+        s = s.rotate(rotAxis, 90.f);
+        break;
+      case EAST:
+      case WEST:
+        p = p.rotate(rotAxis, 90.f);
+        break;
+      }
+
+      int cstate = state->getCurrentState();
+      std::cout << (cstate < 10 ? "0" : "") <<  cstate << ":" << p.round() << "," << s.round() << std::endl;
+    }
+
+    delete state;
+  }
+
 // define different versions of the Color constructor depending on parameters
 
 Color::Color(const QColor& qcolor) {
@@ -345,6 +388,15 @@ Vec Vec::add(Vec v) const {
  */
 Vec Vec::sub(Vec v) const {
   return this->add(v.scaled( -1));
+}
+
+/// round the vector
+/**
+ */
+Vec Vec::round() const {
+  return Vec((int)roundf(this->x),
+	     (int)roundf(this->y),
+	     (int)roundf(this->z));
 }
 
 /// compare vector in all three dimensions

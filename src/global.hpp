@@ -27,7 +27,11 @@ enum PlayMode {
   HUMAN_HUMAN = 2,
 };
 
-const static char separator = '\n';
+const static char separator = ',';
+const static char beginObj = '{';
+const static char endObj = '}';
+const static char beginList = '[';
+const static char endList = ']';
 
 enum PlayColor {
   BLACK = -1,
@@ -48,9 +52,8 @@ class Strategy {
     Strategy();
     Strategy(const Strategy& other);
     void print() const;
-    //TODO: replace read/write by stream operators <<
-    bool write(std::ostream& out) const;
-    bool read(std::istream& in);
+    friend std::ostream& operator<< (std::ostream &out, const Strategy& s);
+    friend std::istream& operator>> (std::istream &out, Strategy& s);
 };
 
 } // end namespace KBX

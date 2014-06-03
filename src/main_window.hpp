@@ -18,9 +18,11 @@ class MainWindow: public QMainWindow {
     void showNewGameDialog();
     void reloadSettings();
     void startNewGame(GameConfig c);
+    void loadGameFromFile(std::string ifname);
     void setStatus(QString msg);
     
   signals:
+    void loadGame(std::string ifname);
     void settingsChanged();
     void newGame(GameConfig c);
     void exitGame();
