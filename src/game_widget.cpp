@@ -517,7 +517,6 @@ void GameWidget::update() {
       if (this->_engineMoves() && !this->_watcher.isRunning()) {
         // encapsulate move evaluation by engine
         // in separate thread to keep UI reactive
-	this->_game->getStrategy().print();
         this->_eval = QtConcurrent::run(evaluatorFunc, *(this->_game));
         this->_watcher.setFuture(this->_eval);
       }

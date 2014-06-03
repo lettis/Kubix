@@ -651,7 +651,6 @@ Move Game::evaluateNext() {
   // always add one to the AI depth for evaluation (i.e. check out at least first move of opponent).
   // e.g.: AI depth == 1 -> level == 2 -> rating == 3 (i.e. first own move, second opponent's move, third rating)
   Evaluation eval = this->_evaluateMoves(this->_aiDepth + 2, -1000.0f, 1000.0f, true);
-  this->printEvaluation(eval);
   return eval.move;
 }
 
