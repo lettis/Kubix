@@ -1317,12 +1317,12 @@ namespace KBX {
     return this->_idCounter;
   }
 
-  void Die::setup(DieState* s){
-    this->translate(Vec(s->x(),s->y(),0));
-    this->setTile(this->_scene->getTile(s->x(),s->y()));
-    size_t state = s->getCurrentState();
-    if(s->gotKilled()){
-      state = s->getFormerState();
+  void Die::setup(DieState& s){
+    this->translate(Vec(s.x(),s.y(),0));
+    this->setTile(this->_scene->getTile(s.x(),s.y()));
+    size_t state = s.getCurrentState();
+    if(s.gotKilled()){
+      state = s.getFormerState();
       this->setVisibleState(false);
       this->dissociate();
     }
@@ -1416,7 +1416,7 @@ namespace KBX {
     this->_selected = NULL;
     
     for (size_t i = 0; i < this->_dice.size(); i++) {
-      DieState* s = game->getDie(i);
+      DieState& s = game->getDie(i);
       Die* d = new Die(this,i);
       this->_dice.push_back(d);
       d->setup(s);

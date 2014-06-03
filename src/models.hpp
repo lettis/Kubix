@@ -152,7 +152,7 @@ class Die: public Model {
 
     void dissociate();
     void reassociate();
-    void setup(DieState* s);
+    void setup(DieState& s);
 
     size_t getId();
     PlayColor getPlayColor();
