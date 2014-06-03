@@ -433,29 +433,14 @@ void GameWidget::save() {
   }
 }
 
-<<<<<<< HEAD
-void GameWidget::load() {
-  QString ifname = QFileDialog::getOpenFileName(this, "Load Game", "", "Kubix Savegames (*.kbx)").simplified();
-  if (ifname != "") {
-    std::ifstream infile(ifname.toStdString().c_str());
+void GameWidget::load(std::string ifname){
+  if (ifname.size() > 0) {
+    std::ifstream infile(ifname);
     if ( !infile.is_open()) {
       this->_log.warning("Error: cannot open file for reading...");
       return;
     }
-    if (this->_game->read(infile)) {
-      // TODO reload graphics after loading game ?
-      this->_log.info("Loaded game successfully from file '" + ifname.toStdString() + "'.");
-    } else {
-      this->_log.warning("Error loading game!");
-=======
-  void GameWidget::load(std::string ifname){
-    if (ifname.size() > 0) {
-      std::ifstream infile(ifname);
-      if ( !infile.is_open()) {
-	this->_log.warning("Error: cannot open file for reading...");
-	return;
->>>>>>> 87d6b9e613471baffb61cd8f1af0d60f2f5ab0c2
-    }
+    //TODO use log instead of cout
     std::cout << "loading game from " << ifname << std::endl;
     infile >> (*this->_game);
     this->_scene->setupFromGame(this->_game);
