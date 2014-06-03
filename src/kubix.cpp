@@ -25,7 +25,7 @@
 class App: public QApplication {
   public:
     App(int &argc, char* argv[])
-        : QApplication(argc, argv) {
+        : QApplication(argc, argv) {    
     }
     bool notify(QObject * receiver, QEvent * event) {
       KBX::Logger log("events");
@@ -53,10 +53,31 @@ int main(int argc, char** argv) {
 //  KBX::Logger::enableDebug();
 //  KBX::Logger::filter("DieState");
 
+  bool quit = false;
+  std::string loadgame = "";
+  std::string* val = NULL;
+  for(int i=1; i<argc; i++){
+    std::string arg(argv[i]);
+    if(val){
+      *val = arg;
+      val = NULL;
+      continue;
+    }
+    if(arg == "-q") quit=true;
+    if(arg == "--load-game"){
+      val=&loadgame;
+    }
+  }
+  
   try {
     App app(argc, argv);
     MainWindow *window = new MainWindow();
     window->show();
+    if(loadgame.size() > 0){
+      std::cout << "loading game '" << loadgame << "'" << std::endl;
+      window->loadGameFromFile(loadgame);
+    }
+    if(quit) return 0;
     return app.exec();
   } catch (const char* errMsg) {
     KBX::Logger("main").error(std::string(errMsg));

@@ -161,6 +161,7 @@
     <slot>cancelEvaluation()</slot>
     <slot>undoLastMove()</slot>
     <slot>redoLastMove()</slot>
+    <slot>load(std::string)</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -349,8 +350,8 @@
    <slot>undoLastMove()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>397</x>
-     <y>396</y>
+     <x>-1</x>
+     <y>-1</y>
     </hint>
     <hint type="destinationlabel">
      <x>465</x>
@@ -374,11 +375,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>MainWindow</sender>
+   <signal>loadGame(std::string)</signal>
+   <receiver>gameWidget</receiver>
+   <slot>load(std::string)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>791</x>
+     <y>359</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>742</x>
+     <y>358</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>settingsChanged()</signal>
   <signal>exitGame()</signal>
   <signal>newGame(GameConfig)</signal>
+  <signal>loadGame(std::string)</signal>
   <slot>showAboutDialog()</slot>
   <slot>showPreferencesDialog()</slot>
   <slot>reloadSettings()</slot>

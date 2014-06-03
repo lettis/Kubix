@@ -37,6 +37,7 @@ ADD_EXECUTABLE(../Kubix
   game_widget.cpp
   models.cpp
   tools.cpp
+  serialization.cpp
   ${KBX_MOC_OUTFILES}
   ${KBX_FORMS_HEADERS}
   ${KBX_RESOURCES_RCC}

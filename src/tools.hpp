@@ -26,6 +26,11 @@
 #include <QtOpenGL/QGLWidget>
 #include <QColor> 
 
+template <typename Iter, typename Cont>
+bool is_last(Iter iter, const Cont& cont){
+  return (iter != cont.end()) && (next(iter) == cont.end());
+}
+
 namespace KBX {
 template< class NumType > int sgn(NumType n);
 int sgn(float f);

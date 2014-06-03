@@ -427,31 +427,31 @@ void GameWidget::save() {
       this->_log.warning("Error: cannot open file to save. Check filesystem permissions!");
       return;
     }
-    if (this->_game->write(outfile)) {
-      this->_log.info("Saved game successfully to file '" + ofname.toStdString() + "'.");
-    } else {
-      this->_log.warning("Error saving game!");
-    }
+    outfile << *(this->_game);
+    this->_log.info("Saved game to file '" + ofname.toStdString() + "'.");
     outfile.close();
+  }
+}
+
+  void GameWidget::load(std::string ifname){
+    if (ifname.size() > 0) {
+      std::ifstream infile(ifname);
+      if ( !infile.is_open()) {
+	this->_log.warning("Error: cannot open file for reading...");
+	return;
+    }
+    std::cout << "loading game from " << ifname << std::endl;
+    infile >> (*this->_game);
+    this->_scene->setupFromGame(this->_game);
+    infile.close();
   }
 }
 
 void GameWidget::load() {
   QString ifname = QFileDialog::getOpenFileName(this, "Load Game", "", "Kubix Savegames (*.kbx)").simplified();
-  if (ifname != "") {
-    std::ifstream infile(ifname.toStdString().c_str());
-    if ( !infile.is_open()) {
-      this->_log.warning("Error: cannot open file for reading...");
-      return;
-    }
-    if (this->_game->read(infile)) {
-      this->_log.info("Loaded game successfully from file '" + ifname.toStdString() + "'.");
-    } else {
-      this->_log.warning("Error loading game!");
-    }
-    infile.close();
-  }
+  this->load(ifname.toStdString());
 }
+ 
 
 void GameWidget::reloadSettings() {
 

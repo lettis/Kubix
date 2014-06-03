@@ -141,6 +141,7 @@ class Model {
 class Die: public Model {
   public:
     const bool IS_KING;
+    Die(Scene* scene, size_t dieId);
     Die(Scene* scene, Vec pos, size_t dieId);
 
     void setTile(Tile* t);
@@ -149,6 +150,7 @@ class Die: public Model {
 
     void dissociate();
     void reassociate();
+    void setup(DieState* s);
 
     size_t getId();
     PlayColor getPlayColor();
@@ -324,6 +326,7 @@ class Scene: public Model {
 
     void wipe();
     void setup();
+    void setupFromGame(Game* game);
 
     void rotate(float angle, size_t direction);
     void zoom(float factor);
