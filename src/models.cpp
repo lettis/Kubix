@@ -132,6 +132,13 @@ namespace KBX {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   }
 
+  Vec Model::getPrimaryOrientation(){
+    return this->_primaryOrientation;
+  }
+  Vec Model::getSecondaryOrientation(){
+    return this->_secondaryOrientation;
+  }
+
   /// clear all states
   /*
     set isSelected, isMarked and isHighlighted to false

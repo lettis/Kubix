@@ -43,6 +43,7 @@ void loadTextures();
 
 void checkGLError();
 std::string stringprintf(std::string str, ...);
+void printDieStates();
 
 /// represents a simple logger class, use it instead of cout/cerr-statements!
 class Logger {
@@ -102,6 +103,7 @@ class Vec {
     Vec cross(Vec v) const;
     float dot(const Vec& v) const;
     float operator*(const Vec& v) const;
+    Vec round() const;
     void setAsGlVertex3f();
 };
 

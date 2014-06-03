@@ -77,6 +77,8 @@ class Model {
     // primary maps on x-axis, secondary on y-axis.
     // always assumes a left-handed orthonormal system
     void setOrientation(Vec primary, Vec secondary);
+    Vec getPrimaryOrientation();
+    Vec getSecondaryOrientation();
     // sets vector to define a translation
     void translate(Vec direction);
     // render the object and perform translation / rotation

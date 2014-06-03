@@ -67,6 +67,9 @@ int main(int argc, char** argv) {
     if(arg == "--load-game"){
       val=&loadgame;
     }
+    if(arg == "--print-die-states"){
+      KBX::printDieStates();
+    }
   }
   
   try {
