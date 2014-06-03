@@ -371,8 +371,8 @@ void GameWidget::userSelect(Model* obj) {
     }
     if (tile) {
       if (this->_selectedDie) {
-        int oldX = this->_game->getDie(this->_selectedDie->getId())->x();
-        int oldY = this->_game->getDie(this->_selectedDie->getId())->y();
+        int oldX = this->_game->getDie(this->_selectedDie->getId()).x();
+        int oldY = this->_game->getDie(this->_selectedDie->getId()).y();
         // check if selected die can move to this field. if yes: move (or draw remaining paths)
         std::list< Move > moves = this->_game->possibleMoves(this->_selectedDie->getId());
         std::list< Move > filteredMoves;
@@ -444,8 +444,8 @@ void GameWidget::load() {
       this->_log.warning("Error: cannot open file for reading...");
       return;
     }
-    // TODO reload graphics after loading game ?
     if (this->_game->read(infile)) {
+      // TODO reload graphics after loading game ?
       this->_log.info("Loaded game successfully from file '" + ifname.toStdString() + "'.");
     } else {
       this->_log.warning("Error loading game!");
@@ -473,8 +473,8 @@ void GameWidget::_performMove(Move m) {
     this->_game->setFinished(true);
   } else {
     int dieId = m.dieIndex;
-    int oldX = this->_game->getDie(dieId)->x();
-    int oldY = this->_game->getDie(dieId)->y();
+    int oldX = this->_game->getDie(dieId).x();
+    int oldY = this->_game->getDie(dieId).y();
     int capturedDie = this->_game->getDieId(oldX + m.rel.dx, oldY + m.rel.dy);
     if (capturedDie != CLEAR) {
       // remove captured die from board

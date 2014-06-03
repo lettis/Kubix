@@ -126,9 +126,8 @@ class Game {
     size_t aiDepth();
     void setAiDepth(size_t aiDepth);
 
-    //TODO: check: is it necessary to return pointers?
-    DieState* getDie(size_t id);
-    DieState* getDie(size_t x, size_t y);
+    DieState& getDie(size_t id);
+    DieState& getDie(size_t x, size_t y);
     int getDieId(size_t x, size_t y);
     int getLastActiveDie();
     int getLastMovesVictim();
