@@ -41,6 +41,8 @@ Move evaluatorFunc(Game game);
 class GameWidget: public QGLWidget {
   Q_OBJECT
 
+  friend class Scene;
+
   public:
     GameWidget(QWidget *parent = NULL);
 

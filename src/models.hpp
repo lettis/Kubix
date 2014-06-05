@@ -74,8 +74,13 @@ class Model {
     void setHighlightedState(bool highlighted);
     // sets angle and axis to define a rotation
     void rotate(Vec axis, float angle);
-    // primary maps on x-axis, secondary on y-axis.
-    // always assumes a left-handed orthonormal system
+    // setOrientation rotates the model to first map
+    // the primary vector (expressed in model-internal coordinates)
+    // on the x-axis, then the secondary vector (model-internal
+    // coordinates, before first rotation) on the y-axis.
+    // the global coordinate system is left-handed and orthonormal,
+    // i.e. the x-axis 'points right', the y-axis 'points upwards'
+    // and the z-axis 'points into the screen'.
     void setOrientation(Vec primary, Vec secondary);
     Vec getPrimaryOrientation();
     Vec getSecondaryOrientation();
@@ -150,8 +155,10 @@ class Die: public Model {
     void setTileNext(Direction d);
     Tile* getTile();
 
+    //TODO comment: what do these functions do?
     void dissociate();
     void reassociate();
+    // set model up according to (internal) DieState
     void setup(DieState& s);
 
     size_t getId();

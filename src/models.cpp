@@ -18,6 +18,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <iostream>
+#include <cassert>
+#include <map>
 
 #include <GL/glu.h>
 
@@ -354,8 +356,8 @@ namespace KBX {
     if ( !Die::texturesLoaded) {
       glGenTextures(14, Die::textures);
       for (size_t i = 1; i < 7; i++) {
-	Die::loadTexture(QString(":res/side%1.png").arg(i), Die::textures, 2 * (i - 1));
-	Die::loadTexture(QString(":res/side%1b.png").arg(i), Die::textures, 2 * (i - 1) + 1);
+        Die::loadTexture(QString(":res/side%1.png").arg(i), Die::textures, 2 * (i - 1));
+        Die::loadTexture(QString(":res/side%1b.png").arg(i), Die::textures, 2 * (i - 1) + 1);
       }
       Die::loadTexture(QString(":res/sidek.png"), Die::textures, 12);
       Die::loadTexture(QString(":res/sidekb.png"), Die::textures, 13);
@@ -378,14 +380,14 @@ namespace KBX {
   void Die::setTile(Tile* t) {
     if (this->_tile) {
       if (this->_tile->getDie() != this) {
-	throw "trying to dissociate die from unassociated tile!";
+        throw "trying to dissociate die from unassociated tile!";
       }
       this->_tile->setDie(NULL);
     }
     this->_tile = t;
     if (this->_tile) {
       if (this->_tile->getDie() != NULL) {
-	throw "trying to associate die to already occupied tile!";
+        throw "trying to associate die to already occupied tile!";
       }
       this->_tile->setDie(this);
     }
@@ -443,9 +445,9 @@ namespace KBX {
     // face 1
     if ( !this->_scene->inObjPickingMode) {
       if (this->IS_KING) {
-	glBindTexture(GL_TEXTURE_2D, Die::textures[12 + b]);
+        glBindTexture(GL_TEXTURE_2D, Die::textures[12 + b]);
       } else {
-	glBindTexture(GL_TEXTURE_2D, Die::textures[0 + b]);
+        glBindTexture(GL_TEXTURE_2D, Die::textures[0 + b]);
       }
     }
     glBegin(GL_QUADS);
@@ -544,11 +546,11 @@ namespace KBX {
       this->_scene->enableAutoUpdate();
       Animation* a = this->_animationQueue.front();
       if (a->isFinished()) {
-	this->_animationQueue.pop();
-	delete a;
-	this->_animate();
+        this->_animationQueue.pop();
+        delete a;
+        this->_animate();
       } else {
-	a->progress();
+        a->progress();
       }
     } else {
       this->_isMoving = false;
@@ -556,20 +558,20 @@ namespace KBX {
     }
   }
 
-  const Vec Die::RollAnimation::_radials[] = {Vec(), // dummy for base-1 array (Directions are base-1)
-					      Vec(0.0f, 0.5f, -0.5f), // NORTH
-					      Vec(0.0f, -0.5f, -0.5f), // SOUTH
-					      Vec(0.5f, 0.0f, -0.5f), // EAST
-					      Vec( -0.5f, 0.0f, -0.5f) // WEST
+  const Vec Die::RollAnimation::_radials[] = {
+    Vec(), // dummy for base-1 array (Directions are base-1)
+    Vec(0.0f, 0.5f, -0.5f), // NORTH
+    Vec(0.0f, -0.5f, -0.5f), // SOUTH
+    Vec(0.5f, 0.0f, -0.5f), // EAST
+    Vec( -0.5f, 0.0f, -0.5f) // WEST
   };
 
 
-  Die::Animation::Animation(Die& die) :
-    _parent(die)
-  {
+  Die::Animation::Animation(Die& die)
+    : _parent(die) {
   }
 
-  Die::Animation:: ~Animation(){
+  Die::Animation:: ~Animation() {
   }
 
   Die::KillAnimation::KillAnimation(Die& die) :
@@ -612,8 +614,8 @@ namespace KBX {
   void Die::ResurrectAnimation::progress(){
     if (this->_timer.elapsed() >= this->_animationIntervall) {
       if(this->_parent.getTile()->isFree()){
-	this->_parent._pos.z += 0.1;
-	this->_stepsDone++;
+        this->_parent._pos.z += 0.1;
+        this->_stepsDone++;
       }
       this->_timer.restart();
     }
@@ -645,9 +647,9 @@ namespace KBX {
       Vec s = this->_parent._secondaryOrientation;
 
       if (this->_stepsDone == 0) {
-	this->_anklePoint = this->_parent._pos + this->_radial;
-	float a = 90.0f / this->_animationSteps;
-	switch (this->_d) {
+        this->_anklePoint = this->_parent._pos + this->_radial;
+        float a = 90.0f / this->_animationSteps;
+        switch (this->_d) {
         case NORTH:
           this->_newPos = this->_parent._pos + NormalVectors::Y;
           this->_rotAxis = NormalVectors::X.rotate(p, s, p.cross(s));
@@ -668,7 +670,7 @@ namespace KBX {
           this->_rotAxis = NormalVectors::Y.rotate(p, s, p.cross(s));
           this->_rotAngle = a;
           break;
-	}
+        }
       }
 
       switch (this->_d) {
@@ -732,21 +734,21 @@ namespace KBX {
     // add single roll animations to animation queue
     if (relMove.firstX) {
       while ( !horizontal.empty()) {
-	this->_animationQueue.push(horizontal.front());
-	horizontal.pop();
+        this->_animationQueue.push(horizontal.front());
+        horizontal.pop();
       }
       while ( !vertical.empty()) {
-	this->_animationQueue.push(vertical.front());
-	vertical.pop();
+        this->_animationQueue.push(vertical.front());
+        vertical.pop();
       }
     } else {
       while ( !vertical.empty()) {
-	this->_animationQueue.push(vertical.front());
-	vertical.pop();
+        this->_animationQueue.push(vertical.front());
+        vertical.pop();
       }
       while ( !horizontal.empty()) {
-	this->_animationQueue.push(horizontal.front());
-	horizontal.pop();
+        this->_animationQueue.push(horizontal.front());
+        horizontal.pop();
       }
     }
   }
@@ -1318,90 +1320,47 @@ namespace KBX {
   }
 
   void Die::setup(DieState& s){
-    this->translate(Vec(s.x(),s.y(),0));
+    this->translate(Vec(s.x()-4,s.y()-4,0));
     this->setTile(this->_scene->getTile(s.x(),s.y()));
-    size_t state = s.getCurrentState();
+    //size_t state = s.getCurrentState();
     if(s.gotKilled()){
-      state = s.getFormerState();
+      //state = s.getFormerState();
       this->setVisibleState(false);
       this->dissociate();
     }
-    switch(state){
-    case 0:
-      // TODO
-      break;
-    case 1:
-      this->setOrientation(NormalVectors::Y, NormalVectors::X);
-      break;
-    case 2:
-      // TODO
-      break;
-    case 3:
-      this->setOrientation(NormalVectors::Y * ( -1), NormalVectors::X * ( -1));
-      break;
-    case 4:
-      // TODO
-      break;
-    case 5:
-      this->setOrientation(NormalVectors::Z * ( -1), NormalVectors::X);
-      break;
-    case 6:
-      // TODO
-      break;
-    case 7:
-      this->setOrientation(NormalVectors::Z, NormalVectors::X * ( -1));
-      break;
-    case 8:
-      // TODO
-      break;
-    case 9:
-      // TODO
-      break;
-    case 10:
-      // TODO
-      break;
-    case 11:
-      // TODO
-      break;
-    case 12:
-      // TODO
-      break;
-    case 13:
-      // TODO
-      break;
-    case 14:
-      // TODO
-      break;
-    case 15:
-      // TODO
-      break;
-    case 16:
-      // TODO
-      break;
-    case 17:
-      this->setOrientation(NormalVectors::Z * ( -1), NormalVectors::X * ( -1));
-      break;
-    case 18:
-      // TODO
-      break;
-    case 19:
-      this->setOrientation(NormalVectors::Z, NormalVectors::X);
-      break;
-    case 20:
-      // TODO
-      break;
-    case 21:
-      // TODO
-      break;
-    case 22:
-      this->setOrientation(NormalVectors::Y * ( -1), NormalVectors::X);
-      break;
-    case 23:
-      this->setOrientation(NormalVectors::Y, NormalVectors::X * ( -1));
-      break;
-    case 24:
-      // king die, do nothing
-      break;
+
+    //// set orientation according to DieState
+    const std::size_t KING = 24;
+    const std::size_t KILLED = 25;
+    if (s.getCurrentState() != KING && s.getCurrentState() != KILLED) {
+      // standard orientation of faces:
+      //  +x: 4; -x: 3
+      //  +y: 5; -y: 2
+      //  +z: 6; -z: 1
+      s.moveOneStep(SOUTH);
+      std::size_t value_north = s.getValue();
+      s.moveOneStep(NORTH); // revert move
+
+      s.moveOneStep(WEST);
+      std::size_t value_east = s.getValue();
+      s.moveOneStep(EAST); // revert move
+
+      assert(value_north > 0 && value_north < 7);
+      assert(value_east > 0 && value_east < 7);
+
+      // setOrientation always rotates first and second
+      // vectors (given in model-internal coordinates)
+      // onto the x- and y-axes respectively (in global coordinates, i.e. EAST and NORTH (from white's POV)).
+      // e.g.: rotate die, so that 'one' points to the right and 'three' north
+      //       by 'setOrientation(NormalVectors::Z * (-1), NormalVectors::X * (-1));'
+      std::map<std::size_t, Vec> rot_direction;
+      rot_direction[1] = NormalVectors::Z * (-1);
+      rot_direction[2] = NormalVectors::Y * (-1);
+      rot_direction[3] = NormalVectors::X * (-1);
+      rot_direction[4] = NormalVectors::X;
+      rot_direction[5] = NormalVectors::Y;
+      rot_direction[6] = NormalVectors::Z;
+      this->setOrientation(rot_direction[value_east], rot_direction[value_north]);
     }
   }
 
@@ -1428,14 +1387,6 @@ namespace KBX {
 
   void Scene::setup() {
     this->wipe();
-    // define rotation axes
-    Vec toFront( -1.0, 0.0, 0.0);
-    Vec toBack(1.0, 0.0, 0.0);
-    Vec toLeft(0.0, 1.0, 0.0);
-    Vec toRight(0.0, -1.0, 0.0);
-    Vec clockwise(0.0, 0.0, -1.0);
-    Vec counterClockwise(0.0, 0.0, 1.0);
-
     // setup dice with correct orientation.
     // per definition, the dice are set up in the same order as the dice
     // are defined in the engine.
@@ -1455,67 +1406,14 @@ namespace KBX {
 
     // die setup.
     // attention: order has to be kept as is to have same die ids as in engine!
-
+    
     // white dice; w1 is in lower left corner, w8 in lower right
-    this->_dice.push_back(new Die(this, Vec( -4, -4, 0), 0));
-    this->_dice.back()->setOrientation(NormalVectors::Z, NormalVectors::X);
-    this->_dice.back()->setTile(this->_board->getTile(0, 0));
-    this->_dice.push_back(new Die(this, Vec( -3, -4, 0), 1));
-    this->_dice.back()->setOrientation(NormalVectors::Y, NormalVectors::X);
-    this->_dice.back()->setTile(this->_board->getTile(1, 0));
-    this->_dice.push_back(new Die(this, Vec( -2, -4, 0), 2));
-    this->_dice.back()->setOrientation(NormalVectors::Z * ( -1), NormalVectors::X);
-    this->_dice.back()->setTile(this->_board->getTile(2, 0));
-    this->_dice.push_back(new Die(this, Vec( -1, -4, 0), 3));
-    this->_dice.back()->setOrientation(NormalVectors::Y * ( -1), NormalVectors::X);
-    this->_dice.back()->setTile(this->_board->getTile(3, 0));
-    this->_dice.push_back(new Die(this, Vec(0, -4, 0), 4)); // King
-    this->_dice.back()->setTile(this->_board->getTile(4, 0));
-    this->_dice.push_back(new Die(this, Vec(1, -4, 0), 5));
-    this->_dice.back()->setOrientation(NormalVectors::Y * ( -1), NormalVectors::X);
-    this->_dice.back()->setTile(this->_board->getTile(5, 0));
-    this->_dice.push_back(new Die(this, Vec(2, -4, 0), 6));
-    this->_dice.back()->setOrientation(NormalVectors::Z * ( -1), NormalVectors::X);
-    this->_dice.back()->setTile(this->_board->getTile(6, 0));
-    this->_dice.push_back(new Die(this, Vec(3, -4, 0), 7));
-    this->_dice.back()->setOrientation(NormalVectors::Y, NormalVectors::X);
-    this->_dice.back()->setTile(this->_board->getTile(7, 0));
-    this->_dice.push_back(new Die(this, Vec(4, -4, 0), 8));
-    this->_dice.back()->setOrientation(NormalVectors::Z, NormalVectors::X);
-    this->_dice.back()->setTile(this->_board->getTile(8, 0));
-
     // black dice; b1 is in upper left corner, b8 in upper right
-    this->_dice.push_back(new Die(this, Vec( -4, 4, 0), 9));
-    this->_dice.back()->setOrientation(NormalVectors::Z * ( -1), NormalVectors::X * ( -1));
-    this->_dice.back()->setTile(this->_board->getTile(0, 8));
-    this->_dice.push_back(new Die(this, Vec( -3, 4, 0), 10));
-    this->_dice.back()->setOrientation(NormalVectors::Y * ( -1), NormalVectors::X * ( -1));
-    this->_dice.back()->setTile(this->_board->getTile(1, 8));
-    this->_dice.push_back(new Die(this, Vec( -2, 4, 0), 11));
-    this->_dice.back()->setOrientation(NormalVectors::Z, NormalVectors::X * ( -1));
-    this->_dice.back()->setTile(this->_board->getTile(2, 8));
-    this->_dice.push_back(new Die(this, Vec( -1, 4, 0), 12));
-    this->_dice.back()->setTile(this->_board->getTile(3, 8));
-    this->_dice.back()->setOrientation(NormalVectors::Y, NormalVectors::X * ( -1));
-    this->_dice.push_back(new Die(this, Vec(0, 4, 0), 13));
-    this->_dice.back()->setTile(this->_board->getTile(4, 8));
-    this->_dice.push_back(new Die(this, Vec(1, 4, 0), 14));
-    this->_dice.back()->setOrientation(NormalVectors::Y, NormalVectors::X * ( -1));
-    this->_dice.back()->setTile(this->_board->getTile(5, 8));
-    this->_dice.push_back(new Die(this, Vec(2, 4, 0), 15));
-    this->_dice.back()->setOrientation(NormalVectors::Z, NormalVectors::X * ( -1));
-    this->_dice.back()->setTile(this->_board->getTile(6, 8));
-    this->_dice.push_back(new Die(this, Vec(3, 4, 0), 16));
-    this->_dice.back()->setOrientation(NormalVectors::Y * ( -1), NormalVectors::X * ( -1));
-    this->_dice.back()->setTile(this->_board->getTile(7, 8));
-    this->_dice.push_back(new Die(this, Vec(4, 4, 0), 17));
-    this->_dice.back()->setOrientation(NormalVectors::Z * ( -1), NormalVectors::X * ( -1));
-    this->_dice.back()->setTile(this->_board->getTile(8, 8));
-
-    // add dice to scene
-    for (size_t i = 0; i < this->_dice.size(); i++) {
-      size_t objId = this->add(this->_dice[i]);
-      this->_dieObjIds[i] = objId;
+    for (std::size_t i=0; i < 18; ++i) {
+      this->_dice.push_back(new Die(this, i));
+      this->_dice.back()->setup(this->_act->_game->getDie(i));
+      // add die to scene
+      this->_dieObjIds[i] = this->add(this->_dice[i]);
     }
   }
 
