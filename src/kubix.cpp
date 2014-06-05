@@ -35,8 +35,8 @@ class App: public QApplication {
       } catch (const std::exception& e) {
         log.error(KBX::stringprintf("Exception thrown: %s", e.what()));
       } catch (const char* s){
-	log.error(s);
-	exit(1);
+        log.error(s);
+        exit(1);
       }
       return done;
     }
@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
 //  KBX::Logger::enableDebug();
 //  KBX::Logger::filter("DieState");
 
+  // TODO think about using boost::program_options
   bool quit = false;
   std::string loadgame = "";
   std::string* val = NULL;
@@ -63,12 +64,11 @@ int main(int argc, char** argv) {
       val = NULL;
       continue;
     }
-    if(arg == "-q") quit=true;
-    if(arg == "--load-game"){
-      val=&loadgame;
+    if(arg == "-q") {
+      quit = true;
     }
-    if(arg == "--print-die-states"){
-      KBX::printDieStates();
+    if(arg == "--load-game"){
+      val = &loadgame;
     }
   }
   
