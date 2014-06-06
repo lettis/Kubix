@@ -100,9 +100,7 @@ class Game {
   public:
     Game(const Game& other);
     Game(GameConfig c);
-    //TODO: implement copy assignment operator
     Game& operator=(const Game& other);
-    //TODO: implement destructor
     ~Game();
 
     friend std::ostream& operator<<(std::ostream& out, const Game&);
@@ -128,9 +126,8 @@ class Game {
     size_t aiDepth();
     void setAiDepth(size_t aiDepth);
 
-    //TODO: check: is it necessary to return pointers?
-    DieState* getDie(size_t id);
-    DieState* getDie(size_t x, size_t y);
+    DieState& getDie(size_t id);
+    DieState& getDie(size_t x, size_t y);
     int getDieId(size_t x, size_t y);
     int getLastActiveDie();
     int getLastMovesVictim();

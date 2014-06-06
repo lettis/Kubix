@@ -426,7 +426,7 @@ Move Game::undoMove() {
   backMove.rel = backMove.rel.invert();
   this->makeMove(backMove, false);
   if(victim != CLEAR){
-    this->getDie(victim)->revive();
+    this->getDie(victim).revive();
   }
   return backMove;
 }
@@ -571,11 +571,20 @@ PlayColor Game::getHumanColor() {
 
 
 /// get die state of die with given id
-DieState* Game::getDie(size_t id) {
+DieState& Game::getDie(size_t id) {
   if (id < 18) {
-    return &this->_dice[id];
+    return this->_dice[id];
   } else {
     throw "index error: given index does not define a valid die";
+  }
+}
+/// get die state of die with given coordinates
+DieState& Game::getDie(size_t x, size_t y) {
+  if (x < 9 && y < 9) {
+    int id = this->_fields[x][y];
+    return this->_dice[id];
+  } else {
+    throw "index error: given coordinates do not define a valid field";
   }
 }
 
@@ -599,15 +608,6 @@ int Game::getLastMovesVictim(){
 int Game::getDieId(size_t x, size_t y) {
   if (x < 9 && y < 9) {
     return this->_fields[x][y];
-  } else {
-    throw "index error: given coordinates do not define a valid field";
-  }
-}
-/// get die state of die with given coordinates
-DieState* Game::getDie(size_t x, size_t y) {
-  if (x < 9 && y < 9) {
-    int id = this->_fields[x][y];
-    return &this->_dice[id];
   } else {
     throw "index error: given coordinates do not define a valid field";
   }
@@ -656,8 +656,8 @@ Move Game::evaluateNext() {
 
 /// print an evaluation
 void Game::printEvaluation(const Evaluation& eval){
-  DieState* die = this->getDie(eval.move.dieIndex);
-  std::cout << "moving die " << eval.move.dieIndex << " from " << die->x() << "/" << die->y() << " to " << die->x()+eval.move.rel.dx << "/" << die->y()+eval.move.rel.dy << " received rating " << eval.rating << std::endl;
+  DieState& die = this->getDie(eval.move.dieIndex);
+  std::cout << "moving die " << eval.move.dieIndex << " from " << die.x() << "/" << die.y() << " to " << die.x()+eval.move.rel.dx << "/" << die.y()+eval.move.rel.dy << " received rating " << eval.rating << std::endl;
 }
 
 /// evaluate best possible move up to a certain level

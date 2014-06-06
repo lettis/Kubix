@@ -43,7 +43,6 @@ void loadTextures();
 
 void checkGLError();
 std::string stringprintf(std::string str, ...);
-void printDieStates();
 
 /// represents a simple logger class, use it instead of cout/cerr-statements!
 class Logger {
