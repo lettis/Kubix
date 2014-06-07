@@ -112,6 +112,8 @@ class Game {
     Move redoMove();
     std::list< Move > possibleMoves(size_t dieId);
 
+    void clearBoard();
+
     PlayColor getWinner();
     PlayColor getNext();
     PlayColor getAiColor();
@@ -126,12 +128,14 @@ class Game {
     size_t aiDepth();
     void setAiDepth(size_t aiDepth);
 
+    size_t getNumberOfDice();
     DieState& getDie(size_t id);
     DieState& getDie(size_t x, size_t y);
     int getDieId(size_t x, size_t y);
     int getLastActiveDie();
     int getLastMovesVictim();
 
+    void printFields();
     void printEvaluation(const Evaluation& eval);
     Strategy& getStrategy();
 

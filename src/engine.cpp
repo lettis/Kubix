@@ -342,18 +342,27 @@ void Game::_setup() {
   this->_dice[16] = DieState(7, 8, BLACK, 3);
   this->_dice[17] = DieState(8, 8, BLACK, 17);
   // initialize fields with ids of dice (or clear)
+  this->clearBoard();
   for (size_t x = 0; x <= 8; x++) {
     this->_fields[x][0] = x;
-  }
-  for (size_t y = 1; y <= 7; y++) {
-    for (size_t x = 0; x <= 8; x++) {
-      this->_fields[x][y] = CLEAR;
-    }
   }
   for (size_t x = 0; x <= 8; x++) {
     this->_fields[x][8] = x + 9;
   }
 }
+
+void Game::clearBoard(){
+  for (size_t y = 0; y < 9; y++) {
+    for (size_t x = 0; x < 9; x++) {
+      this->_fields[x][y] = CLEAR;
+    }
+  }
+}
+
+size_t Game::getNumberOfDice(){
+  return this->_dice.size();
+}
+
 /// move die over board
 void Game::makeMove(Move move, bool storeMove) {
   //TODO: check correctness! (Game::makeMove)
@@ -800,6 +809,15 @@ float Game::_rateDiceRatio(PlayColor color) {
     }
   }
   return rating;
+}
+
+void Game::printFields(){
+  for(size_t i=0; i<9; i++){
+    for(size_t j=0; j<9; j++){
+      std::cout << _fields[i][j] << "\t";
+    }
+    std::cout << std::endl;
+  }
 }
 
 } // end namespace KBX

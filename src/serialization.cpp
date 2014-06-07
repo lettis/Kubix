@@ -61,24 +61,12 @@ namespace KBX {
     return readNext(stream,value);
   }
 
-
   std::ostream& operator<< (std::ostream &out, const Game& game){
     out << KBX::beginObj;
     out << "mode:" << game._mode << KBX::separator;
+    out << "next:" << (KBX::PlayColor)(game._nextPlayer) << KBX::separator;
     out << "aiDepth:" << game._aiDepth << KBX::separator;
     out << "aiStrategy:" << game._strategy << KBX::separator;
-    out << "fields:" << KBX::beginList;
-    for (size_t i = 0; i < 9; i++) {
-      out << KBX::beginList;
-      for (size_t j = 0; j < 9; j++) {
-	out << game._fields[i][j];
-	if(j!=8) out << KBX::separator;
-      }
-      out << KBX::endList;
-      if(i!=8) out << KBX::separator;
-    }
-    out << KBX::endList;
-    out << KBX::separator;
     out << "dice:" << KBX::beginList;
     for (size_t i = 0; i < 18; i++) {
       out << game._dice[i];
@@ -120,6 +108,7 @@ namespace KBX {
     readTo(stream,KBX::beginObj);
     std::string key;
     std::stringstream value;
+    game.clearBoard();
     while(stream.good()){
       bool next = readNextToken(stream,key,value);
       if(key.empty()) break;
@@ -127,23 +116,20 @@ namespace KBX {
 	size_t mode;
 	value >> mode;
 	game._mode = (KBX::PlayMode)(mode);
+      } else if(key=="next"){
+	int nextPlayer;
+	value >> nextPlayer;
+	game._nextPlayer = (KBX::PlayColor)(nextPlayer);
       } else if(key=="aiDepth"){
 	value >> game._aiDepth;
       } else if(key=="aiStrategy"){
 	value >> game._strategy;
-      }else if(key=="fields"){
-	for(size_t i=0; i<9; ++i){
-	  std::stringstream row;
-	  readNext(value,row);
-	  for(size_t j=0; j<9; ++j){
-	    std::stringstream field;
-	    readNext(row,field);
-	    field >> game._fields[i][j];
-	  }
-	}
       } else if(key=="dice"){
 	for(size_t i=0; i<18; i++){
 	  value >> game._dice[i];
+	  if(!game._dice[i].gotKilled()){
+	    game._fields[game._dice[i].x()][game._dice[i].y()] = i;
+	  }
 	}
       } else if(key=="history"){
       } else {
@@ -171,8 +157,8 @@ namespace KBX {
   std::istream& operator>> (std::istream &stream, DieState& d){
     readTo(stream,KBX::beginObj);
     std::string key;
-    std::stringstream value;
     while(stream.good()){
+      std::stringstream value;
       bool next = readNextToken(stream,key,value);
       if(key.empty()) break;
       if(key=="x")  value >> d._x;
@@ -185,9 +171,7 @@ namespace KBX {
       if(key=="fS") value >> d._formerState;
       if(key=="cS") value >> d._curState;
       if(!next) break;
-      value.str("");
     }
-    readTo(stream,KBX::endObj);
     return stream;
   }
 

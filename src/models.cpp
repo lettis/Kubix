@@ -1293,6 +1293,7 @@ namespace KBX {
     for (std::vector< Model* >::iterator obj = this->_objList.begin(); obj != this->_objList.end(); obj++) {
       delete *obj;
     }
+    this->_idCounter = 0;
     this->_dice.clear();
     this->_objList.clear();
     this->_board = NULL;
@@ -1322,9 +1323,7 @@ namespace KBX {
   void Die::setup(DieState& s){
     this->translate(Vec(s.x()-4,s.y()-4,0));
     this->setTile(this->_scene->getTile(s.x(),s.y()));
-    //size_t state = s.getCurrentState();
     if(s.gotKilled()){
-      //state = s.getFormerState();
       this->setVisibleState(false);
       this->dissociate();
     }
@@ -1373,8 +1372,7 @@ namespace KBX {
     this->_markX = 4;
     this->_markY = 4;
     this->_selected = NULL;
-    
-    for (size_t i = 0; i < this->_dice.size(); i++) {
+    for (size_t i = 0; i < game->getNumberOfDice(); i++) {
       DieState& s = game->getDie(i);
       Die* d = new Die(this,i);
       this->_dice.push_back(d);
