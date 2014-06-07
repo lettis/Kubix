@@ -60,7 +60,6 @@ class GameWidget: public QGLWidget {
     void save();
     void load();
     void load(std::string ifname);
-    void reloadSettings();
     void update();
     void setEngineRunning();
     void setEngineFinished();

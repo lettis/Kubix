@@ -54,8 +54,6 @@ GameWidget::GameWidget(QWidget *parent)
   // initialize game with some stupid defaults in case there is no config
   Config c(this);
   this->_game = new Game(c);
-  // load settings from config
-  this->reloadSettings();
   // handle evaluation threads
   connect( &(this->_watcher), SIGNAL(started()), this, SLOT(setEngineRunning()));
   connect( &(this->_watcher), SIGNAL(finished()), this, SLOT(setEngineFinished()));
@@ -453,10 +451,6 @@ void GameWidget::load() {
   this->load(ifname.toStdString());
 }
  
-
-void GameWidget::reloadSettings() {
-//TODO needed? if yes: implement!
-}
 
 void GameWidget::_performMove(Move m) {
   if(this->_game->finished()) return;
