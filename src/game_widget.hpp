@@ -60,6 +60,7 @@ class GameWidget: public QGLWidget {
 
     void newGame(GameConfig c);
     void save();
+    void save(std::string ofname);
     void load();
     void load(std::string ifname);
     void update();

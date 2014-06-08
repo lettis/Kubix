@@ -439,26 +439,34 @@ void GameWidget::giveUp() {
   this->_performMove(Move());
 }
 
+
+
 void GameWidget::save() {
   QString ofname = QFileDialog::getSaveFileName(this, "Save game", "", "Kubix Savegames (*.kbx)").simplified();
-  if (ofname != "") {
-    if ( !ofname.endsWith(".kbx")) {
+  this->save(ofname.toStdString());
+}
+
+void GameWidget::save(std::string ofname) {
+  if (ofname.size() > 0){
+    if (!endsWith(ofname,".kbx")) {
       ofname += ".kbx";
     }
-    //QString ofname = showSaveFileDialog(this, "Save Game", QString(), "Kubix Savegames (*.kbx)");
-    std::ofstream outfile(ofname.toStdString().c_str());
+    std::ofstream outfile(ofname);
     if ( !outfile.is_open()) {
       this->_log.warning("Error: cannot open file to save. Check filesystem permissions!");
       return;
     }
     outfile << *(this->_game);
-    this->_log.info("Saved game to file '" + ofname.toStdString() + "'.");
+    this->_log.info("Saved game to file '" + ofname + "'.");
     outfile.close();
   }
 }
 
 void GameWidget::load(std::string ifname){
   if (ifname.size() > 0) {
+    if (!endsWith(ifname,".kbx")) {
+      ifname += ".kbx";
+    }
     std::ifstream infile(ifname);
     if ( !infile.is_open()) {
       this->_log.warning("Error: cannot open file for reading...");
@@ -520,6 +528,8 @@ void GameWidget::_performMove(Move m) {
       }
       msgBox.exec();
       this->_game->setFinished(true);
+    } else {
+      this->save(".autosave.kbx");
     }
   }
 }

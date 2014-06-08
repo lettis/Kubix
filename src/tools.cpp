@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string>
 #include <iostream>
+#include <fstream>
 
 #include <QString>
 #include <QPixmap>
@@ -213,6 +214,18 @@ std::string stringprintf(std::string str, ...) {
   return result;
 }
 
+bool fileExists(const std::string& filename){
+  std::ifstream ifile(filename);
+  return ifile;
+}
+
+bool endsWith(std::string const &fullString, std::string const &ending){
+  if (fullString.length() >= ending.length()) {
+    return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+  } else {
+    return false;
+  }
+}
 
 // define different versions of the Color constructor depending on parameters
 

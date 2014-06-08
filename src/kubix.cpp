@@ -77,8 +77,9 @@ int main(int argc, char** argv) {
     MainWindow *window = new MainWindow();
     window->show();
     if(loadgame.size() > 0){
-      std::cout << "loading game '" << loadgame << "'" << std::endl;
       window->loadGameFromFile(loadgame);
+    } else if(KBX::fileExists(".autosave.kbx")){
+      window->loadGameFromFile(".autosave.kbx");
     }
     if(quit) return 0;
     return app.exec();

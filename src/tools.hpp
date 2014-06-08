@@ -43,6 +43,8 @@ void loadTextures();
 
 void checkGLError();
 std::string stringprintf(std::string str, ...);
+bool endsWith(std::string const &fullString, std::string const &ending);
+bool fileExists(const std::string& filename);
 
 /// represents a simple logger class, use it instead of cout/cerr-statements!
 class Logger {
