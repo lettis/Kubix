@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>795</width>
+    <width>812</width>
     <height>794</height>
    </rect>
   </property>
@@ -35,7 +35,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>795</width>
+     <width>812</width>
      <height>19</height>
     </rect>
    </property>
@@ -43,6 +43,8 @@
     <property name="title">
      <string>&amp;Game</string>
     </property>
+    <addaction name="action_Pause"/>
+    <addaction name="separator"/>
     <addaction name="action_Undo"/>
     <addaction name="action_Redo"/>
     <addaction name="separator"/>
@@ -94,7 +96,7 @@
   </action>
   <action name="action_Open_File">
    <property name="text">
-    <string>L&amp;oad Game</string>
+    <string>&amp;Load Game</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -138,10 +140,27 @@
    <property name="text">
     <string>&amp;Undo</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
   </action>
   <action name="action_Redo">
    <property name="text">
     <string>&amp;Redo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
+   </property>
+  </action>
+  <action name="action_Pause">
+   <property name="text">
+    <string>&amp;Pause</string>
+   </property>
+   <property name="toolTip">
+    <string>Pause / Resume Game</string>
+   </property>
+   <property name="shortcut">
+    <string>Space</string>
    </property>
   </action>
  </widget>
@@ -162,6 +181,7 @@
     <slot>undoLastMove()</slot>
     <slot>redoLastMove()</slot>
     <slot>load(std::string)</slot>
+    <slot>togglePause()</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -264,22 +284,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>MainWindow</sender>
-   <signal>settingsChanged()</signal>
-   <receiver>gameWidget</receiver>
-   <slot>reloadSettings()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>404</x>
-     <y>396</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>479</x>
-     <y>396</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>gameWidget</sender>
    <signal>newStatus(QString)</signal>
    <receiver>MainWindow</receiver>
@@ -334,11 +338,11 @@
    <slot>newGame(GameConfig)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>790</x>
+     <x>759</x>
      <y>34</y>
     </hint>
     <hint type="destinationlabel">
-     <x>751</x>
+     <x>750</x>
      <y>39</y>
     </hint>
    </hints>
@@ -382,12 +386,28 @@
    <slot>load(std::string)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>791</x>
+     <x>759</x>
      <y>359</y>
     </hint>
     <hint type="destinationlabel">
      <x>742</x>
      <y>358</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Pause</sender>
+   <signal>triggered()</signal>
+   <receiver>gameWidget</receiver>
+   <slot>togglePause()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>482</x>
+     <y>396</y>
     </hint>
    </hints>
   </connection>

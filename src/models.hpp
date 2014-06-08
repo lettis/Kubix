@@ -155,8 +155,13 @@ class Die: public Model {
     void setTileNext(Direction d);
     Tile* getTile();
 
-    //TODO comment: what do these functions do?
+    // dissociate this die from a tile, i.e. 
+    // remove the link from the tile to the die
+    // the link from the die to the dile remains intact
     void dissociate();
+    // reassociate the die to the last tile it occupied, i.e.
+    // restore the link from the tile to the die
+    // based on the (still intact) link from the die to the tile
     void reassociate();
     // set model up according to (internal) DieState
     void setup(DieState& s);

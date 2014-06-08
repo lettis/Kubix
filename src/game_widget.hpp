@@ -51,6 +51,8 @@ class GameWidget: public QGLWidget {
     void setAutoUpdate(bool newAutoUpdate);
     void userSelect(Model* obj);
     void setBackgroundColor();
+    void setPausedState(bool paused);
+    bool paused();
 
   public slots:
     void setAutoRefresh(bool newAutoRefresh);
@@ -61,6 +63,7 @@ class GameWidget: public QGLWidget {
     void load();
     void load(std::string ifname);
     void update();
+    void togglePause();
     void setEngineRunning();
     void setEngineFinished();
     void performEvaluatedMove();
@@ -91,6 +94,7 @@ class GameWidget: public QGLWidget {
     bool _autoRefresh;
     bool _autoUpdate;
     bool _allowUndoRedo;
+    bool _paused;
     int _nBuffers;
     // _bfChange keeps track of the changes of the scene
     // _bfChange  > 0: perform a redraw for the next bfChange frames

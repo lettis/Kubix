@@ -46,6 +46,7 @@ GameWidget::GameWidget(QWidget *parent)
       _autoRefresh(false),
       _autoUpdate(false),
       _allowUndoRedo(true),
+      _paused(false),
       _nBuffers(2),
       _bfChange(0),
       _relativeMarking(false),
@@ -65,9 +66,30 @@ void GameWidget::cancelEvaluation() {
   this->_eval.cancel();
 }
 
+void GameWidget::togglePause(){
+  this->setPausedState(!this->paused());
+}
+
+bool GameWidget::paused(){
+  return this->_paused;
+}
+
+void GameWidget::setPausedState(bool paused){
+  //  this->_game->printFields();
+  if(paused){
+    emit this->newStatus("Kubix is paused.");
+    this->_paused = true;
+    this->cancelEvaluation();
+  } else {
+    emit this->newStatus("Kubix was resumed!");
+    this->_paused = false;
+    this->update();
+  }
+}
+
 void GameWidget::undoLastMove(){
   if(!this->_allowUndoRedo) return;
-  this->cancelEvaluation();
+  this->setPausedState(true);
   int victim = this->_game->getLastMovesVictim();
   Move m = this->_game->undoMove();
   if(m){
@@ -399,11 +421,14 @@ void GameWidget::userSelect(Model* obj) {
       }
     }
     if (path) {
-      // move die along this path
-      Move mv = path->getMove();
-      this->_performMove(mv);
-      if (pathIsTempObj && (path != NULL)) {
-        delete path;
+      // if the game is paused, we do not accept user moves;
+      if(!this->paused()){
+	// move die along this path
+	Move mv = path->getMove();
+	this->_performMove(mv);
+	if (pathIsTempObj && (path != NULL)) {
+	  delete path;
+	}
       }
     }
   }
@@ -499,14 +524,17 @@ void GameWidget::_performMove(Move m) {
 }
 
 void GameWidget::performEvaluatedMove(){
-  Move m = this->_eval.result();
-  this->_performMove(m);
+  if(!this->paused()){
+    // if the game is paused, we do not accept engine input
+    Move m = this->_eval.result();
+    this->_performMove(m);
+  }
 }
 
 
 void GameWidget::update() {
   //TODO: rewrite this function to fully support all play modes, game states, etc
-  if ( !this->_game->finished()) {
+  if ( !this->_game->finished() && !this->paused()) {
     // TODO: quit extra thread when window closes
     if (this->_scene->movingDie() == -1) {
       if (this->_engineMoves() && !this->_watcher.isRunning()) {

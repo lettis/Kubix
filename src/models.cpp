@@ -580,6 +580,7 @@ namespace KBX {
     _animationSteps(15),
     _stepsDone(0)
   {
+    this->_parent._pos.z = 0;
     this->_parent.dissociate();
     this->_timer.start();
   }
@@ -607,6 +608,7 @@ namespace KBX {
     _animationSteps(15),
     _stepsDone(0)
   {
+    this->_parent._pos.z = -1.5;
     this->_parent.setVisibleState(true);
     this->_timer.start();
   }

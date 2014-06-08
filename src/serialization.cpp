@@ -13,6 +13,7 @@
 namespace KBX {
 
   inline bool readTo(std::istream &stream,char end){
+    if(stream.tellg() > 0) stream.unget();
     char c;
     while(stream.good()){
       stream.get(c);
@@ -29,8 +30,12 @@ namespace KBX {
     while(stream.good()){
       stream.get(c);
       if(ostack == 0 && lstack == 0){
-	if(c == KBX::endList || c == KBX::endObj) return false;
-	if(c==KBX::separator) return true;
+	if(c == KBX::endList || c == KBX::endObj){
+	  return false;
+	}
+	if(c==KBX::separator){
+	  return true;
+	}
       }
       switch(c){
       case KBX::endObj:
@@ -104,12 +109,52 @@ namespace KBX {
     return out;
   }
 
+  void peekAhead(std::istream& stream, int length){
+    int pos = stream.tellg();
+    char* s = (char*)calloc(length,sizeof(char));
+    stream.read(s,length);
+    std::cout << s << std::endl;
+    free(s);
+    stream.seekg(pos);
+  }
+
+  int readMoves(std::istream& stream,std::list<Move>& moves){
+    int retval = 0;
+    readTo(stream,KBX::beginList);
+    while(stream.good()){
+      readTo(stream,KBX::beginObj);
+      Move m;
+      stream >> m;
+      if(m){
+	moves.push_back(m);
+	retval++;
+      }
+    }
+    return retval;
+  }
+
+  int readDeaths(std::istream& stream,std::list<int>& deaths){
+    int retval = 0;
+    const int emptyval = -10;
+    readTo(stream,KBX::beginList);
+    while(stream.good()){
+      int id = emptyval;
+      stream >> id;
+      if(id != emptyval){
+	deaths.push_back(id);
+	retval++;
+      }
+      readTo(stream,KBX::separator);
+    }
+    return retval;
+  }
+
   std::istream& operator>> (std::istream & stream, Game& game){
     readTo(stream,KBX::beginObj);
-    std::string key;
-    std::stringstream value;
     game.clearBoard();
     while(stream.good()){
+      std::string key;
+      std::stringstream value;
       bool next = readNextToken(stream,key,value);
       if(key.empty()) break;
       if(key == "mode"){
@@ -132,17 +177,30 @@ namespace KBX {
 	  }
 	}
       } else if(key=="history"){
+	readTo(value,KBX::beginObj);
+	while(value.good()){
+	  std::string subkey;
+	  std::stringstream val;
+	  bool nextSub = readNextToken(value,subkey,val);
+	  if(subkey == "moves"){
+	    KBX::readMoves(val,game._moveStack);
+	  } else if(subkey=="deaths"){
+	    KBX::readDeaths(val,game._deathStack);
+	  } else if(subkey=="movesPending"){
+	    KBX::readMoves(val,game._moveStackPending);
+	  } else if(subkey=="deathsPending"){
+	    KBX::readDeaths(val,game._deathStackPending);
+	  }
+	  if(!nextSub) break;
+	}
       } else {
-	std::cout << "unknown key: " << key;
+	throw stringprintf("deserialization operator >>&Game: unknown key '%s'",key.c_str());
       }
       if(!next) break;
-      value.str("");
     }
-    readTo(stream,KBX::endObj);
     return stream;
   }
 
-  /// serializer
   std::ostream& operator<< (std::ostream &out, const DieState& die){
     out << KBX::beginObj;
     out << "x:"<<die._x << KBX::separator;
@@ -184,12 +242,43 @@ namespace KBX {
     return out;
   }
 
+  std::istream& operator>> (std::istream &stream, RelativeMove& move){
+    readTo(stream,KBX::beginObj);
+    while(stream.good()){
+      std::string key;
+      std::stringstream value;
+      bool next = readNextToken(stream,key,value);
+      if(key.empty()) break;
+      if(key=="dx") value >> move.dx;
+      if(key=="dy") value >> move.dy;
+      if(key=="fX") value >> move.firstX;
+      if(!next) break;
+    }
+    return stream;
+  }
+
   std::ostream& operator<< (std::ostream &out, const Move& move){
     out << KBX::beginObj;
     out << "idx:" << move.dieIndex << KBX::separator;
     out << "rel:" << move.rel;
     out << KBX::endObj;
     return out;
+  }
+
+  std::istream& operator>> (std::istream &stream, Move& move){
+    readTo(stream,KBX::beginObj);
+    while(stream.good()){
+      std::string key;
+      std::stringstream value;
+      bool next = readNextToken(stream,key,value);
+      if(key.empty()) break;
+      if(key=="idx") value >> move.dieIndex;
+      if(key=="rel"){
+	value >> move.rel;
+      }
+      if(!next) break;
+    }
+    return stream;
   }
 
   std::ostream& operator<< (std::ostream &out, const Strategy& s){
@@ -203,19 +292,18 @@ namespace KBX {
 
   std::istream& operator>> (std::istream &stream, Strategy& s){
     readTo(stream,KBX::beginObj);
-    std::string key;
-    std::stringstream value;
     while(stream.good()){
+      std::string key;
+      std::stringstream value;
       bool next = readNextToken(stream,key,value);
       if(key.empty()) break;
       if(key=="name") value >> s.name;
       if(key=="coeffDR") value >> s.coeffDiceRatio;
       if(key=="pat") value >> s.patience;
       if(!next) break;
-      value.str("");
     }
-    readTo(stream,KBX::endObj);
     return stream;
   }
 
 } // end namespace KBX
+

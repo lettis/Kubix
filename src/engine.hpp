@@ -37,6 +37,7 @@ class RelativeMove {
     RelativeMove invert();
     bool operator==(const RelativeMove& other);
     friend std::ostream& operator<< (std::ostream &out, const RelativeMove& move);
+    friend std::istream& operator>> (std::istream &stream, RelativeMove& move);
 };
 
 class Move {
@@ -48,6 +49,7 @@ class Move {
     bool operator==(const Move& other);
     operator bool() { return (dieIndex >= 0); }
     friend std::ostream& operator<< (std::ostream &out, const Move& move);
+    friend std::istream& operator>> (std::istream &stream, Move& move);
 };
 
 /// defines the current state of a die (i.e. position, orientation, value, color, etc.)
