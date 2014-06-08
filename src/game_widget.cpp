@@ -75,7 +75,6 @@ bool GameWidget::paused(){
 }
 
 void GameWidget::setPausedState(bool paused){
-  //  this->_game->printFields();
   if(paused){
     emit this->newStatus("Kubix is paused.");
     this->_paused = true;
@@ -98,7 +97,9 @@ void GameWidget::undoLastMove(){
     this->_scene->setMovingDie(dieId);
     KBX::Die* die = this->_scene->getDie(dieId);
     die->rollOverFields(m.rel);
-    if(victim != CLEAR) this->_scene->resurrectDie(victim);
+    if(victim != CLEAR){
+      this->_scene->resurrectDie(victim);
+    }
   } else {
     std::cout << "Nothing to undo!" << std::endl;
   }

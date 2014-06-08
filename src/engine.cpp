@@ -424,7 +424,6 @@ void Game::makeMove(Move move, bool storeMove) {
 }
 
 Move Game::undoMove() {
-  //TODO: untested
   if(_moveStack.empty()) return Move();
   Move backMove = this->_moveStack.front();
   int victim = this->_deathStack.front();
@@ -435,7 +434,7 @@ Move Game::undoMove() {
   backMove.rel = backMove.rel.invert();
   this->makeMove(backMove, false);
   if(victim != CLEAR){
-    this->getDie(victim).revive();
+    this->reviveDie(victim);
   }
   return backMove;
 }
@@ -724,9 +723,8 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
         this->makeMove(Move(d, moveBack));
         // revive killed die on target field
         if (idDieOnTarget != CLEAR) {
-          this->_dice[idDieOnTarget].revive();
-          this->_fields[this->_dice[idDieOnTarget].x()][this->_dice[idDieOnTarget].y()] = idDieOnTarget;
-        }
+	  this->reviveDie(idDieOnTarget);
+	}
         // alpha-beta pruning
         if (rating >= beta) {
           return Evaluation(rating);
@@ -747,6 +745,11 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
     }
   }
   return Evaluation(alpha);
+}
+
+void Game::reviveDie(size_t idDieOnTarget){
+  this->_dice[idDieOnTarget].revive();
+  this->_fields[this->_dice[idDieOnTarget].x()][this->_dice[idDieOnTarget].y()] = idDieOnTarget;
 }
 
 /// reset the game

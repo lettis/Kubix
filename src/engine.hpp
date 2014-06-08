@@ -136,6 +136,7 @@ class Game {
     int getDieId(size_t x, size_t y);
     int getLastActiveDie();
     int getLastMovesVictim();
+    void reviveDie(size_t dieId);
 
     void printFields();
     void printEvaluation(const Evaluation& eval);
