@@ -549,10 +549,10 @@ PlayColor Game::getWinner() {
     return WHITE;
   }
   // winning by conquering opponents king field
-  if ((kingW.x() == 8) && (kingW.y() == 4)) {
+  if ((kingW.x() == 4) && (kingW.y() == 8)) {
     return WHITE;
   }
-  if ((kingB.x() == 0) && (kingB.y() == 4)) {
+  if ((kingB.x() == 4) && (kingB.y() == 0)) {
     return BLACK;
   }
   // nobody has won yet
