@@ -199,7 +199,7 @@ void checkGLError() {
  The function internally calls sprintf, but converts the result to a c++ string and returns that one.
  Problems of memory allocation are taken care of automatically.
  */
-std::string stringprintf(std::string str, ...) {
+std::string stringprintf(const std::string& str, ...) {
   unsigned int size = 256;
   va_list args;
   char* buf = (char*) malloc(size * sizeof(char));
@@ -226,6 +226,14 @@ bool endsWith(std::string const &fullString, std::string const &ending){
     return false;
   }
 }
+  
+std::string trim(const std::string& str){
+  size_t begin = str.find_first_not_of(" \t\n\"'");
+  if(begin == std::string::npos) return "";
+  size_t end = str.find_last_not_of(" \t\n\"'");
+  return str.substr(begin,end-begin+1);
+}
+  
 
 // define different versions of the Color constructor depending on parameters
 

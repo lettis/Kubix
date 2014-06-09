@@ -42,9 +42,10 @@ void swap(int& a, int& b);
 void loadTextures();
 
 void checkGLError();
-std::string stringprintf(std::string str, ...);
+std::string stringprintf(const std::string& str, ...);
 bool endsWith(std::string const &fullString, std::string const &ending);
 bool fileExists(const std::string& filename);
+std::string trim(const std::string& str);
 
 /// represents a simple logger class, use it instead of cout/cerr-statements!
 class Logger {

@@ -57,48 +57,49 @@ namespace KBX {
   }
   inline bool readNextToken(std::istream &stream, std::string& key, std::stringstream& value){
     char c;
-    key.clear();
+    std::string raw;
     while(stream.good()){
       stream.get(c);
       if(c == ':') break;
-      key+=c;
+      raw+=c;
     }
+    key = KBX::trim(raw);
     return readNext(stream,value);
   }
 
   std::ostream& operator<< (std::ostream &out, const Game& game){
     out << KBX::beginObj;
-    out << "mode:" << game._mode << KBX::separator;
-    out << "next:" << (KBX::PlayColor)(game._nextPlayer) << KBX::separator;
-    out << "aiDepth:" << game._aiDepth << KBX::separator;
-    out << "aiStrategy:" << game._strategy << KBX::separator;
-    out << "dice:" << KBX::beginList;
+    out << "\"mode\":" << game._mode << KBX::separator;
+    out << "\"next\":" << (KBX::PlayColor)(game._nextPlayer) << KBX::separator;
+    out << "\"aiDepth\":" << game._aiDepth << KBX::separator;
+    out << "\"aiStrategy\":" << game._strategy << KBX::separator;
+    out << "\"dice\":" << KBX::beginList;
     for (size_t i = 0; i < 18; i++) {
       out << game._dice[i];
       if(i!=17) out<< KBX::separator;
     }
     out << KBX::endList << KBX::separator;
-    out << "history:";
+    out << "\"history\":";
     out << KBX::beginObj;
-    out << "moves:" << KBX::beginList;
+    out << "\"moves\":" << KBX::beginList;
     for(auto it = game._moveStack.begin(); it != game._moveStack.end(); it++){
       out << (*it);
       if(!is_last(it,game._moveStack)) out<< KBX::separator;
     }
     out << KBX::endList << KBX::separator;
-    out << "deaths:" << KBX::beginList;
+    out << "\"deaths\":" << KBX::beginList;
     for(auto it = game._deathStack.begin(); it != game._deathStack.end(); it++){
       out << (*it);
       if(!is_last(it,game._deathStack)) out<< KBX::separator;
     }
     out << KBX::endList << KBX::separator;
-    out << "movesPending:" << KBX::beginList;
+    out << "\"movesPending\":" << KBX::beginList;
     for(auto it = game._moveStackPending.begin(); it != game._moveStackPending.end(); it++){
       out << (*it);
       if(!is_last(it,game._moveStackPending)) out<< KBX::separator;
     }
     out << KBX::endList << KBX::separator;
-    out << "deathsPending:" << KBX::beginList;
+    out << "\"deathsPending\":" << KBX::beginList;
     for(auto it = game._deathStackPending.begin(); it != game._deathStackPending.end(); it++){
       out << (*it);
       if(!is_last(it,game._deathStackPending)) out<< KBX::separator;
@@ -194,7 +195,7 @@ namespace KBX {
 	  if(!nextSub) break;
 	}
       } else {
-	throw stringprintf("deserialization operator >>&Game: unknown key '%s'",key.c_str());
+	throw stringprintf("deserialization operator >>&Game: unknown key '%s'",key.c_str()).c_str();
       }
       if(!next) break;
     }
@@ -203,11 +204,11 @@ namespace KBX {
 
   std::ostream& operator<< (std::ostream &out, const DieState& die){
     out << KBX::beginObj;
-    out << "x:"<<die._x << KBX::separator;
-    out << "y:"<<die._y << KBX::separator;
-    out << "col:"<<die._color << KBX::separator;
-    out << "fS:"<<((int)(die._formerState)) << KBX::separator;
-    out << "cS:"<<(int)(die._curState);
+    out << "\"x\":"<<die._x << KBX::separator;
+    out << "\"y\":"<<die._y << KBX::separator;
+    out << "\"col\":"<<die._color << KBX::separator;
+    out << "\"fS\":"<<((int)(die._formerState)) << KBX::separator;
+    out << "\"cS\":"<<(int)(die._curState);
     out << KBX::endObj;
     return out;
   }
@@ -235,9 +236,9 @@ namespace KBX {
 
   std::ostream& operator<< (std::ostream &out, const RelativeMove& move){
     out << KBX::beginObj;
-    out << "dx:"<<move.dx << KBX::separator;
-    out << "dy:"<<move.dy << KBX::separator;
-    out << "fX:"<<move.firstX;
+    out << "\"dx\":"<<move.dx << KBX::separator;
+    out << "\"dy\":"<<move.dy << KBX::separator;
+    out << "\"fX\":"<<move.firstX;
     out << KBX::endObj;
     return out;
   }
@@ -259,8 +260,8 @@ namespace KBX {
 
   std::ostream& operator<< (std::ostream &out, const Move& move){
     out << KBX::beginObj;
-    out << "idx:" << move.dieIndex << KBX::separator;
-    out << "rel:" << move.rel;
+    out << "\"idx\":" << move.dieIndex << KBX::separator;
+    out << "\"rel\":" << move.rel;
     out << KBX::endObj;
     return out;
   }
@@ -283,9 +284,9 @@ namespace KBX {
 
   std::ostream& operator<< (std::ostream &out, const Strategy& s){
     out << KBX::beginObj;
-    out << "name:'" <<s.name << "'" << KBX::separator;
-    out << "coeffDR:" <<s.coeffDiceRatio  << KBX::separator;
-    out << "pat:" << s.patience;
+    out << "\"name\":\"" <<s.name << "\"" << KBX::separator;
+    out << "\"coeffDR\":" <<s.coeffDiceRatio  << KBX::separator;
+    out << "\"pat\":" << s.patience;
     out << KBX::endObj;
     return out;
   }
@@ -297,7 +298,11 @@ namespace KBX {
       std::stringstream value;
       bool next = readNextToken(stream,key,value);
       if(key.empty()) break;
-      if(key=="name") value >> s.name;
+      if(key=="name"){
+	std::string name;
+	value >> name;
+	s.name = KBX::trim(name);
+      }
       if(key=="coeffDR") value >> s.coeffDiceRatio;
       if(key=="pat") value >> s.patience;
       if(!next) break;
