@@ -16,6 +16,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <string>
+#include <stdlib.h>
+#include <time.h>
 
 #include <QApplication>
 
@@ -56,6 +58,7 @@ int main(int argc, char** argv) {
   // TODO think about using boost::program_options
   bool quit = false;
   std::string loadgame = "";
+  std::string randomseed = "";
   std::string* val = NULL;
   for(int i=1; i<argc; i++){
     std::string arg(argv[i]);
@@ -70,6 +73,9 @@ int main(int argc, char** argv) {
     if(arg == "--load-game"){
       val = &loadgame;
     }
+    if(arg== "--random-seed"){
+      val = &randomseed;
+    }
   }
   
   try {
@@ -80,6 +86,11 @@ int main(int argc, char** argv) {
       window->loadGameFromFile(loadgame);
     } else if(KBX::fileExists(".autosave.kbx")){
       window->loadGameFromFile(".autosave.kbx");
+    }
+    if(randomseed.size() > 0){
+      srand(atoi(randomseed.c_str()));
+    } else {
+      srand(time(NULL));
     }
     if(quit) return 0;
     return app.exec();

@@ -44,14 +44,16 @@ PlayColor inverse(PlayColor color) {
 Strategy::Strategy()
   : name("default"),
     coeffDiceRatio(1.),
-    patience(.95)
+    patience(.95),
+    randomness(0.01)
 {
 }
 
 Strategy::Strategy(const Strategy& other)
   : name(other.name),
     coeffDiceRatio(other.coeffDiceRatio),
-    patience(other.patience)
+    patience(other.patience),
+    randomness(other.randomness)
 {
 }
 
@@ -59,6 +61,7 @@ void Strategy::print() const {
   std::cout << "Strategy '" << this->name << "'" << std::endl;
   std::cout << "dice ratio coefficient: " << this->coeffDiceRatio << std::endl;
   std::cout << "patience: " << this->patience << std::endl;
+  std::cout << "randomness: " << this->randomness << std::endl;
 }
 
 /// initialize a move
@@ -637,7 +640,7 @@ float Game::_rate(PlayColor color) {
       return -100.0f;
     }
   }
-  float rating = 0.0f;
+  float rating =  this->_strategy.randomness/RAND_MAX*rand()-0.5;
   rating += this->_strategy.coeffDiceRatio * this->_rateDiceRatio(color);
   return rating;
 }

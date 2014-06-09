@@ -286,7 +286,8 @@ namespace KBX {
     out << KBX::beginObj;
     out << "\"name\":\"" <<s.name << "\"" << KBX::separator;
     out << "\"coeffDR\":" <<s.coeffDiceRatio  << KBX::separator;
-    out << "\"pat\":" << s.patience;
+    out << "\"pat\":" << s.patience  << KBX::separator;
+    out << "\"rnd\":" << s.randomness;
     out << KBX::endObj;
     return out;
   }
@@ -305,8 +306,10 @@ namespace KBX {
       }
       if(key=="coeffDR") value >> s.coeffDiceRatio;
       if(key=="pat") value >> s.patience;
+      if(key=="rnd") value >> s.randomness;
       if(!next) break;
     }
+    std::cout << s.randomness << std::endl;
     return stream;
   }
 

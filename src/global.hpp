@@ -49,6 +49,7 @@ class Strategy {
     std::string name;
     double coeffDiceRatio;
     double patience;
+    double randomness;
     Strategy();
     Strategy(const Strategy& other);
     void print() const;
