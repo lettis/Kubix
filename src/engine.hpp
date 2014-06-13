@@ -106,7 +106,7 @@ class Game {
     ~Game();
 
     friend std::ostream& operator<<(std::ostream& out, const Game&);
-    friend std::istream& operator>> (std::istream & stream, Game&);
+    friend std::istream& operator>>(std::istream & stream, Game&);
 
     bool moveIsValid(Move move);
     void makeMove(Move move, bool storeMove = true);
