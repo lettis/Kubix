@@ -1324,12 +1324,16 @@ namespace KBX {
 
   void Die::setup(DieState& s){
     this->translate(Vec(s.x()-4,s.y()-4,0));
-    this->setTile(this->_scene->getTile(s.x(),s.y()));
+    if(this->getTile()){
+      this->getTile()->setDie(NULL);
+    } else {
+      this->_tile = this->_scene->getTile(s.x(),s.y());
+    }
     if(s.gotKilled()){
       this->setVisibleState(false);
-      this->dissociate();
+    } else {
+      this->reassociate();
     }
-
     //// set orientation according to DieState
     const std::size_t KING = 24;
     const std::size_t KILLED = 25;
