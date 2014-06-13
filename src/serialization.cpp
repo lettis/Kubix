@@ -309,7 +309,6 @@ namespace KBX {
       if(key=="rnd") value >> s.randomness;
       if(!next) break;
     }
-    std::cout << s.randomness << std::endl;
     return stream;
   }
 
