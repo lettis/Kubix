@@ -15,18 +15,20 @@ set(KBX_MOC_HDRS
   main_window.hpp
   preferences_dialog.hpp
   new_game_dialog.hpp
-)
+  )
 QT4_WRAP_CPP(KBX_MOC_OUTFILES ${KBX_MOC_HDRS})
 
 # ressource binding
-SET(KBX_RESOURCES ../res.qrc)
+SET(KBX_RESOURCES ${CMAKE_SOURCE_DIR}/res.qrc)
 QT4_ADD_RESOURCES(KBX_RESOURCES_RCC ${KBX_RESOURCES})
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
 # UI creation
-SET(KBX_FORMS ../ui/mainWindow.ui ../ui/aboutDialog.ui ../ui/preferencesDialog.ui ../ui/newGameDialog.ui)
+SET(KBX_FORMS ${CMAKE_SOURCE_DIR}/ui/mainWindow.ui ${CMAKE_SOURCE_DIR}/ui/aboutDialog.ui ${CMAKE_SOURCE_DIR}/ui/preferencesDialog.ui ${CMAKE_SOURCE_DIR}/ui/newGameDialog.ui)
 QT4_WRAP_UI(KBX_FORMS_HEADERS ${KBX_FORMS})
 
-ADD_EXECUTABLE(../Kubix
+ADD_EXECUTABLE(Kubix
   kubix.cpp
   config.cpp
   main_window.cpp
@@ -40,12 +42,13 @@ ADD_EXECUTABLE(../Kubix
   ${KBX_MOC_OUTFILES}
   ${KBX_FORMS_HEADERS}
   ${KBX_RESOURCES_RCC}
-)
+  )
 
-install(TARGETS ../Kubix RUNTIME DESTINATION bin)
+install(TARGETS Kubix RUNTIME DESTINATION bin)
 
-TARGET_LINK_LIBRARIES(../Kubix
+TARGET_LINK_LIBRARIES(
+  Kubix
   ${QT_LIBRARIES}
   ${QT_QTOPENGL_LIBRARIES}
   ${OPENGL_LIBRARIES}
-)
+  )

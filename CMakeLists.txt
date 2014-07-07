@@ -18,6 +18,25 @@ add_custom_target(
   COMMAND find -iname '*cmake*' -not -name CMakeLists.txt -exec rm -rf {} \\+
   )
 
+
+add_custom_target(clean-cmake-files
+  COMMAND ${CMAKE_COMMAND} -P clean-all.cmake
+  )
+
+set(cmake_generated ${CMAKE_BINARY_DIR}/CMakeCache.txt
+  ${CMAKE_BINARY_DIR}/cmake_install.cmake  
+  ${CMAKE_BINARY_DIR}/Makefile
+  ${CMAKE_BINARY_DIR}/CMakeFiles
+  )
+
+foreach(file ${cmake_generated})
+  
+  if (EXISTS ${file})
+    file(REMOVE_RECURSE ${file})
+  endif()
+  
+endforeach(file)
+
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Kubix")
 SET(CPACK_PACKAGE_VENDOR "Florian Sittel, Carsten Burgard")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README.md")
@@ -29,7 +48,7 @@ SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSIO
 IF(WIN32 AND NOT UNIX)
   # There is a bug in NSI that does not handle full unix paths properly. Make
   # sure there is at least one set of four (4) backslashes.
-#  SET(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}/Utilities/Release\\\\InstallIcon.bmp")
+  #  SET(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}/Utilities/Release\\\\InstallIcon.bmp")
   SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\Kubix.exe")
   SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} Kubix")
   SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\github.com/lettis/Kubix")
