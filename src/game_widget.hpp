@@ -107,6 +107,7 @@ class GameWidget: public QGLWidget {
     bool _relativeMarking;
     Logger _log;
     Move _moveToPerform;
+    bool _evaluationFinished;
     bool _engineMoves();
     void _startEvaluationThread();
 };

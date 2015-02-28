@@ -8,6 +8,7 @@
 #include <QtGui>
 #include <QFileDialog>
 #include <QPoint>
+#include <QMessageBox>
 
 #include <fstream>
 #include <sstream>
@@ -48,7 +49,8 @@ GameWidget::GameWidget(QWidget *parent)
       _nBuffers(2),
       _bfChange(0),
       _relativeMarking(false),
-      _log("act") {
+      _log("act"),
+      _evaluationFinished(false){
   setMouseTracking(false);
   // initialize game with some stupid defaults in case there is no config
   Config c(this);
@@ -80,7 +82,9 @@ void GameWidget::setPausedState(bool paused){
 }
 
 void GameWidget::undoLastMove(){
-  if(!this->_allowUndoRedo) return;
+  if(!this->_allowUndoRedo){
+    return;
+  }
   this->setPausedState(true);
   int victim = this->_game->getLastMovesVictim();
   Move m = this->_game->undoMove();
@@ -541,11 +545,17 @@ void GameWidget::update() {
     // TODO: quit extra thread when window closes
     if (this->_scene->movingDie() == KBX::NONE) {
       if (this->_engineMoves() && !this->_game->evaluating()) {
-        // encapsulate move evaluation by engine
-        // in separate thread to keep UI reactive
-        std::thread engineThread(&GameWidget::_startEvaluationThread, this); 
-        engineThread.detach();
-      }
+        if ( this->_evaluationFinished ){
+          this->performEvaluatedMove();
+          this->setEngineFinished();
+        } else {
+          // encapsulate move evaluation by engine
+          // in separate thread to keep UI reactive
+          this->setEngineRunning();
+          std::thread engineThread(&GameWidget::_startEvaluationThread, this); 
+          engineThread.detach();
+        }
+      } 
     } else if ( !this->_scene->getDie(this->_scene->movingDie())->isMoving()) {
       // release lock after die has finished moving
       this->_scene->setMovingDie(KBX::NONE);
@@ -573,14 +583,13 @@ void GameWidget::setEngineRunning() {
 }
 
 void GameWidget::setEngineFinished() {
+  this->_evaluationFinished = false;
   emit this->newStatus("Kubix is waiting for your move.");
 }
 
 void GameWidget::_startEvaluationThread() {
-  this->setEngineRunning();
   this->_moveToPerform = this->_game->evaluateNext();
-  this->performEvaluatedMove();
-  this->setEngineFinished();
+  this->_evaluationFinished = true;
 }
 
 } // end namespace KBX

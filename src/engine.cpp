@@ -416,12 +416,10 @@ void Game::makeMove(Move move, bool storeMove) {
   }
   // if the move should be stored, do so
   if(storeMove){
-    std::cout << "storing move" << std::endl;
     this->_moveStackPending.clear();
     this->_deathStackPending.clear();
     this->_moveStack.push_front(move);
     this->_deathStack.push_front(keyOldDie);
-    std::cout << "move stack is " << this->_moveStack.size() <<  std::endl;
   }
   // move die to new position
   this->_fields[dieState.x()][dieState.y()] = move.dieIndex;
@@ -797,7 +795,6 @@ bool Game::cancelled() {
 bool Game::evaluating() {
   return (this->_state == EVALUATING);
 }
-
 
 PlayMode Game::playMode() {
   return this->_mode;
