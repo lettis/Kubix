@@ -440,8 +440,6 @@ void GameWidget::giveUp() {
   this->_performMove(Move());
 }
 
-
-
 void GameWidget::save() {
   QString ofname = QFileDialog::getSaveFileName(this, "Save game", "", "Kubix Savegames (*.kbx)").simplified();
   this->save(ofname.toStdString());
@@ -488,7 +486,9 @@ void GameWidget::load() {
  
 
 void GameWidget::_performMove(Move m) {
-  if(this->_game->finished()) return;
+  if(this->_game->finished()) {
+    return;
+  }
   QMessageBox msgBox;
   if (m == Move()) {
     // empty move: 'next player' loses
@@ -499,7 +499,7 @@ void GameWidget::_performMove(Move m) {
       msgBox.setText("you give up. loser!");
     }
     msgBox.exec();
-    this->_game->setFinished(true);
+    this->_game->setFinished();
   } else {
     int dieId = m.dieIndex;
     int oldX = this->_game->getDie(dieId).x();
@@ -528,7 +528,7 @@ void GameWidget::_performMove(Move m) {
         msgBox.setText("black wins.");
       }
       msgBox.exec();
-      this->_game->setFinished(true);
+      this->_game->setFinished();
     } else {
       this->save(".autosave.kbx");
     }
@@ -536,17 +536,16 @@ void GameWidget::_performMove(Move m) {
 }
 
 void GameWidget::performEvaluatedMove(){
-  if(!this->paused()){
+  if( ! this->paused() && ! this->_game->cancelled()){
     // if the game is paused, we do not accept engine input
     Move m = this->_eval.result();
     this->_performMove(m);
   }
 }
 
-
 void GameWidget::update() {
   //TODO: rewrite this function to fully support all play modes, game states, etc
-  if ( !this->_game->finished() && !this->paused()) {
+  if ( ! this->_game->finished() && ! this->paused()) {
     // TODO: quit extra thread when window closes
     if (this->_scene->movingDie() == -1) {
       if (this->_engineMoves() && !this->_watcher.isRunning()) {

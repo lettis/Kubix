@@ -280,7 +280,7 @@ Game::Game(GameConfig c)
     _aiDepth(c.getAiDepth()),
     _strategy(c.getAiStrategy()),
     _nextPlayer(WHITE),
-    _finished(false) {
+    _state(IDLE) {
     this->_setup();
 }
 
@@ -297,7 +297,7 @@ Game::Game(const Game& other)
       _deathStack(other._deathStack),
       _deathStackPending(other._deathStackPending),
       _nextPlayer(other._nextPlayer),
-      _finished(other._finished) {
+      _state(other._state) {
 }
 
 Game& Game::operator=(const Game& other) {
@@ -313,7 +313,7 @@ Game& Game::operator=(const Game& other) {
     this->_deathStack = other._deathStack;
     this->_deathStackPending = other._deathStackPending;
     this->_nextPlayer = other._nextPlayer;
-    this->_finished = other._finished;
+    this->_state = other._state;
   }
   return *this;
 }
@@ -668,18 +668,28 @@ Move Game::evaluateNext() {
 /// print an evaluation
 void Game::printEvaluation(const Evaluation& eval){
   DieState& die = this->getDie(eval.move.dieIndex);
-  std::cout << "moving die " << eval.move.dieIndex << " from " << die.x() << "/" << die.y() << " to " << die.x()+eval.move.rel.dx << "/" << die.y()+eval.move.rel.dy << " received rating " << eval.rating << std::endl;
+  std::cout << "moving die "
+            << eval.move.dieIndex
+            << " from "
+            << die.x()
+            << "/"
+            << die.y()
+            << " to "
+            << die.x()+eval.move.rel.dx
+            << "/"
+            << die.y()+eval.move.rel.dy
+            << " received rating "
+            << eval.rating
+            << std::endl;
 }
 
 /// evaluate best possible move up to a certain level
 /// this is done recursively by a form of the NegaMax algorithm with alpha-beta pruning
 Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initialCall) {
   KBX::Logger log("evaluation");
-
   if ((level == 0) || (this->getWinner() != NONE_OF_BOTH)) {
     return Evaluation(this->_rate(this->_nextPlayer));
   }
-  
   // get rating, either directly or by recursive call
   float rating;
   // container for best move candidates
@@ -699,6 +709,11 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
     size_t value = this->_dice[d].getValue();
     // iterate over max number of moves for given dice value (stored in state-array)
     for (size_t i = 0; i < DieState::nPossibleMoves[value]; i++) {
+      // abort evaluation if cancelled
+      if (this->cancelled()) {
+        std::cout << "cancelled!\n";
+        return Evaluation(0.0f);
+      }
       // check if this specific move is valid
       RelativeMove move = DieState::possibleMoves[value][i];
       if (this->moveIsValid(Move(d, move))) {
@@ -706,28 +721,16 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
         RelativeMove moveBack = move.invert();
         // kill the die lying on the target field
         int idDieOnTarget = this->_fields[this->_dice[d].x() + move.dx][this->_dice[d].y() + move.dy];
-
-//        std::cerr << (this->_nextPlayer == WHITE ? "W" : "B") << " ";
-
         // perform move
         this->makeMove(Move(d, move));
-
-//        for (int z=0; z<level; z++) std::cerr << "\t";
-//        std::cerr << level << " " << d << " " << move.dx << " " << move.dy << " " << move.firstX << std::endl;
-
         // recursive call for next step (negative weighting, since it is opponent's turn)
         rating = - this->_strategy.patience * this->_evaluateMoves(level - 1, -beta, -alpha, false).rating;
-//        std::cerr << (this->_nextPlayer == WHITE ? "W" : "B") << " ";
-        for (int z = 0; z < level; z++)
-          std::cerr << "\t";
-//        std::cerr << rating << std::endl;
-
         // undo move
         this->makeMove(Move(d, moveBack));
         // revive killed die on target field
         if (idDieOnTarget != CLEAR) {
-	  this->reviveDie(idDieOnTarget);
-	}
+          this->reviveDie(idDieOnTarget);
+        }
         // alpha-beta pruning
         if (rating >= beta) {
           return Evaluation(rating);
@@ -768,13 +771,22 @@ void Game::reset() {
   this->_setup();
 }
 
-void Game::setFinished(bool finished) {
-  this->_finished = finished;
+void Game::setFinished() {
+  this->_state = FINISHED;
 }
 
 bool Game::finished() {
-  return this->_finished;
+  return (this->_state == FINISHED);
 }
+
+void Game::cancelEvaluation() {
+  this->_state = CANCELLED;
+}
+
+bool Game::cancelled() {
+  return (this->_state == CANCELLED);
+}
+
 
 PlayMode Game::playMode() {
   return this->_mode;

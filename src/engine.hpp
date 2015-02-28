@@ -121,8 +121,12 @@ class Game {
     PlayColor getAiColor();
     PlayColor getHumanColor();
     void reset();
-    void setFinished(bool finished);
+
+    void setFinished();
     bool finished();
+
+    void cancelEvaluation();
+    bool cancelled();
 
     PlayMode playMode();
     void setPlayMode(PlayMode mode);
@@ -145,6 +149,9 @@ class Game {
     Move evaluateNext();
 
   private:
+    enum State {
+      CANCELLED, RUNNING, IDLE, FINISHED
+    };
     Evaluation _evaluateMoves(int level, float alpha, float beta, bool initialCall);
     // rating functions
     float _rateDiceRatio(PlayColor color);
@@ -159,7 +166,7 @@ class Game {
     std::list< int > _deathStack;
     std::list< int > _deathStackPending;
     PlayColor _nextPlayer;
-    bool _finished;
+    State _state;
     void _setup();
 };
 
