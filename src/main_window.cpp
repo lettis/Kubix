@@ -22,7 +22,6 @@ void MainWindow::closeEvent(QCloseEvent* event) {
   QMainWindow::closeEvent(event);
 }
 
-
 void MainWindow::showAboutDialog() {
   Ui::AboutDialog dialog;
   QDialog d;

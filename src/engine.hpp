@@ -22,6 +22,7 @@
 #include <iostream>
 #include <vector>
 #include <list>
+
 #include "global.hpp"
 #include "config.hpp"
 
@@ -128,6 +129,8 @@ class Game {
     void cancelEvaluation();
     bool cancelled();
 
+    bool evaluating();
+
     PlayMode playMode();
     void setPlayMode(PlayMode mode);
 
@@ -150,7 +153,7 @@ class Game {
 
   private:
     enum State {
-      CANCELLED, RUNNING, IDLE, FINISHED
+      CANCELLED, EVALUATING, IDLE, FINISHED
     };
     Evaluation _evaluateMoves(int level, float alpha, float beta, bool initialCall);
     // rating functions

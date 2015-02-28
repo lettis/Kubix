@@ -659,9 +659,13 @@ std::list< Move > Game::possibleMoves(size_t dieId) {
 }
 /// return next evaluated move
 Move Game::evaluateNext() {
+  this->_state = EVALUATING;
   // always add one to the AI depth for evaluation (i.e. check out at least first move of opponent).
   // e.g.: AI depth == 1 -> level == 2 -> rating == 3 (i.e. first own move, second opponent's move, third rating)
   Evaluation eval = this->_evaluateMoves(this->_aiDepth + 2, -1000.0f, 1000.0f, true);
+  if (this->evaluating()) {
+    this->_state = IDLE;
+  }
   return eval.move;
 }
 
@@ -711,7 +715,6 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
     for (size_t i = 0; i < DieState::nPossibleMoves[value]; i++) {
       // abort evaluation if cancelled
       if (this->cancelled()) {
-        std::cout << "cancelled!\n";
         return Evaluation(0.0f);
       }
       // check if this specific move is valid
@@ -785,6 +788,10 @@ void Game::cancelEvaluation() {
 
 bool Game::cancelled() {
   return (this->_state == CANCELLED);
+}
+
+bool Game::evaluating() {
+  return (this->_state == EVALUATING);
 }
 
 

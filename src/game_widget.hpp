@@ -21,10 +21,6 @@
 #include <QtOpenGL/QGLWidget>
 #include <QTimer>
 #include <QWheelEvent>
-#include <QFuture>
-#include <QFutureWatcher>
-#include <QtConcurrentRun>
-#include <QMutex>
 
 #include <list>
 
@@ -111,9 +107,8 @@ class GameWidget: public QGLWidget {
     bool _relativeMarking;
     Logger _log;
     Move _moveToPerform;
-    QFuture<Move> _eval;
-    QFutureWatcher<Move> _watcher;
     bool _engineMoves();
+    void _startEvaluationThread();
 };
 
 } // end namespace KBX

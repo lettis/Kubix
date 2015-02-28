@@ -11,17 +11,15 @@
 
 #include <fstream>
 #include <sstream>
+#include <thread>
 
 namespace KBX {
-
-Move evaluatorFunc(Game game) {
-  return game.evaluateNext();
-}
 
 //TODO: add menu items / preferences for
 //      autoRefresh and relativeMarking
 
 void GameWidget::newGame(GameConfig c) {
+  this->cancelEvaluation();
   // clear paths and wipe scene for new game
   // attention: order is important because of
   //            references in path list to
@@ -55,15 +53,10 @@ GameWidget::GameWidget(QWidget *parent)
   // initialize game with some stupid defaults in case there is no config
   Config c(this);
   this->_game = new Game(c);
-  // handle evaluation threads
-  connect( &(this->_watcher), SIGNAL(started()), this, SLOT(setEngineRunning()));
-  connect( &(this->_watcher), SIGNAL(finished()), this, SLOT(setEngineFinished()));
-  connect( &(this->_watcher), SIGNAL(finished()), this, SLOT(performEvaluatedMove()));
 }
 
 void GameWidget::cancelEvaluation() {
-//TODO shit not working with concurrent::run
-  this->_eval.cancel();
+  this->_game->cancelEvaluation();
 }
 
 void GameWidget::togglePause(){
@@ -538,8 +531,7 @@ void GameWidget::_performMove(Move m) {
 void GameWidget::performEvaluatedMove(){
   if( ! this->paused() && ! this->_game->cancelled()){
     // if the game is paused, we do not accept engine input
-    Move m = this->_eval.result();
-    this->_performMove(m);
+    this->_performMove(this->_moveToPerform);
   }
 }
 
@@ -548,11 +540,11 @@ void GameWidget::update() {
   if ( ! this->_game->finished() && ! this->paused()) {
     // TODO: quit extra thread when window closes
     if (this->_scene->movingDie() == KBX::NONE) {
-      if (this->_engineMoves() && !this->_watcher.isRunning()) {
+      if (this->_engineMoves() && !this->_game->evaluating()) {
         // encapsulate move evaluation by engine
         // in separate thread to keep UI reactive
-        this->_eval = QtConcurrent::run(evaluatorFunc, *(this->_game));
-        this->_watcher.setFuture(this->_eval);
+        std::thread engineThread(&GameWidget::_startEvaluationThread, this); 
+        engineThread.detach();
       }
     } else if ( !this->_scene->getDie(this->_scene->movingDie())->isMoving()) {
       // release lock after die has finished moving
@@ -582,6 +574,13 @@ void GameWidget::setEngineRunning() {
 
 void GameWidget::setEngineFinished() {
   emit this->newStatus("Kubix is waiting for your move.");
+}
+
+void GameWidget::_startEvaluationThread() {
+  this->setEngineRunning();
+  this->_moveToPerform = this->_game->evaluateNext();
+  this->performEvaluatedMove();
+  this->setEngineFinished();
 }
 
 } // end namespace KBX
