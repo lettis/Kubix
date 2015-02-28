@@ -1313,7 +1313,7 @@ namespace KBX {
       _markX(4),
       _markY(4),
       _messages("Scene"),
-      _movingDie(-1) {
+      _movingDie(KBX::NONE) {
     this->setup();
   }
 
