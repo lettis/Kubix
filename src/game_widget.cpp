@@ -548,7 +548,7 @@ void GameWidget::update() {
   //TODO: rewrite this function to fully support all play modes, game states, etc
   if ( !this->_game->finished() && !this->paused()) {
     // TODO: quit extra thread when window closes
-    if (this->_scene->movingDie() == -1) {
+    if (this->_scene->movingDie() == KBX::NONE) {
       if (this->_engineMoves() && !this->_watcher.isRunning()) {
         // encapsulate move evaluation by engine
         // in separate thread to keep UI reactive
@@ -557,7 +557,7 @@ void GameWidget::update() {
       }
     } else if ( !this->_scene->getDie(this->_scene->movingDie())->isMoving()) {
       // release lock after die has finished moving
-      this->_scene->setMovingDie( -1);
+      this->_scene->setMovingDie(KBX::NONE);
     }
   }
   QGLWidget::update();

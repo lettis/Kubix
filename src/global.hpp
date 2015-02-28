@@ -3,6 +3,8 @@
 
 namespace KBX {
 
+const static int NONE = -1;
+  
 enum Direction {
   NORTH = 1,
   SOUTH = 2,
