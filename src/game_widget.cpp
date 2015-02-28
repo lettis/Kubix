@@ -104,6 +104,7 @@ void GameWidget::undoLastMove(){
     std::cout << "Nothing to undo!" << std::endl;
   }
 }
+
 void GameWidget::redoLastMove(){
   if(!this->_allowUndoRedo) return;
   this->cancelEvaluation();
@@ -424,12 +425,12 @@ void GameWidget::userSelect(Model* obj) {
     if (path) {
       // if the game is paused, we do not accept user moves;
       if(!this->paused()){
-	// move die along this path
-	Move mv = path->getMove();
-	this->_performMove(mv);
-	if (pathIsTempObj && (path != NULL)) {
-	  delete path;
-	}
+        // move die along this path
+        Move mv = path->getMove();
+        this->_performMove(mv);
+        if (pathIsTempObj && (path != NULL)) {
+          delete path;
+        }
       }
     }
   }
