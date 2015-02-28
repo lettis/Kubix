@@ -52,6 +52,7 @@ GameWidget::GameWidget(QWidget *parent)
       _log("act"),
       _evaluationFinished(false){
   setMouseTracking(false);
+  setFocusPolicy(Qt::StrongFocus);
   // initialize game with some stupid defaults in case there is no config
   Config c(this);
   this->_game = new Game(c);
@@ -334,6 +335,7 @@ void GameWidget::keyPressEvent(QKeyEvent* event) {
       }
       break;
     case Qt::Key_Space:
+      //this->userSelect(this->_scene->pickObject(event->pos()));
       this->userSelect(this->_scene->getMarked());
       break;
     default:

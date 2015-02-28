@@ -1646,10 +1646,11 @@ namespace KBX {
       throw "Scene::getMarked called without board!";
     }
     Tile* t = this->_board->getTile(this->_markX, this->_markY);
-    if (t->getDie())
+    if (t->getDie()) {
       return t->getDie();
-    else
+    } else {
       return t;
+    }
   }
 
   void Scene::setSelected(Model* obj) {
