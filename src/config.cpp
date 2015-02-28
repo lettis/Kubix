@@ -75,7 +75,7 @@ void Config::setAiDepth(size_t aiDepth){
 }
 
 size_t Config::getAiDepth() const {
-  size_t aiDepth = this->value("game/aidepth").toUInt();
+  size_t aiDepth = this->value("game/aiDepth").toUInt();
   return aiDepth;
 }
 
