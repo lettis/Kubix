@@ -79,6 +79,7 @@ int main(int argc, char** argv) {
   }
   
   try {
+    QApplication::setAttribute(Qt::AA_X11InitThreads);
     App app(argc, argv);
     MainWindow *window = new MainWindow();
     window->show();
