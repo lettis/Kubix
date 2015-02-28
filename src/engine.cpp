@@ -725,11 +725,11 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
         // kill the die lying on the target field
         int idDieOnTarget = this->_fields[this->_dice[d].x() + move.dx][this->_dice[d].y() + move.dy];
         // perform move
-        this->makeMove(Move(d, move));
+        this->makeMove(Move(d, move), false);
         // recursive call for next step (negative weighting, since it is opponent's turn)
         rating = - this->_strategy.patience * this->_evaluateMoves(level - 1, -beta, -alpha, false).rating;
         // undo move
-        this->makeMove(Move(d, moveBack));
+        this->makeMove(Move(d, moveBack), false);
         // revive killed die on target field
         if (idDieOnTarget != CLEAR) {
           this->reviveDie(idDieOnTarget);

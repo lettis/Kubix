@@ -505,7 +505,7 @@ void GameWidget::_performMove(Move m) {
     this->_scene->setMovingDie(dieId);
     this->_scene->getDie(dieId)->rollOverFields(m.rel);
     // update engine
-    this->_game->makeMove(m);
+    this->_game->makeMove(m, true);
     this->_clearDieSelection();
 
     // has anybody won?

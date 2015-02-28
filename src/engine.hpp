@@ -110,7 +110,7 @@ class Game {
     friend std::istream& operator>>(std::istream & stream, Game&);
 
     bool moveIsValid(Move move);
-    void makeMove(Move move, bool storeMove = true);
+    void makeMove(Move move, bool storeMove);
     Move undoMove();
     Move redoMove();
     std::list< Move > possibleMoves(size_t dieId);
