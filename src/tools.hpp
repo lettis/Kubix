@@ -37,6 +37,8 @@ int sgn(float f);
 int sgn(int i);
 int sgnP(float f);
 
+std::size_t randomIndex(std::size_t rangeMin, std::size_t rangeMax);
+
 void swap(int& a, int& b);
 
 void loadTextures();

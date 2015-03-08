@@ -54,6 +54,7 @@ int main(int argc, char** argv) {
   //KBX::Logger::enableErrors();
   //KBX::Logger::enableDebug();
 //  KBX::Logger::filter("DieState");
+//  KBX::Logger::filter("evaluation");
 
   // TODO think about using boost::program_options
   bool quit = false;

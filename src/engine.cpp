@@ -44,16 +44,14 @@ PlayColor inverse(PlayColor color) {
 Strategy::Strategy()
   : name("default"),
     coeffDiceRatio(1.),
-    patience(.95),
-    randomness(0.01)
+    patience(.95)
 {
 }
 
 Strategy::Strategy(const Strategy& other)
   : name(other.name),
     coeffDiceRatio(other.coeffDiceRatio),
-    patience(other.patience),
-    randomness(other.randomness)
+    patience(other.patience)
 {
 }
 
@@ -61,7 +59,6 @@ void Strategy::print() const {
   std::cout << "Strategy '" << this->name << "'" << std::endl;
   std::cout << "dice ratio coefficient: " << this->coeffDiceRatio << std::endl;
   std::cout << "patience: " << this->patience << std::endl;
-  std::cout << "randomness: " << this->randomness << std::endl;
 }
 
 /// initialize a move
@@ -642,7 +639,7 @@ float Game::_rate(PlayColor color) {
       return -100.0f;
     }
   }
-  float rating =  this->_strategy.randomness/RAND_MAX*rand()-0.5;
+  float rating = 0.0f;
   rating += this->_strategy.coeffDiceRatio * this->_rateDiceRatio(color);
   return rating;
 }
@@ -663,7 +660,7 @@ std::list< Move > Game::possibleMoves(size_t dieId) {
 Move Game::evaluateNext() {
   this->_state = EVALUATING;
   // aiDepth = number of human moves anticipated (hence times two because of response moves)
-  Evaluation eval = this->_evaluateMoves(this->_aiDepth * 2, -1000.0f, 1000.0f, true);
+  Evaluation eval = this->_evaluateMoves(this->_aiDepth * 2, -100.0f, 100.0f, true);
   if (this->evaluating()) {
     this->_state = IDLE;
   }
@@ -750,8 +747,19 @@ Evaluation Game::_evaluateMoves(int level, float alpha, float beta, bool initial
     }
   }
   if (initialCall == true) {
-    if ( !candidates.empty()) {
-      return candidates.top();
+    if ( ! candidates.empty()) {
+      float topRating = candidates.top().rating;
+      std::vector<Evaluation> topCandidates;
+      log.info(stringprintf("top rating: %0.4f", topRating));
+      while ((candidates.top().rating >= topRating) && ( ! candidates.empty())) {
+        topCandidates.push_back(candidates.top());
+        candidates.pop();
+      }
+      log.info(stringprintf("next rating: %0.4f", candidates.top().rating));
+      log.info(stringprintf("no. of top candidates: %d", topCandidates.size()));
+      // randomly select from equally rated top candidates
+      std::size_t iTop = randomIndex(0, topCandidates.size()-1);
+      return topCandidates[iTop];
     }
   }
   return Evaluation(alpha);

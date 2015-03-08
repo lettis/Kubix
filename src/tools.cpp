@@ -23,6 +23,8 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <random>
+#include <chrono>
 
 #include <QString>
 #include <QPixmap>
@@ -63,6 +65,12 @@ int sgnP(float f){
   }
 }
 
+std::size_t randomIndex(std::size_t rangeMin, std::size_t rangeMax) {
+  std::size_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  std::minstd_rand0 generator(seed);
+  std::uniform_int_distribution<std::size_t> dist(rangeMin, rangeMax);
+  return dist(generator);
+}
 
 /// swap values of integers a & b
 void swap(int& a, int& b) {
